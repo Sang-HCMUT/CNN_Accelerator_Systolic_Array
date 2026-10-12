@@ -111,6 +111,8 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   └── compile_4x4.bat          # Automated command-line build script
 ├── synthesis_gemm_8x8/          # Quartus II project for 8x8 configuration (64 PEs)
 │   └── compile_8x8.bat          # Automated command-line build script
+├── synthesis_soc/               # Quartus II project for complete RISC-V SoC system
+│   └── compile_soc.bat          # Automated command-line build script for SoC
 └── PROJECT_SPECIFICATION.md     # Comprehensive system specification & engineering report
 ```
 
@@ -120,20 +122,18 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 
 Compiled with **Quartus II 64-Bit 13.0 SP1** and analyzed via **TimeQuest Timing Analyzer**:
 
-| Metric | $4 \times 4$ Array (16 PEs) | $8 \times 8$ Array (64 PEs) | Scaling Ratio |
+| Metric | $4 \times 4$ Standalone Array | $8 \times 8$ Standalone Array | Full RISC-V SoC (`soc_top`) |
 | :--- | :---: | :---: | :---: |
-| **Logic Elements (LEs)** | **4,323 / 18,752 (23.1%)** | **15,567 / 18,752 (83.0%)** | **$3.60\times$** |
-| - *Combinational Functions* | 3,412 (18.2%) | 13,211 (70.5%) | $3.87\times$ |
-| - *Dedicated Logic Registers* | 2,473 (13.2%) | 8,012 (42.7%) | $3.24\times$ |
-| **Embedded Multipliers (9-bit)** | **16 / 52 (30.8%)** | **52 / 52 (100.0% - Saturated)** | **$3.25\times$** (12 mults in LUTs) |
-| **Memory Bits (Block RAM)** | **512 / 239,616 (< 1%)** | **1,024 / 239,616 (< 1%)** | $2.00\times$ |
-| **Total I/O Pins** | 93 / 315 (29.5%) | 97 / 315 (30.8%) | $+4$ pins |
-| **Max Frequency $F_{max}$ (Slow 85°C)** | **70.00 MHz** ($T_{clk} = 14.286 \text{ ns}$) | **67.60 MHz** ($T_{clk} = 14.793 \text{ ns}$) | **Stable (-3.4%)** |
-| **Max Frequency $F_{max}$ (Fast 0°C)** | **186.04 MHz** ($T_{clk} = 5.37 \text{ ns}$) | **184.74 MHz** ($T_{clk} = 5.41 \text{ ns}$) | **Stable (-0.7%)** |
-| **Compute Latency ($K=N$)** | 13 clock cycles | 25 clock cycles | $1.92\times$ |
-| **Total Latency (with Readout)** | 33 clock cycles | 91 clock cycles | $2.75\times$ |
-| **Peak Throughput (Slow 85°C)** | **2.240 GOPS** | **8.653 GOPS** | **$3.86\times$ (Near-linear)** |
-| **Peak Throughput (Fast 0°C)** | **5.953 GOPS** | **23.647 GOPS** | **$3.97\times$** |
+| **Logic Elements (LEs)** | **4,323 / 18,752 (23.1%)** | **15,567 / 18,752 (83.0%)** | **6,219 / 18,752 (33.1%)** |
+| - *Combinational Functions* | 3,412 (18.2%) | 13,211 (70.5%) | 5,539 (29.5%) |
+| - *Dedicated Logic Registers* | 2,473 (13.2%) | 8,012 (42.7%) | 3,337 (17.8%) |
+| **Embedded Multipliers (9-bit)** | **16 / 52 (30.8%)** | **52 / 52 (100.0% - Saturated)** | **16 / 52 (30.8%)** |
+| **Memory Bits (Block RAM)** | **512 / 239,616 (< 1%)** | **1,024 / 239,616 (< 1%)** | **133,632 / 239,616 (55.8%)** |
+| **Total I/O Pins** | 93 / 315 (29.5%) | 97 / 315 (30.8%) | **4 / 315 (1.3%)** |
+| **Max Frequency $F_{max}$ (Slow 85°C)** | **70.00 MHz** ($T_{clk} = 14.29 \text{ ns}$) | **67.60 MHz** ($T_{clk} = 14.79 \text{ ns}$) | **60.00 MHz** ($T_{clk} = 16.67 \text{ ns}$) |
+| **Max Frequency $F_{max}$ (Fast 0°C)** | **186.04 MHz** ($T_{clk} = 5.37 \text{ ns}$) | **184.74 MHz** ($T_{clk} = 5.41 \text{ ns}$) | **162.33 MHz** ($T_{clk} = 6.16 \text{ ns}$) |
+| **Worst-Case Slack @ 50 MHz** | **+5.714 ns** | **+5.207 ns** | **+3.331 ns (Zero Violation)** |
+| **Compilation Status** | **0 Errors (Passed)** | **0 Errors (Passed)** | **0 Errors (Passed)** |
 
 ### Key Academic Takeaways:
 1. **$F_{max}$ Frequency Preservation**: By eliminating global broadcast routes and inserting pipelined registers between adjacent PEs, increasing the compute density by $4\times$ ($16 \to 64$ PEs) causes only a negligible $3.4\%$ frequency drop.
