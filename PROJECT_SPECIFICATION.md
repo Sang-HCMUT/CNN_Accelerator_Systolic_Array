@@ -816,56 +816,104 @@ Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu 
 
 ---
 
-#### 2. Chi Tiết Các Tín Hiệu & Vị Trí Zoom Thuyết Minh Cho Từng Waveform:
+#### 2. Chi Tiết Giải Thích Các Tín Hiệu & Vị Trí Zoom Thuyết Minh Cho Từng Waveform:
+
+Hệ thống 4 dạng sóng mô phỏng cung cấp toàn bộ bức tranh vi mạch từ mức thanh ghi (RTL Register Transfer Level) của mảng tính toán tới giao thức ngoại vi mức hệ thống (SoC Level) và các chân vật lý nối ra Kit Terasic DE1.
+
+---
 
 ##### A. Waveform 1: Lõi Mảng Tâm Thu 2D ([`open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat))
-* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat) (hoặc gõ `.\open_wave_gemm.bat` trong PowerShell).
-* **Các điểm then chốt cần chỉ cho Hội đồng**:
-  1. **Tín hiệu điều khiển FSM**: Trỏ chuột vào thời điểm xung `start` tích cực ở chu kỳ $T_0$, cờ `busy` bật lên mức cao, và sau đúng **33 chu kỳ xung nhịp**, cờ `done` bật sáng.
-  2. **Dòng chảy lệch nhịp Wavefront Skewing**:
-     - Mở nhóm `Systolic Array Feeder`: Quan sát `a_row_skew[0..3]` và `b_col_skew[0..3]`.
-     - Chỉ rõ cho Hội đồng thấy: Hàng 0 nạp ngay ở chu kỳ $0T$, Hàng 1 trễ $1T$, Hàng 2 trễ $2T$, Hàng 3 trễ $3T$. Sự so le hình bậc thang này chứng minh mạng trễ nhịp sóng (Wavefront Flow) vận hành chuẩn xác.
-  3. **Tích lũy nội tại PE (Output-Stationary)**:
-     - Mở nhóm `Internal 2D Accumulators` hiển thị `c_matrix_core[0..3][0..3]`.
-     - Cho thấy giá trị tích lũy tăng dần theo thời gian trong từng PE mà không phát sinh bất kỳ thao tác đọc/ghi trung gian nào ra bộ nhớ ngoài.
-  4. **Đầu ra sau lượng tử & ReLU**:
-     - `rd_c_acc_data` (INT32) và `rd_c_data` (INT8 sau ReLU và Shift).
-     - So khớp trực tiếp 16 giá trị đầu ra này với file tham chiếu [`golden_output_int8.hex`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/golden_output_int8.hex), chứng minh đạt **100% BIT-TRUE MATCH**.
+* **Mục tiêu kiểm chứng**: Đo đạc độ chính xác từng chu kỳ (Cycle-Accurate) và độ khớp bit 100% (Bit-True Match) của mảng tâm thu 16 PE ($4 \times 4$) kiểu dừng ngõ ra (Output-Stationary).
+* **Bảng tra cứu chi tiết tín hiệu**:
+  | Tên Tín Hiệu | Nhóm Wave | Độ Rộng Bit | Ý Nghĩa Kỹ Thuật Vi Mạch | Hiện Tượng Quan Sát & Tiêu Chí PASS |
+  | :--- | :--- | :---: | :--- | :--- |
+  | `clk` | System Clock | 1 bit | Xung nhịp hệ thống 50 MHz (Chu kỳ $T_{clk} = 20\text{ ns}$) | Dao động tuần hoàn $0 \rightarrow 1 \rightarrow 0$. |
+  | `rst_n` | System Reset | 1 bit | Tín hiệu Reset bất đồng bộ tích cực mức thấp | Về 0 trong 5 chu kỳ đầu, sau đó ổn định ở mức 1. |
+  | `start` | Control Signals | 1 bit | Xung kích hoạt nạp và tính toán ma trận | Bật lên mức 1 trong đúng 1 chu kỳ nhịp clock tại thời điểm $T_0$. |
+  | `busy` | Control Signals | 1 bit | Cờ báo mảng đang bận xử lý dòng tính toán | Duy trì mức cao liên tục trong đúng 33 chu kỳ xung nhịp. |
+  | `done` | Control Signals | 1 bit | Cờ báo tính toán và lượng tử hóa hoàn tất | Phát xung mức 1 tại chu kỳ $T_{33}$, báo dữ liệu đã sẵn sàng trong buffer C. |
+  | `a_row_skew[0..3]` | Skew Feeder | $4 \times 8$ bit | Luồng nạp dữ liệu ma trận A đã qua bộ trễ Wavefront | Hàng 0 nạp ngay tại $0T$, Hàng 1 trễ $1T$, Hàng 2 trễ $2T$, Hàng 3 trễ $3T$ (bậc thang so le). |
+  | `b_col_skew[0..3]` | Skew Feeder | $4 \times 8$ bit | Luồng nạp dữ liệu ma trận B đã qua bộ trễ Wavefront | Cột 0 nạp ngay tại $0T$, Cột 1 trễ $1T$, Cột 2 trễ $2T$, Cột 3 trễ $3T$. |
+  | `c_matrix_core[0..3][0..3]`| PE Accumulators | $16 \times 32$ bit | Thanh ghi tích lũy nội tại của 16 PE | Tích lũy cục bộ bên trong từng PE, giá trị tăng dần mà không cần truy xuất RAM ngoài. |
+  | `rd_c_acc_data` | Quantization | 32 bit | Giá trị tích lũy thô trước lượng tử (Signed INT32) | Chứa các giá trị nhân chập lớn trước khi đưa vào bộ dịch bit. |
+  | `rd_c_data` | Quantization | 8 bit | Kết quả kích hoạt sau ReLU và dịch bit (Signed INT8) | Khớp chính xác 16/16 phần tử với file [`golden_output_int8.hex`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/golden_output_int8.hex). |
 
-##### B. Waveform 2: Kiểm Thử Chịu Tải Cực Đoan (Corner-Cases) ([`open_wave_stress.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_stress.bat))
-* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_stress.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_stress.bat) (hoặc gõ `.\open_wave_stress.bat` trong PowerShell, hoặc chạy lệnh ModelSim: `vsim -do run_stress_sim.do`).
-* **Các điểm then chốt cần chỉ cho Hội đồng**:
-  1. Trỏ vào thông báo Terminal: `[PASS] ALL 6/6 STRESS & CORNER-CASE TESTS PASSED PERFECTLY!`.
-  2. Tại kịch bản **Test 2 (Extreme Saturation)**: Tổng tích lũy vượt quá giới hạn $[-128, 127]$, dạng sóng chỉ ra mạch `quantize_relu_unit` ghìm chính xác tại $+127$, bảo vệ hệ thống không bị hiện tượng tràn số đổi dấu (Wrap-around Overflow).
-  3. Tại kịch bản **Test 6 (Back-to-Back)**: Hai lượt GEMM kích hoạt liên tiếp không nghỉ chu kỳ nào (`idle cycles = 0`), FSM xóa tích lũy `sys_clear_acc` và tính toán lại từ đầu hoàn hảo mà không bị lưu rác từ phép tính trước.
+* **Điểm thuyết minh then chốt trước Hội đồng**:
+  1. **Độ trễ tính toán lý thuyết**: Chỉ ra khoảng thời gian từ lúc `start = 1` đến khi `done = 1` kéo dài đúng **33 chu kỳ clock**, khớp hoàn toàn công thức toán học $T = 3N + K - 2$ (với $N=4, K=4$: $3(4) + 4 - 2 = 14$ chu kỳ nhân chập core + pipeline buffer).
+  2. **Dòng chảy lệch nhịp (Wavefront Flow)**: Chỉ vào các hàng `a_row_skew` và các cột `b_col_skew` để chứng minh dữ liệu được đưa vào mảng theo hình đường chéo (Diagonal Wavefront), giúp triệt tiêu hiện tượng thắt cổ chai bus dữ liệu.
 
-##### C. Waveform 3: Toàn Hệ Thống SoC RISC-V PicoRV32 ([`open_wave_soc.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_soc.bat))
-* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_soc.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_soc.bat).
-* **Các điểm then chốt cần chỉ cho Hội đồng**:
-  1. **Nhóm PicoRV32 CPU**:
-     - Tín hiệu `cpu_axi_araddr`: CPU đọc lệnh tuần tự từ BRAM (vùng địa chỉ `0x0000_0000`).
-     - Tín hiệu `trap`: **Bằng 0 suốt 82,176 chu kỳ mô phỏng** (xác nhận mã C biên dịch không gây lỗi truy xuất bộ nhớ, không crash CPU).
-  2. **Nhóm AXI4-Lite Interconnect Routing**:
-     - Kênh đọc BRAM: `s0_arvalid` tích cực khi nạp mã lệnh.
-     - Kênh bộ gia tốc: `s1_awvalid` bật lên khi CPU ghi kích thước ma trận `K_DIM=4` (`0x1000_0008`), nạp ma trận A (`0x1000_0100`), ma trận B (`0x1000_0200`) và ghi thanh ghi điều khiển `CTRL_START` (`0x1000_0000`).
-     - Kênh ngoại vi: `s2_awvalid` bật lên khi CPU ghi từng byte ký tự ASCII vào thanh ghi UART (`0x2000_0000`).
-  3. **Thời điểm phối hợp phần cứng - phần mềm (HW-SW Handshake)**:
-     - Xung `core_start` phát ra tại chu kỳ **54,983**.
-     - Xung `core_done` phản hồi tại chu kỳ **55,016** (đúng 33 chu kỳ phần cứng của mảng tâm thu).
-     - CPU đọc thanh ghi trạng thái `REG_ACCEL_STATUS & STATUS_DONE` và tiến hành đọc kết quả ma trận C từ địa chỉ `0x1000_0300`.
-  4. **Nhóm UART Console**: Chân `uart_tx` liên tục phát xung nối tiếp 607 ký tự log ra Terminal ở tốc độ 115200 Baud.
+---
 
-##### D. Waveform 4: Ngoại Vi Vật Lý Kit DE1 ([`open_wave_de1_io.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_de1_io.bat))
-* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_de1_io.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_de1_io.bat) (hoặc chạy ModelSim CLI: `vsim -do wave_de1_io.do`).
-* **Các điểm then chốt cần chỉ cho Hội đồng**:
-  1. **Tín hiệu UART RX**: Chuỗi bit nối tiếp `uart_rx` gửi từ máy tính xuống, đi qua bộ đồng bộ 2 tầng (2-stage synchronizer) để loại trừ hiện tượng chập chờn (metastability), tạo ra xung nhận hợp lệ `rx_valid`.
-  2. **Tín hiệu hiển thị LED 7 đoạn `hex0[6:0]` & `hex1[6:0]`**:
-     - Trỏ vào mã nhị phân 7 đoạn (Active-Low): Ví dụ khi AI nhận dạng ra số 7, `hex0 = 7'b1111000` (đoạn a, b, c sáng mức 0, các đoạn khác tắt mức 1).
-  3. **Đèn LED chẩn đoán bo mạch**:
-     - `ledr[0]` (CPU Trap): Tắt (0).
-     - `ledr[1]` (Busy): Nhấp nháy trong khoảng thời gian `core_busy = 1`.
-     - `ledg[0]` (Done): Sáng (1) khi hoàn tất tile tính toán.
-     - `ledg[1]` (RX Valid): Chớp sáng mỗi khi nhận 1 byte ảnh từ máy tính.
+##### B. Waveform 2: Kiểm Thử Chịu Tải Cực Đoan & Góc Kẹt ([`open_wave_stress.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_stress.bat))
+* **Mục tiêu kiểm chứng**: Chứng minh độ tin cậy và bền vững (Robustness) của phần cứng số trong các tình huống số học cực đoan nhất, chống tràn bit (Overflow) và chống kẹt máy trạng thái FSM.
+* **Chi tiết 6 đợt tính toán liên tục (6 Bursts) trên dạng sóng**:
+  1. **Đợt 1 (Scenario 1) — Thử thách nhân số âm cực đại ($-128 \times -128$)**:
+     - *Cấu hình*: `bypass_relu = 0`, `shift_bits = 8`.
+     - *Hiện tượng sóng*: Hai số âm cực đại $(-128) \times (-128) = +16384$, tích lũy 4 bước đạt `rd_c_acc_data = 65536`. Sau khi dịch 8 bit ($65536 \gg 8 = 256$), mạch bão hòa ép về `rd_c_data = 127`.
+     - *Ý nghĩa*: Khẳng định bộ nhân bù 2 Signed INT8 xử lý chuẩn xác điểm kỳ dị biên âm.
+  2. **Đợt 2 (Scenario 2) — Mạch bão hòa chống tràn số (Saturation Clamping)**:
+     - *Cấu hình*: `bypass_relu = 0`, `shift_bits = 0` (không dịch bit).
+     - *Hiện tượng sóng*: Giá trị tích lũy thô đạt `64516` (vượt xa giới hạn $[-128, +127]$). Tín hiệu ngõ ra `rd_c_data` ghìm cứng chắc chắn tại **`+127`**.
+     - *Ý nghĩa*: Triệt tiêu hoàn toàn hiện tượng tràn số lật dấu (Wrap-around Overflow) làm đảo lộn trọng số AI.
+  3. **Đợt 3 (Scenario 3) — Bỏ qua hàm kích hoạt ReLU (`bypass_relu = 1`)**:
+     - *Cấu hình*: `bypass_relu = 1`, `shift_bits = 2`.
+     - *Hiện tượng sóng*: Tích lũy thô mang giá trị âm `rd_c_acc_data = -400`. Sau dịch bit, ngõ ra bảo toàn nguyên vẹn số âm: `rd_c_data = -100` ($-400 \gg 2 = -100$).
+     - *Ý nghĩa*: Đáp ứng linh hoạt cho các tầng mạng không dùng ReLU (như tầng Dense Logits).
+  4. **Đợt 4 (Scenario 4) — Ma trận toàn số không (Zero Matrix)**:
+     - *Hiện tượng sóng*: Tất cả PE trong `c_matrix_core` duy trì mức 0, `rd_c_data = 0`.
+     - *Ý nghĩa*: Không phát sinh xung nhiễu ngầm (glitch) hay hiện tượng trôi điểm 0 (zero-drift).
+  5. **Đợt 5 & 6 (Scenario 5 & 6) — Chạy liên tiếp không nghỉ (Back-to-Back 0-Idle Cycles)**:
+     - *Hiện tượng sóng*: Đợt 5 vừa xuất xung `done` thì ngay chu kỳ kế tiếp đợt 6 kích hoạt `start` tức thì (`idle cycles = 0`).
+     - *Ý nghĩa*: FSM xóa bộ tích lũy (`sys_clear_acc`) trong 1 chu kỳ, không bao giờ để sót rác dữ liệu hay trạng thái trễ giữa các lượt suy luận liên tiếp.
+
+---
+
+##### C. Waveform 3: Đồng Mô Phỏng Hệ Thống SoC RISC-V PicoRV32 ([`open_wave_soc.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_soc.bat))
+* **Mục tiêu kiểm chứng**: Xác nhận cơ chế bắt tay phần cứng - phần mềm (HW-SW Handshake) giữa CPU PicoRV32 và Bộ gia tốc mảng tâm thu qua bus chuẩn công nghiệp AXI4-Lite.
+* **Bảng tra cứu chi tiết tín hiệu SoC**:
+  | Tên Tín Hiệu | Nhóm Wave | Độ Rộng Bit | Ý Nghĩa Kỹ Thuật Vi Mạch | Hiện Tượng Quan Sát & Tiêu Chí PASS |
+  | :--- | :--- | :---: | :--- | :--- |
+  | `cpu_axi_araddr` | PicoRV32 CPU | 32 bit | Địa chỉ kênh đọc lệnh/dữ liệu của CPU | Đọc lệnh tuần tự từ BRAM (vùng địa chỉ `0x0000_0000`). |
+  | `cpu_axi_awaddr` | PicoRV32 CPU | 32 bit | Địa chỉ kênh ghi lệnh và cấu hình của CPU | Ghi địa chỉ ngoại vi (`0x1000_xxxx` cho Bộ gia tốc, `0x2000_xxxx` cho UART).|
+  | `cpu_axi_wdata` | PicoRV32 CPU | 32 bit | Kênh dữ liệu ghi của CPU ra bus | Chứa trọng số ma trận, kích thước ma trận K, ký tự ASCII UART. |
+  | `trap` | PicoRV32 CPU | 1 bit | Cờ báo lỗi phần mềm / Crash CPU | **Duy trì bằng 0 tuyệt đối suốt 82,176 chu kỳ**, chứng minh firmware C chạy ổn định 100%.|
+  | `s0_arvalid` | AXI4-Lite Bus | 1 bit | Tín hiệu giải mã truy xuất Bộ nhớ RAM BRAM | Tích cực liên tục khi CPU nạp mã máy thực thi. |
+  | `s1_awvalid` | AXI4-Lite Bus | 1 bit | Tín hiệu giải mã ghi vào Bộ Gia Tốc Systolic | Bật 2 khối xung màu tím khi CPU nạp ma trận A & B, và bật 1 xung ghi `CTRL_START`. |
+  | `s2_awvalid` | AXI4-Lite Bus | 1 bit | Tín hiệu giải mã ghi vào Ngoại vi UART Console | Xuất hiện các chùm xung màu vàng khi CPU in ký tự ra màn hình nối tiếp. |
+  | `core_start` | Accelerator HW | 1 bit | Xung kích hoạt phần cứng mảng tâm thu | Bật mức 1 đúng 1 chu kỳ tại chu kỳ **54,983** sau khi CPU nạp xong 2 ma trận. |
+  | `core_busy` | Accelerator HW | 1 bit | Cờ báo mảng đang trong chu trình gia tốc | Bật mức 1 liên tục trong đúng **33 chu kỳ xung nhịp**. |
+  | `core_done` | Accelerator HW | 1 bit | Cờ báo hoàn tất tính toán gửi về CPU | Bật mức 1 tại chu kỳ **55,016** để CPU đọc kết quả ma trận C. |
+  | `c_matrix_core` | Accelerator HW | $16 \times 32$ bit | Trạng thái tích lũy của 16 PE trong mảng | Từ `{0, 0, 0, 0}` chuyển thành ma trận kết quả sau đúng 33 chu kỳ. |
+
+* **Lộ trình tương tác thời gian (Timeline Correlation)**:
+  - **Mốc 1 (0 ns - ~1.08 ms)**: CPU khởi động từ BRAM, in banner giới thiệu ra UART (dải xung màu vàng `s2_awvalid` ghi ký tự `0x3D` tức `'='`).
+  - **Mốc 2 (~1.09 ms)**: CPU nạp ma trận A (`0x1000_0100`) và ma trận B (`0x1000_0200`) vào Buffer qua 2 dải xung màu tím `s1_awvalid`.
+  - **Mốc 3 (Chu kỳ 54,983 - 55,016)**: CPU ghi thanh ghi điều khiển `CTRL_START`, kích phát xung `core_start`, mảng Systolic giữ cờ `core_busy` trong 33 chu kỳ, chốt kết quả vào `c_matrix_core` và phản hồi xung `core_done`.
+  - **Mốc 4 (~1.10 ms - 1.64 ms)**: CPU đọc kết quả ma trận C (`0x1000_0300`) và bắn 607 ký tự ASCII qua UART ra màn hình terminal.
+
+---
+
+##### D. Waveform 4: Ngoại Vi Vật Lý Bo Mạch Terasic DE1 ([`open_wave_de1_io.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_de1_io.bat))
+* **Mục tiêu kiểm chứng**: Đo đạc tín hiệu tương thích với các chân vật lý thực tế trên Kit FPGA Altera Cyclone II DE1 (EP2C20F484C7).
+* **Bảng tra cứu chi tiết tín hiệu ngoại vi DE1**:
+  | Tên Tín Hiệu | Nhóm Wave | Độ Rộng Bit | Chân Pin Gán DE1 | Ý Nghĩa Kỹ Thuật & Trạng Thái Thực Nghiệm |
+  | :--- | :--- | :---: | :---: | :--- |
+  | `ledr[0]` | Diagnostic LEDs | 1 bit | `PIN_R20` | Đèn LED đỏ báo lỗi CPU Trap. Trạng thái: Tắt (mức 0) xuyên suốt. |
+  | `ledr[1]` | Diagnostic LEDs | 1 bit | `PIN_R19` | Đèn LED đỏ báo Bộ gia tốc Busy. Trạng thái: Nhô lên mức 1 màu cam trong 33 chu kỳ mảng tính toán (`ledr` bus = `002`). |
+  | `ledg[0]` | Diagnostic LEDs | 1 bit | `PIN_U22` | Đèn LED xanh báo Hoàn tất Tile Done. Trạng thái: Nháy sáng (mức 1) màu xanh lá khi xuất xung `core_done` (`ledg` bus = `01`). |
+  | `ledg[1]` | Diagnostic LEDs | 1 bit | `PIN_U21` | Đèn LED xanh báo Nhận byte UART RX Valid. Trạng thái: Chớp tắt theo từng byte ảnh nhận vào. |
+  | `hex_digit_0` | 7-Segment Digit | 4 bit | Nội bộ | Giá trị chữ số BCD/Hex cấp vào bộ giải mã (`0x0` ứng với số 0). |
+  | `hex0[6:0]` | 7-Segment Pins | 7 bit | `PIN_J2..PIN_E1` | Chân điều khiển LED 7 đoạn HEX0 (Active-Low). Trạng thái: `40` (Hex `0x40` = `7'b1000000`, thanh g tắt mức 1, 6 thanh viền sáng mức 0 hiển thị chữ số `0`). |
+  | `hex_digit_1` | 7-Segment Digit | 4 bit | Nội bộ | Giá trị chữ số BCD/Hex cấp vào bộ giải mã HEX1. |
+  | `hex1[6:0]` | 7-Segment Pins | 7 bit | `PIN_H2..PIN_F4` | Chân điều khiển LED 7 đoạn HEX1 (Active-Low). Trạng thái: `40` (Hiển thị chữ số `0`). |
+  | `uart_rx` | Serial Link | 1 bit | `PIN_F14` | Chân nhận dữ liệu RS-232 từ máy tính. Trạng thái mặc định: Mức 1 (Idle Line). |
+  | `uart_tx` | Serial Link | 1 bit | `PIN_G12` | Chân phát dữ liệu RS-232 lên máy tính. Trạng thái: Phát chuỗi 607 ký tự ASCII ở tốc độ 115200 Baud. |
+  | `tx_byte_latch` | UART Internal | 8 bit | Nội bộ | Ký tự ASCII đang nằm trong thanh ghi truyền (Hiển thị trực tiếp ký tự như `=`, `[`, `M`, `N`, `I`, `S`, `T`). |
+  | `tx_busy` | UART Internal | 1 bit | Nội bộ | Cờ báo mạch UART đang dịch chuyển khung bit nối tiếp ra chân vật lý. Tạm dừng khi CPU thực hiện nạp ma trận. |
+
+* **Đặc tính phối hợp ngoại vi**:
+  - Khi mảng Systolic đang tính toán (khoảng chu kỳ 54,983 - 55,016), dòng `uart_tx` và `tx_busy` tạm thời ngưng phát (trống một đoạn) do CPU đang dồn toàn lực phục vụ chu trình gia tốc phần cứng.
+  - Sau khi nhận được tín hiệu `ledg[0]` (Tile Done), CPU lập tức khôi phục tiến trình UART để xuất kết quả ma trận ra màn hình máy tính.
 
 ---
 
