@@ -185,17 +185,29 @@ vsim -c -do "run -all; quit -f" tb_systolic_stress_test
 - **Test a Specific Image**: `python software_ref/test_single_image.py 42`
 - **Test a Random Image**: `python software_ref/test_single_image.py random`
 
-### 5. Run Phase 3: RISC-V SoC Hardware-Software Co-Simulation
-- **Compile Firmware (Pure Python RV32I Assembler)**:
+### 5. Run Phase 3: RISC-V SoC Hardware-Software Co-Simulation & Synthesis
+- **Build Firmware Option A (Standalone Python RV32I Assembler - Zero Dependency)**:
   ```powershell
   python firmware/firmware_generator.py
+  ```
+- **Build Firmware Option B (GNU RISC-V C Toolchain)**:
+  ```powershell
+  cd firmware
+  riscv32-unknown-elf-gcc -march=rv32i -mabi=ilp32 -O2 -nostdlib -T link.ld start.s main.c -o firmware.elf
+  riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
+  python bin2hex.py firmware.bin ../VEFIFY/firmware.hex
   ```
 - **Run Full SoC Co-Simulation on ModelSim**:
   ```powershell
   cd VEFIFY
   vsim -c -do run_soc_sim.do
   ```
-  Observes CPU booting from BRAM (`0x0000_0000`), configuring the Systolic GEMM Accelerator via AXI4-Lite (`0x1000_0000`), executing GEMM tile calculations in 33 hardware cycles, and streaming verified results out via UART (`0x2000_0000`).
+  Observes CPU booting from BRAM (`0x0000_0000`), configuring the Systolic GEMM Accelerator via AXI4-Lite (`0x1000_0000`), executing GEMM tile calculations in 33 hardware cycles, and streaming verified results out via UART (`0x2000_0000`) with 100% Bit-True match.
+- **Run Full SoC Quartus II Synthesis (Cyclone II EP2C20)**:
+  ```powershell
+  cd synthesis_soc
+  .\compile_soc.bat
+  ```
 
 ---
 
