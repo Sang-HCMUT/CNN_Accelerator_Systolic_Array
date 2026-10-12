@@ -158,6 +158,13 @@ VERIFICATION RESULT: ALL 16 ELEMENTS PASSED (0 ERRORS)!
 - **Scenario 5**: Back-to-Back Run #1 (Accumulator auto-clear) $\implies$ **PASSED**
 - **Scenario 6**: Back-to-Back Run #2 (Pipeline residual flush) $\implies$ **PASSED**
 
+### 3. Full RISC-V SoC Hardware-Software Co-Simulation (`tb_soc_top`)
+- **Total Simulation Cycles**: **82,176 cycles** (50 MHz, CPI = 5.97)
+- **CPU Retired Instructions**: **13,751 instructions** (0 TRAP errors, 0 timeouts)
+- **Systolic Execution Latency**: **Exactly 33 cycles** (Cycle 54,983 $\to$ 55,016)
+- **UART Output Characters**: **607 characters** (Zero buffer overrun, 100% verified)
+- **Matrix C Verification**: 16/16 elements **100% Bit-True Match** with Python Golden Model.
+
 ---
 
 ## Quickstart Guide
