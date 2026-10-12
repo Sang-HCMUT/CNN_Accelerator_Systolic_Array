@@ -514,210 +514,251 @@ Kịch bản đã tự động trích xuất các tile ma trận thực tế t�
 
 ---
 
-## 8. HƯỚNG DẪN TỰ KIỂM TRA & TÁI LẬP SỐ LIỆU TRƯỚC HỘI ĐỒNG (GIAI ĐOẠN 1 & 2)
+## 8. QUY TRÌNH THỰC NGHIỆM & HƯỚNG DẪN TEST CHI TIẾT TỪNG GIAI ĐOẠN (PHASE 1, 2 & 3)
 
-Tất cả các lệnh và file dưới đây đều sẵn sàng để bạn tự kiểm chứng hoặc biểu diễn trực tiếp:
+Nhằm đảm bảo tính minh bạch khoa học, khả năng tái lập 100% kết quả (Reproducibility) và phục vụ việc bảo vệ trước Hội đồng chấm Luận văn, mục này chuẩn hóa toàn bộ **Quy trình kiểm thử (Testing Pipeline)** cùng **Bảng số liệu kết quả thực nghiệm chi tiết tương ứng** cho từng giai đoạn của đề tài:
 
-### 8.1. Chạy Lại Kiểm Thử Mô Phỏng ModelSim (Giai Đoạn 1)
-```powershell
-# Bước 1: Sinh vector kiểm thử từ Python Golden Model
-e:\DATN\CNN_Systolic_Architecture\software_ref\run_golden.bat
-# (Hoặc gõ lệnh: python software_ref/gemm_golden.py)
-
-# Bước 2: Di chuyển vào thư mục VEFIFY
-cd e:\DATN\CNN_Systolic_Architecture\VEFIFY
-
-# Bước 3: Biên dịch toàn bộ mã nguồn SystemVerilog
-C:\13.0sp1\modelsim_ase\win32aloem\vlog.exe -sv -work work ../RTL/pe_gemm.sv ../RTL/systolic_skew_unit.sv ../RTL/systolic_array_core.sv ../RTL/systolic_array_gemm.sv ../RTL/quantize_relu_unit.sv ../RTL/matrix_buffer_a.sv ../RTL/matrix_buffer_b.sv ../RTL/matrix_buffer_c.sv ../RTL/gemm_controller.sv ../RTL/systolic_accelerator_top.sv tb_systolic_gemm.sv tb_systolic_stress_test.sv
-
-# Bước 4: Chạy test so khớp 16 phần tử với Python
-C:\13.0sp1\modelsim_ase\win32aloem\vsim.exe -c -do "run -all; quit -f" tb_systolic_gemm
-
-# Bước 5: Chạy bộ 6 bài test kịch bản cực đoan
-C:\13.0sp1\modelsim_ase\win32aloem\vsim.exe -c -do "run -all; quit -f" tb_systolic_stress_test
+```
++---------------------------------------------------------------------------------------------------+
+|                        TỔNG QUAN QUY TRÌNH THỰC NGHIỆM QUA 3 GIAI ĐOẠN ĐỀ TÀI                     |
++---------------------------------------------------------------------------------------------------+
+  [GIAI ĐOẠN 1] MẢNG TÂM THU RTL ĐƠN KHỐI (4x4 & 8x8)
+    ├── Bước 1: Sinh vector kiểm thử từ Python Golden Model (NumPy INT8/INT32)
+    ├── Bước 2: Chạy kiểm thử so khớp Scoreboard 16 phần tử trên ModelSim (100% Bit-True)
+    ├── Bước 3: Chạy bộ 6 kịch bản thử thách cực đoan (Stress & Corner-Case Suite)
+    └── Bước 4: Tổng hợp trên Quartus II đo LEs, DSP, BRAM, Fmax (Khảo sát đánh đổi phần cứng)
+     │
+     ▼
+  [GIAI ĐOẠN 2] THUẬT TOÁN IM2COL, TILING ENGINE & SUY LUẬN AI TRÊN MNIST
+    ├── Bước 1: Unit Test toán học chuyển đổi ma trận im2col & col2im (Sai số Diff = 0)
+    ├── Bước 2: Unit Test phân hoạch và tích lũy bộ chia khối Tiling Engine (Diff = 0)
+    ├── Bước 3: Kiểm thử suy luận toàn diện trên 10,000 ảnh MNIST (Đạt 97.06% Accuracy)
+    ├── Bước 4: Kiểm thử tương tác trực quan 1 ảnh cụ thể (Vẽ tranh ASCII & đo chu kỳ)
+    └── Bước 5: Trích xuất Test Vector AI thực tế (Weight & Patch) ra file hex cho ModelSim
+     │
+     ▼
+  [GIAI ĐOẠN 3] TÍCH HỢP HỆ THỐNG SOC RISC-V VÀ ĐỒNG MÔ PHỎNG PHẦN CỨNG - PHẦN MỀM
+    ├── Bước 1: Biên dịch Firmware RV32I (Hỗ trợ cả 2 cách: GNU GCC C Toolchain & Python Assembler)
+    ├── Bước 2: Nạp mã máy vào On-Chip BRAM (16 KB) và khởi động CPU PicoRV32
+    ├── Bước 3: Chạy đồng mô phỏng Hardware-Software Co-Simulation trên ModelSim
+    ├── Bước 4: Kiểm chứng 7 điểm nghẽn và cơ chế an toàn hệ thống (Handshake, Busy, Polling)
+    └── Bước 5: Tổng hợp toàn hệ thống SoC trên Quartus II (6,219 LEs, Fmax 60 MHz, Slack +3.33ns)
++---------------------------------------------------------------------------------------------------+
 ```
 
-### 8.2. Kiểm Tra Số Liệu Phần Cứng Trên Quartus II (Giai Đoạn 1)
-
-#### Cách 1: Đọc trực tiếp các file báo cáo đã tổng hợp sẵn (Nhanh nhất)
-- **Tài nguyên logic (LEs, Registers, DSP, BRAM):**
-  - Cấu hình $4 \times 4$: Mở file [synthesis_gemm/systolic_accelerator_top.fit.summary](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm/systolic_accelerator_top.fit.summary).
-  - Cấu hình $8 \times 8$: Mở file [synthesis_gemm_8x8/systolic_accelerator_8x8.fit.summary](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/systolic_accelerator_8x8.fit.summary).
-- **Tần số cực đại $F_{max}$ và trần xung nhịp:**
-  - Cấu hình $4 \times 4$: Mở file [synthesis_gemm/systolic_accelerator_top.sta.rpt](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm/systolic_accelerator_top.sta.rpt) $\implies$ Mục `Slow Model Fmax Summary`.
-  - Cấu hình $8 \times 8$: Mở file [synthesis_gemm_8x8/systolic_accelerator_8x8.sta.rpt](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/systolic_accelerator_8x8.sta.rpt) $\implies$ Mục `Slow Model Fmax Summary`.
-
-#### Cách 2: Xem trực quan trên giao diện Quartus II GUI
-1. Mở file project [synthesis_gemm/systolic_accelerator_top.qpf](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm/systolic_accelerator_top.qpf) (hoặc [synthesis_gemm_8x8.qpf](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/systolic_accelerator_8x8.qpf)).
-2. Trong cửa sổ **Tasks** bên trái:
-   - Nhấp đúp vào **Compilation Report** $\rightarrow$ **Fitter** $\rightarrow$ **Summary**: Quan sát tài nguyên logic.
-   - Chọn **TimeQuest Timing Analyzer** $\rightarrow$ **Slow 85C Model** $\rightarrow$ **Fmax Summary**: Xem cột $F_{max}$.
-   - Vào menu **Tools** $\rightarrow$ **Netlist Viewers** $\rightarrow$ **RTL Viewer**: Xem sơ đồ khối phân cấp mạch lạc.
-   - Vào menu **Tools** $\rightarrow$ **Chip Planner**: Quan sát cách các khối PE được bố trí vật lý trên chip silicon.
-
-#### Cách 3: Chạy lại toàn bộ luồng tổng hợp bằng script `.bat` tự động
-- **Cấu hình 4x4**: Nhấp đúp vào [compile_4x4.bat](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm/compile_4x4.bat).
-- **Cấu hình 8x8**: Nhấp đúp vào [compile_8x8.bat](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/compile_8x8.bat).
-
 ---
 
-### 8.3. Hướng Dẫn Tự Kiểm Tra & Chạy Demo Giai Đoạn 2 (MNIST AI Inference)
+### 8.1. Quy Trình Test & Kết Quả Thực Nghiệm Giai Đoạn 1 (Mảng Tâm Thu Phần Cứng RTL)
 
-#### Cách 1: Chạy Demo trực quan 1-Click (Khuyên dùng)
-- Nhấp đúp chuột vào file: [software_ref/run_phase2_demo.bat](file:///e:/DATN/CNN_Systolic_Architecture/software_ref/run_phase2_demo.bat)
-- Hoặc gõ lệnh trong PowerShell:
-  ```powershell
-  & "C:\Users\hoang\AppData\Local\Programs\Python\Python313\python.exe" software_ref/run_mnist_inference.py
-  ```
-- Quan sát trên màn hình:
-  * Tranh ASCII vẽ nét chữ số viết tay thực tế.
-  * Nhãn AI dự đoán, độ tin cậy Confidence (100%), cờ `[100% BIT-TRUE]`.
-  * Thống kê độ chính xác 97.06% và bảng số chu kỳ phần cứng.
+#### 1. Mục Tiêu Thực Nghiệm:
+- Chứng minh tính đúng đắn toán học của kiến trúc mảng tâm thu $4 \times 4$ và $8 \times 8$ (100% Bit-True so với Python).
+- Xác thực khả năng chịu tải và triệt tiêu lỗi qua 6 kịch bản cực đoan (Corner-cases).
+- Đo đạc chính xác tài nguyên logic (LEs), bộ nhớ (BRAM), bộ nhân DSP và tần số xung nhịp $F_{max}$ trên chip Cyclone II EP2C20.
 
-#### Cách 2: Unit Test kiểm chứng từng module con
-- **Kiểm thử toán học `im2col`**:
+#### 2. Các Bước Thực Hiện Kiểm Thử (Step-by-Step Commands):
+
+- **Bước 1: Sinh vector kiểm chứng ngẫu nhiên từ Python Golden Model**:
   ```powershell
-  & "C:\Users\hoang\AppData\Local\Programs\Python\Python313\python.exe" software_ref/im2col.py
+  # Chạy script sinh vector kiểm thử
+  python software_ref/gemm_golden.py
+  # (Hoặc nhấp đúp vào: software_ref/run_golden.bat)
   ```
-- **Kiểm thử bộ chia khối `tiling_engine`**:
+  *Kết quả sinh ra*: 4 file hex trong `VEFIFY/` (`matrix_a.hex`, `matrix_b.hex`, `golden_acc_int32.hex`, `golden_output_int8.hex`).
+
+- **Bước 2: Chạy kiểm thử chức năng và so khớp Scoreboard trên ModelSim**:
   ```powershell
-  & "C:\Users\hoang\AppData\Local\Programs\Python\Python313\python.exe" software_ref/tiling_engine.py
+  cd e:\DATN\CNN_Systolic_Architecture\VEFIFY
+  vsim -c -do "run -all; quit -f" tb_systolic_gemm
   ```
 
-#### Cách 3: Kiểm thử một ảnh bất kỳ trong tập test (Dễ nhất)
-- **Kiểm thử một ảnh theo số thứ tự (ví dụ ảnh số 42 hoặc 100)**:
+- **Bước 3: Chạy bộ kiểm thử 6 kịch bản cực đoan (Stress & Corner-Case Suite)**:
   ```powershell
-  & "C:\Users\hoang\AppData\Local\Programs\Python\Python313\python.exe" software_ref/test_single_image.py 42
-  ```
-- **Hoặc chọn ngẫu nhiên một ảnh bất kỳ trong 10,000 ảnh test**:
-  ```powershell
-  & "C:\Users\hoang\AppData\Local\Programs\Python\Python313\python.exe" software_ref/test_single_image.py random
+  vsim -c -do "run -all; quit -f" tb_systolic_stress_test
   ```
 
----
-### 8.4. Hướng Dẫn Tự Kiểm Tra & Chạy Đồng Mô Phỏng SoC Giai Đoạn 3 (RISC-V + Systolic Array Co-Simulation)
+- **Bước 4: Chạy tổng hợp phần cứng trên Quartus II đo đạc tài nguyên**:
+  ```powershell
+  # Cấu hình 4x4 (16 PEs):
+  cd e:\DATN\CNN_Systolic_Architecture\synthesis_gemm
+  .\compile_4x4.bat
 
-Để tái lập và kiểm chứng toàn diện quá trình đồng mô phỏng Phần cứng - Phần mềm (Hardware-Software Co-Simulation) trên ModelSim cũng như quá trình tổng hợp phần cứng trên Quartus II, bạn có thể thực hiện theo **cả 2 cách phát triển Firmware** dưới đây:
+  # Cấu hình 8x8 (64 PEs):
+  cd e:\DATN\CNN_Systolic_Architecture\synthesis_gemm_8x8
+  .\compile_8x8.bat
+  ```
 
----
+#### 3. Bảng Số Liệu Kết Quả Thực Nghiệm Giai Đoạn 1 Đo Được:
 
-#### CÁCH 1: Sử Dụng Trình Biên Dịch C Chuẩn Hóa (GNU RISC-V Toolchain)
-Dành cho môi trường Linux, WSL, hoặc Windows đã cài đặt bộ công cụ `riscv32-unknown-elf-gcc`:
+##### A. Kết quả kiểm chứng chức năng (Functional & Stress Verification):
+| Nội Dung Kiểm Thử | Số Lượng Test Case | Số Lượng Lỗi | Tỷ Lệ Đạt (%) | Đánh Giá Kết Quả |
+| :--- | :---: | :---: | :---: | :--- |
+| **So khớp 16 phần tử Scoreboard vs Python** | 16 phần tử | 0 lỗi | **100.0%** | Khớp cả giá trị INT32 Accumulator và INT8 Quantized |
+| **Scenario 1: Nhân cực tiểu ($-128 \times -128$)** | 16 phần tử | 0 lỗi | **100.0%** | Xử lý hoàn hảo giá trị $+16,384$, không tràn số |
+| **Scenario 2: Kẹp bão hòa Saturation Clamping** | 16 phần tử | 0 lỗi | **100.0%** | Mạch kẹp cứng tại ngưỡng $+127$, không lộn dấu |
+| **Scenario 3: Bảo toàn số âm khi Bypass ReLU** | 16 phần tử | 0 lỗi | **100.0%** | Giá trị âm được bảo toàn khi cờ bypass bật |
+| **Scenario 4: Ổn định trạng thái tĩnh ma trận 0** | 16 phần tử | 0 lỗi | **100.0%** | Ngõ ra bằng 0, không có nhiễu dao động |
+| **Scenario 5: Chạy liên tiếp lượt 1 (Back-to-Back #1)**| 16 phần tử | 0 lỗi | **100.0%** | Bộ đếm và pipeline khởi động chuẩn xác |
+| **Scenario 6: Xóa rác bộ tích lũy (Back-to-Back #2)** | 16 phần tử | 0 lỗi | **100.0%** | Auto-Clear xóa sạch accum_reg, không lưu rác |
 
-1. **Cấu trúc luồng biên dịch C**:
-   - [`firmware/start.s`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/start.s): Khởi tạo thanh ghi con trỏ ngăn xếp (`sp = 0x0000_7FF0`), xóa các thanh ghi và gọi hàm `main()`.
-   - [`firmware/main.c`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/main.c): Chương trình C điều khiển khởi tạo UART, cấu hình tham số mảng tâm thu, nạp ma trận $A$, $B$, kích hoạt tính toán và đọc ma trận $C$.
-   - [`firmware/systolic.h`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/systolic.h): Header cung cấp các hàm API MMIO giao tiếp trực tiếp với thanh ghi phần cứng của bộ gia tốc.
-   - [`firmware/link.ld`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/link.ld): File kịch bản liên kết bộ nhớ, định vị đoạn mã `.text` tại `0x0000_0000`, dữ liệu `.data`/`.rodata`, và cấp phát vùng nhớ RAM 16 KB.
-
-2. **Các lệnh biên dịch thủ công hoặc qua Makefile**:
-   ```powershell
-   cd e:\DATN\CNN_Systolic_Architecture\firmware
-
-   # Biên dịch hợp ngữ và mã C thành file thực thi ELF
-   riscv32-unknown-elf-gcc -march=rv32i -mabi=ilp32 -O2 -nostdlib -T link.ld start.s main.c -o firmware.elf
-
-   # Trích xuất dữ liệu nhị phân thuần túy (Raw Binary)
-   riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
-
-   # Chuyển đổi định dạng Binary thành Verilog Memory Hex (32-bit Little-Endian)
-   python bin2hex.py firmware.bin ../VEFIFY/firmware.hex
-
-   # (Tùy chọn) Xuất file disassembly để kiểm tra mã máy hợp ngữ
-   riscv32-unknown-elf-objdump -d firmware.elf > firmware.dis
-   ```
-   *Hoặc chỉ cần gõ 1 lệnh nếu đã có môi trường Make:*
-   ```powershell
-   make
-   ```
-
----
-
-#### CÁCH 2: Sử Dụng Bộ Biên Dịch Hợp Ngữ RV32I Thuần Python (Standalone Python Assembler - Khuyên Dùng)
-Dành cho mọi máy tính Windows/Linux thông thường mà **KHÔNG CẦN CÀI ĐẶT BỘ CÔNG CỤ GNU GCC CỒNG KỀNH (> 5GB)**:
-
-1. **Nguyên lý hoạt động của Python Assembler ([`firmware/firmware_generator.py`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/firmware_generator.py))**:
-   - Script Python tự hành hiện thực đầy đủ trình hợp dịch chuẩn **RISC-V RV32I**:
-     * Hỗ trợ đầy đủ các định dạng lệnh: **R-Type** (`add`, `sub`, `and`, `or`), **I-Type** (`addi`, `lw`, `jalr`), **S-Type** (`sw`), **B-Type** (`beq`, `bne`, `blt`), **U-Type** (`lui`), **J-Type** (`jal`).
-     * Cơ chế **2-Pass Assembler**: Lượt 1 quét toàn bộ nhãn địa chỉ (Label Resolution); Lượt 2 tính toán độ lệch PC-Relative Offset và mã hóa thành các từ mã máy 32-bit.
-     * Tự động sinh hàm in UART Polling (`print_str`, `print_hex8`), hàm nạp dữ liệu ma trận, và vòng lặp đồng bộ chờ cờ `core_done`.
-
-2. **Lệnh thực thi 1-Click (Thời gian chạy chỉ 0.05 giây)**:
-   ```powershell
-   & "C:\Users\hoang\AppData\Local\Programs\Python\Python313\python.exe" firmware/firmware_generator.py
-   ```
-   **Kết quả tự động sinh ra**:
-   - [`firmware/firmware.hex`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/firmware.hex) & [`VEFIFY/firmware.hex`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/firmware.hex): File hex gồm đúng 389 chỉ lệnh RV32I (1,556 bytes), sẵn sàng nạp cho Block RAM qua `$readmemh`.
-   - [`firmware/firmware.dis`](file:///e:/DATN/CNN_Systolic_Architecture/firmware/firmware.dis): File Assembly Disassembly có chú thích địa chỉ và mã opcode chi tiết phục vụ debug.
+##### B. Kết quả đo đạc tài nguyên phần cứng trên Altera Cyclone II EP2C20:
+| Chỉ Số Phần Cứng Đo Đạc | Cấu Hình $4 \times 4$ (16 PEs) | Cấu Hình $8 \times 8$ (64 PEs) | Hệ Số Tăng Trưởng |
+| :--- | :---: | :---: | :---: |
+| **Logic Elements (LEs)** | **4,323 / 18,752 (23.1%)** | **15,567 / 18,752 (83.0%)** | $3.60\times$ (Dưới tuyến tính $4\times$) |
+| **Dedicated Registers** | **2,473 (13.2%)** | **8,012 (42.7%)** | $3.24\times$ |
+| **Embedded 9-bit Multipliers** | **16 / 52 (30.8%)** | **52 / 52 (100.0% - Bão hòa)** | $3.25\times$ (12 bộ nhân còn lại map LUTs) |
+| **Total Memory Bits (BRAM)** | **512 bits (< 1%)** | **1,024 bits (< 1%)** | $2.00\times$ |
+| **Tần số cực đại $F_{max}$ (Slow 85°C)**| **70.00 MHz** | **67.60 MHz** | **Bảo toàn xung nhịp (chỉ giảm 3.4%)** |
+| **Worst-case Setup Slack @ 50 MHz**| **+5.714 ns** | **+5.207 ns** | Dương (+), không có vi phạm định thời |
+| **Thời gian tính toán ($K=N$)** | **33 chu kỳ** (13 tính + 16 đọc + 4 trễ) | **91 chu kỳ** (25 tính + 64 đọc + 2 trễ) | Phù hợp thiết kế Output-Stationary |
+| **Thông lượng đỉnh (Throughput)** | **2.240 GOPS** | **8.653 GOPS** | **$3.86\times$ (Tăng gần như tuyến tính)** |
 
 ---
 
-#### CÁCH 3: Chạy Đồng Mô Phỏng Toàn Hệ Thống SoC Trên ModelSim & Phân Tích Kết Quả
+### 8.2. Quy Trình Test & Kết Quả Thực Nghiệm Giai Đoạn 2 (Thuật Toán im2col, Tiling Engine & MNIST)
 
-Sau khi file `firmware.hex` đã được sinh ra bởi Cách 1 hoặc Cách 2, tiến hành chạy đồng mô phỏng trên ModelSim:
+#### 1. Mục Tiêu Thực Nghiệm:
+- Kiểm chứng tính đúng đắn toán học của thuật toán `im2col` và `col2im` (sai số tuyệt đối bằng 0).
+- Kiểm chứng bộ chia khối ma trận đa chiều `SystolicTilingEngine` ghép nối chính xác các sub-tiles $4 \times 4$.
+- Đạt độ chính xác nhận diện chữ số viết tay trên tập chuẩn **MNIST $\ge 97\%$** với mô hình CNN lượng tử hóa Signed INT8.
+- Đo đạc độ trễ phần cứng và tốc độ xử lý FPS trên 1 ảnh đầu vào.
 
-1. **Chạy mô phỏng tự động bằng script DO (Chế độ dòng lệnh Command-line)**:
-   ```powershell
-   cd e:\DATN\CNN_Systolic_Architecture\VEFIFY
-   & "C:\13.0sp1\modelsim_ase\win32aloem\vsim.exe" -c -do run_soc_sim.do
-   ```
+#### 2. Các Bước Thực Hiện Kiểm Thử (Step-by-Step Commands):
 
-2. **Chạy mô phỏng trên giao diện trực quan ModelSim GUI (Để xem Waveform)**:
-   ```powershell
-   cd e:\DATN\CNN_Systolic_Architecture\VEFIFY
-   & "C:\13.0sp1\modelsim_ase\win32aloem\vsim.exe" -do run_soc_sim.do
-   ```
-   *Các nhóm tín hiệu quan trọng cần quan sát trên cửa sổ Waveform*:
-   - **Nhóm CPU Core**: `clk`, `rst_n`, `trap`, `mem_valid`, `mem_ready`, `mem_addr`, `mem_wdata`.
-   - **Nhóm Bus AXI Interconnect**: `s_axi_awvalid`, `s_axi_awready`, `s_axi_wvalid`, `s_axi_wready`, `s_axi_bvalid` (kênh ghi); `s_axi_arvalid`, `s_axi_rvalid`, `s_axi_rdata` (kênh đọc).
-   - **Nhóm Accelerator**: `core_start` (bật mức 1 ở chu kỳ 54,983), `core_done` (bật mức 1 ở chu kỳ 55,016 -> Đúng 33 chu kỳ tính toán), `c_bram_dout` (dữ liệu ma trận kết quả $C$).
-   - **Nhóm UART Console**: `uart_tx` (các khung truyền UART Serial gồm Start bit 0, 8 bit dữ liệu, Stop bit 1), `tx_ready` (cờ thăm dò trạng thái).
+- **Bước 1: Chạy Unit Test kiểm chứng toán học `im2col`**:
+  ```powershell
+  python software_ref/im2col.py
+  ```
+  *Kiểm tra*: Hàm so khớp kết quả phép tích chập không gian đa vòng lặp truyền thống và tích chập ma trận hóa $C = A \times B$.
 
-3. **Quan sát kết quả giải mã UART Console thực tế**:
-   Console ModelSim sẽ hiển thị trực tiếp dữ liệu do bộ giám sát UART trong testbench giải mã theo thời gian thực:
-   ```
-   ============================================================
-   [UART MONITOR] Initialized @ 115200 Baud (Clks/bit: 434)
-   ============================================================
-   [UART] 
-   [UART] ======================================================
-   [UART]  RISC-V (PicoRV32) + Systolic Array SoC Demo
-   [UART]  Hardware-Software Co-Simulation
-   [UART] ======================================================
-   [UART] [1] SoC Initialized successfully.
-   [UART] [2] Configuring Systolic Array: K=4, Shift=0, ReLU=OFF
-   [UART] [3] Loading Matrix A (4x4 INT8) via AXI-Lite...
-   [UART] [4] Loading Matrix B (4x4 INT8) via AXI-Lite...
-   [UART] [5] Starting Systolic Acceleration Core...
-   [UART]     Accelerator finished execution!
-   [UART] [6] Reading Matrix C output activations:
-   [UART]     Row 00: [ 00 07 06 00 ]
-   [UART]     Row 01: [ 00 09 00 01 ]
-   [UART]     Row 02: [ 18 00 00 09 ]
-   [UART]     Row 03: [ 02 08 03 04 ]
-   [UART] ======================================================
-   [UART]  SoC Matrix GEMM Verification: SUCCESS!
-   [UART] ======================================================
-   ```
-   - Thống kê cuối mô phỏng: **Total Cycles = 82,176**, **Retired Instructions = 13,751**, **UART Characters = 607**, xác nhận **100% BIT-TRUE MATCH** với mô hình Python Golden Model.
+- **Bước 2: Chạy Unit Test kiểm chứng bộ chia khối Tiling Engine**:
+  ```powershell
+  python software_ref/tiling_engine.py
+  ```
+  *Kiểm tra*: Nhân ma trận lớn kích thước tùy ý ($16 \times 9 \times 784$) qua mảng $4 \times 4$ có Zero-Padding động.
+
+- **Bước 3: Chạy suy luận toàn diện trên toàn bộ 10,000 ảnh tập kiểm thử chính thức**:
+  ```powershell
+  python software_ref/run_mnist_inference.py
+  # (Hoặc nhấp đúp vào: software_ref/run_phase2_demo.bat)
+  ```
+
+- **Bước 4: Kiểm thử tương tác trên 1 ảnh bất kỳ (Live Visual Test)**:
+  ```powershell
+  # Kiểm tra ảnh số 42:
+  python software_ref/test_single_image.py 42
+
+  # Hoặc kiểm tra một ảnh ngẫu nhiên:
+  python software_ref/test_single_image.py random
+  ```
+
+#### 3. Bảng Số Liệu Kết Quả Thực Nghiệm Giai Đoạn 2 Đo Được:
+
+##### A. Bảng kiểm chứng độ chính xác toán học & AI:
+| Hạng Mục Kiểm Thử | Quy Mô Kiểm Thử | Kết Quả Đo Được | Kết Luận Kỹ Thuật |
+| :--- | :---: | :---: | :--- |
+| **Độ lệch tuyệt đối hàm `im2col`** | $32 \times 32 \times 3 \times 3$ patches | **Max $\text{Diff} = 0$** | **100% BIT-TRUE MATCH** |
+| **Độ lệch bộ chia khối Tiling Engine** | Ma trận bất đối xứng | **Max $\text{Diff} = 0$** | **100% BIT-TRUE MATCH** |
+| **Độ chính xác Tập Huấn Luyện (Train Set)** | 30,000 ảnh MNIST | **97.89%** | Quá trình học hội tụ sau 4 epochs |
+| **Độ chính xác Tập Kiểm Thử (Official Test Set)** | **10,000 ảnh MNIST** | **97.06% (9,706/10,000 đúng)** | **VƯỢT CHỈ TIÊU ĐỀ TÀI ($\ge 97\%$)** |
+| **Độ tin cậy trung bình của nhãn đúng** | 10,000 ảnh test | **> 98.5%** | Mạng tự tin phân loại, phân tách rõ ràng |
+
+##### B. Bảng đo đạc hiệu năng tính toán phần cứng trên 1 ảnh MNIST (50 MHz):
+| Tầng Mạng CNN (Layer) | Kích Thước Tính Toán | Số Lượng Sub-Tiles 4x4 | Số Phép Tính MAC | Số Chu Kỳ Xung Nhịp (Cycles) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Tầng Conv1** (16 filters $3 \times 3$) | $[16 \times 9] \times [9 \times 784]$ | 1,372 sub-tiles | 225,792 MACs | 45,276 chu kỳ |
+| **Hàm ReLU + Quantization** | $16 \times 28 \times 28$ | Ghép nối phần cứng | 12,544 OPs | 0 chu kỳ trễ thêm (Pipelined) |
+| **Tầng Max-Pooling (2x2, S=2)** | $16 \times 14 \times 14$ | Xử lý nội suy | 12,544 OPs | 3,136 chu kỳ |
+| **Tầng Fully-Connected (Dense)** | $[10 \times 3136] \times [3136 \times 1]$ | 196 sub-tiles | 31,360 MACs | 5,096 chu kỳ |
+| **TỔNG CỘNG CHO 1 ẢNH** | — | **1,568 sub-tiles** | **263,424 MACs** | **53,508 chu kỳ xung nhịp** |
+
+- **Thời gian suy luận 1 ảnh ở tần số 50 MHz**:
+  $$T_{\text{infer}} = \frac{53,508}{50 \times 10^6 \text{ Hz}} = \mathbf{1.07 \text{ ms/ảnh}}$$
+- **Tốc độ xử lý khung hình (Throughput FPS)**:
+  $$\text{FPS} = \frac{1}{1.07 \times 10^{-3} \text{ s}} \approx \mathbf{934 \text{ FPS}} \quad (\text{Vượt xa camera thông thường: 30 - 60 FPS})$$
 
 ---
 
-#### CÁCH 4: Tự Chạy Tổng Hợp Phần Cứng SoC Trên Quartus II
+### 8.3. Quy Trình Test & Kết Quả Thực Nghiệm Giai Đoạn 3 (RISC-V SoC & Hardware-Software Co-Simulation)
 
-Để tái lập việc tổng hợp và đo đạc tài nguyên thực tế của module đỉnh `soc_top` trên chip FPGA Altera Cyclone II EP2C20:
+#### 1. Mục Tiêu Thực Nghiệm:
+- Chứng minh CPU RISC-V PicoRV32 điều khiển thành công bộ gia tốc qua Bus AXI4-Lite (MMIO).
+- Đo đạc chính xác thời gian khởi động, nạp ma trận, độ trễ phần cứng (33 chu kỳ) và truyền nhận qua UART.
+- Kiểm chứng an toàn 7 điểm nghẽn, xung đột bus và trường hợp biên (Hazards & Bottlenecks).
+- Tổng hợp toàn bộ hệ thống SoC hoàn chỉnh trên Quartus II đạt chuẩn Timing và tài nguyên chip EP2C20.
 
-1. **Chạy script tự động 1-Click**:
-   - Nhấp đúp chuột vào file: [synthesis_soc/compile_soc.bat](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/compile_soc.bat)
-   - Hoặc chạy từ PowerShell:
-     ```powershell
-     cd e:\DATN\CNN_Systolic_Architecture\synthesis_soc
-     .\compile_soc.bat
-     ```
-2. **Xem báo cáo tài nguyên & tần số**:
-   - Mở file tóm tắt tài nguyên: [synthesis_soc/soc_top.fit.summary](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.fit.summary)
-   - Mở file phân tích định thời TimeQuest: [synthesis_soc/soc_top.sta.rpt](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.sta.rpt)
-   - Kết quả: **6,219 LEs (33.1%)**, **133,632 Memory Bits (55.8%)**, **16 DSP Multipliers (30.8%)**, **Fmax = 60.00 MHz (Setup Slack +3.331 ns)**, **0 Errors**.
+#### 2. Các Bước Thực Hiện Kiểm Thử (Cả 2 Cách Phát Triển Firmware):
+
+##### CÁCH A: Dùng Python RV32I Assembler Tự Hành (Zero-Dependency - Khuyên dùng)
+```powershell
+# Bước 1: Biên dịch hợp ngữ RV32I ra file hex (Chạy trong 0.05 giây)
+python firmware/firmware_generator.py
+
+# Bước 2: Chạy đồng mô phỏng trên ModelSim
+cd e:\DATN\CNN_Systolic_Architecture\VEFIFY
+vsim -c -do run_soc_sim.do
+```
+
+##### CÁCH B: Dùng GNU RISC-V Toolchain (C Code)
+```powershell
+# Bước 1: Biên dịch mã C, xuất ELF, nhị phân và file hex
+cd e:\DATN\CNN_Systolic_Architecture\firmware
+make
+# (Hoặc gõ lệnh: riscv32-unknown-elf-gcc ... && python bin2hex.py ...)
+
+# Bước 2: Chạy đồng mô phỏng trên ModelSim
+cd e:\DATN\CNN_Systolic_Architecture\VEFIFY
+vsim -c -do run_soc_sim.do
+```
+
+##### CÁCH C: Tổng Hợp Toàn Bộ SoC Trên Quartus II
+```powershell
+cd e:\DATN\CNN_Systolic_Architecture\synthesis_soc
+.\compile_soc.bat
+```
+
+#### 3. Bảng Số Liệu Kết Quả Thực Nghiệm Giai Đoạn 3 Đo Được:
+
+##### A. Kết quả đồng mô phỏng trên ModelSim (`tb_soc_top`):
+| Thông Số Đo Đạc | Kết Quả Thực Nghiệm | Đánh Giá Ý Nghĩa Kỹ Thuật |
+| :--- | :---: | :--- |
+| **Tổng thời gian mô phỏng** | **1,643,530 ns** | Hoàn thành toàn bộ quy trình boot, compute và in kết quả |
+| **Tổng chu kỳ xung nhịp (Cycles @ 50MHz)** | **82,176 chu kỳ** | Hệ thống chạy trơn tru, không có chu kỳ chết (deadlock) |
+| **Tổng số lệnh CPU đã thực thi (Retired Insns)** | **13,751 lệnh** | Chỉ số CPI đạt $\approx 5.97$ chu kỳ/lệnh chuẩn cho PicoRV32 |
+| **Thời điểm phát xung `core_start`** | **Chu kỳ 54,983** | CPU nạp xong 16 từ A và 16 từ B qua bus AXI |
+| **Thời điểm mảng tâm thu báo `core_done`** | **Chu kỳ 55,016** | Mảng tâm thu hoàn thành toàn bộ phép tính |
+| **Thời gian tính toán phần cứng (Hardware Latency)** | **ĐÚNG 33 CHU KỲ** | **Khớp chính xác 100% công thức: $13 + 16 + 4 = 33 \text{ chu kỳ}$** |
+| **Số ký tự xuất qua UART Console** | **607 ký tự** | 100% bản tin in ra nguyên vẹn, không rơi rụng một byte nào |
+| **Số lỗi CPU Trap (`trap = 1`)** | **0 lỗi** | CPU không gặp lệnh bất hợp pháp, không vi phạm bộ nhớ |
+| **Xác thực ma trận đầu ra $C$** | **16/16 phần tử** | **100% BIT-TRUE MATCH với mô hình Python Golden Model** |
+
+##### B. Kết quả tổng hợp phần cứng SoC trên Altera Cyclone II EP2C20:
+| Tài Nguyên Phần Cứng | Đã Chiếm Dụng | Tổng Giới Hạn Của Chip | Tỷ Lệ Sử Dụng (%) | Đánh Giá Mức Độ Khả Thi |
+| :--- | :---: | :---: | :---: | :--- |
+| **Total Logic Elements (LEs)** | **6,219** | **18,752** | **33.1%** | Dư thừa tới 67% logic cho các ngoại vi khác |
+| **Total Memory Bits (Block RAM)** | **133,632 bits** | **239,616 bits** | **55.8%** | Gồm 16 KB BRAM chương trình + RAM trọng số |
+| **Embedded Multipliers (9-bit DSP)** | **16** | **52** | **30.8%** | 16 bộ nhân của 16 PE trong mảng $4 \times 4$ |
+| **Worst-case Setup Slack @ 50 MHz** | **+3.331 ns** | $0.000 \text{ ns}$ | **DƯƠNG (+)** | Không có bất kỳ vi phạm định thời nào (TNS = 0.000 ns) |
+| **Tần số cực đại $F_{max}$ (Slow 85°C)** | **60.00 MHz** | $50.00 \text{ MHz}$ | **+20.0%** | Vượt trên xung nhịp thạch anh 50 MHz Kit DE1 |
+| **Tần số cực đại $F_{max}$ (Fast 0°C)** | **162.33 MHz** | $50.00 \text{ MHz}$ | **+224.7%** | Tiềm năng xung nhịp cực cao trong điều kiện tối ưu |
+| **Tổng số lỗi tổng hợp (Errors)** | **0 errors** | 0 | **100% PASS** | Biên dịch trơn tru, không có cảnh báo nghiêm trọng |
+
+---
+
+### 8.4. Bảng Tổng Hợp Đối Chiếu Toàn Diện 3 Giai Đoạn Đề Tài
+
+Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu kỹ thuật và kết quả đo đạc thực tế của cả 3 giai đoạn:
+
+| Tiêu Chí So Sánh | Giai Đoạn 1: Mảng Tâm Thu Cơ Sở | Giai Đoạn 2: im2col & MNIST CNN | Giai Đoạn 3: SoC RISC-V Tích Hợp |
+| :--- | :--- | :--- | :--- |
+| **Đối tượng thiết kế chính** | Lõi phần cứng `systolic_accelerator_top` | Thuật toán phần mềm `im2col` & Tiling | Toàn hệ thống SoC `soc_top` (CPU + Bus + AI) |
+| **Công cụ kiểm chứng chính** | ModelSim ASE & Quartus II STA | Python NumPy & Bộ trọng số INT8 | ModelSim Co-Simulation & Quartus II |
+| **Định dạng dữ liệu** | Signed INT8 $\times$ INT8 $\rightarrow$ INT32/INT8 | Signed INT8 $\times$ INT8 $\rightarrow$ INT8 (ReLU) | AXI MMIO 32-bit Words (chứa Signed INT8) |
+| **Quy mô ma trận kiểm thử** | Đơn khối cố định $4 \times 4$ và $8 \times 8$ | Ma trận đa chiều $16 \times 9 \times 784$ (MNIST) | Ma trận trọng số AI nạp qua CPU Bus AXI |
+| **Kết quả kiểm thử chức năng** | **100% Bit-True (16/16 passed, 6/6 stress)** | **100% Bit-True (Diff = 0, 97.06% accuracy)**| **100% Bit-True (607 UART chars, 0 trap)** |
+| **Tài nguyên Logic (LEs)** | 4,323 LEs ($4 \times 4$) / 15,567 LEs ($8 \times 8$)| — (Chạy mô phỏng phần mềm) | **6,219 LEs (33.1% chip EP2C20)** |
+| **Dung lượng Block RAM** | 512 bits ($4 \times 4$) / 1,024 bits ($8 \times 8$) | 24 KB file trọng số `mnist_weights.npz` | **133,632 bits (55.8% BRAM chip EP2C20)** |
+| **Tần số cực đại $F_{max}$** | 70.00 MHz ($4 \times 4$) / 67.60 MHz ($8 \times 8$)| — (Ước tính ở 50 MHz) | **60.00 MHz (Setup Slack +3.331 ns)** |
+| **Thời gian tính toán / Độ trễ**| 33 chu kỳ ($4 \times 4$) / 91 chu kỳ ($8 \times 8$) | 53,508 chu kỳ/ảnh (1.07 ms, 934 FPS) | **33 chu kỳ phần cứng (82,176 chu kỳ toàn SoC)**|
 
 ---
 
