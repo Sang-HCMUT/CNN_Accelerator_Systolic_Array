@@ -818,8 +818,66 @@ Toàn bộ không gian địa chỉ 32-bit của CPU PicoRV32 được phân chi
 ### 9.3. Thiết Kế & Hiện Thực Chi Tiết Các Module RTL SoC
 
 #### 1. Lõi CPU Mềm PicoRV32 ([`RTL/picorv32.v`](file:///e:/DATN/CNN_Systolic_Architecture/RTL/picorv32.v))
-- Triển khai tập lệnh cơ bản **RV32I** (32 thanh ghi số nguyên 32-bit, không yêu cầu phần cứng nhân chia phức tạp).
-- Tích hợp adapter AXI4-Lite nguyên bản (`picorv32_axi_adapter`), biến đổi các chu kỳ bộ nhớ nội bộ sang chuẩn bus AXI (AW, W, B, AR, R).
+
+##### A. Bản Chất Vi Kiến Trúc (Microarchitecture of PicoRV32):
+PicoRV32 (tác giả Claire Xenia Wolf, YosysHQ) là một vi xử lý mã nguồn mở chuẩn **RISC-V RV32I** với triết lý thiết kế hướng tới **tối ưu hóa diện tích phần cứng silicon (Area-Optimized)**:
+- **Tổ chức thực thi**: Kiến trúc **Multi-Cycle Von Neumann** (chia nhỏ mỗi lệnh thành 3 đến 6 chu kỳ xung nhịp qua một máy trạng thái FSM tập trung). CPU không sử dụng pipeline 5 tầng phức tạp (vốn ngốn nhiều tài nguyên thanh ghi và logic chuyển tiếp forwarding), nhờ đó toàn bộ lõi CPU chỉ chiếm khoảng **1,500 Logic Elements (LEs)** trên FPGA.
+- **Tập thanh ghi (Register File)**: 32 thanh ghi số nguyên 32-bit (`x0` đến `x31`, trong đó `x0` cố định mức 0). Hỗ trợ đọc đồng thời 2 thanh ghi (Dual-port read) trong 1 chu kỳ clock.
+- **Khối tính toán ALU**: Thực hiện đầy đủ các phép toán cộng, trừ, logic AND/OR/XOR, so sánh có dấu/không dấu (SLT/SLTU).
+- **Bộ dịch bit (Barrel Shifter)**: Cấu hình `BARREL_SHIFTER = 1` và `TWO_STAGE_SHIFT = 1` để thực hiện các phép dịch bit số học và logic (`sll`, `srl`, `sra`) chỉ trong 2 chu kỳ clock thay vì phải lặp dịch 32 chu kỳ.
+- **Tầng chuyển đổi bus (`picorv32_axi_adapter`)**: Lõi CPU sử dụng giao diện bộ nhớ nội bộ (`mem_*`), đi kèm adapter chuyển đổi nguyên bản sang chuẩn bus công nghiệp **AXI4-Lite Master (32-bit)** với 5 kênh độc lập: AW, W, B, AR, R.
+
+```
+                    +-------------------------------------------------------------+
+                    |                VI KIẾN TRÚC PICORV32 CORE                   |
+                    |                                                             |
+                    |   +--------------------+         +----------------------+   |
+                    |   |  Program Counter   |         |    Register File     |   |
+                    |   |     (PC 32-bit)    |         | (x0..x31 Dual-Port)  |   |
+                    |   +---------+----------+         +----------+-----------+   |
+                    |             │                               │               |
+                    |             ▼                               ▼               |
+                    |   +--------------------+         +----------------------+   |
+                    |   | Instruction Decode |========>|   ALU & 2-Stage      |   |
+                    |   | & Control FSM      |         |   Barrel Shifter     |   |
+                    |   +---------+----------+         +----------+-----------+   |
+                    |             │                               │               |
+                    |             ▼                               ▼               |
+                    |   +-----------------------------------------------------+   |
+                    |   | Native Memory Interface (mem_valid, mem_ready, ...) |   |
+                    |   +--------------------------+--------------------------+   |
+                    |                              │                              |
+                    |                              ▼                              |
+                    |   +-----------------------------------------------------+   |
+                    |   |    AXI4-Lite Master Adapter (picorv32_axi_adapter)  |   |
+                    |   |    [AW Channel, W Channel, B Channel, AR, R Chan]   |   |
+                    |   +--------------------------+--------------------------+   |
+                    +------------------------------│------------------------------+
+                                                   ▼
+                                        Trục Bus AXI4-Lite Master
+```
+
+##### B. Vai Trò Của PicoRV32 Trong Dự Án (Control Plane vs Data Plane):
+Trong một hệ thống tăng tốc tính toán AI, việc phân tách rõ ràng giữa **Mặt phẳng điều khiển (Control Plane)** và **Mặt phẳng dữ liệu (Data Plane)** là nguyên lý thiết kế then chốt:
+1. **Mặt phẳng Dữ liệu (Data Plane) - Do Mảng tâm thu đảm nhiệm**:
+   - Thực hiện toàn bộ các phép tính nhân-cộng ma trận Tensor (MACs) nặng nề với thông lượng cực đại (hàng triệu phép tính/giây). Mảng tâm thu hoạt động hoàn toàn ở mức phần cứng pipeline thuần túy.
+2. **Mặt phẳng Điều khiển (Control Plane) - Do PicoRV32 đảm nhiệm**:
+   - **Khởi tạo & Cấu hình**: Thiết lập kích thước ma trận $K$, hệ số lượng tử hóa `shift_bits`, bật/tắt kích hoạt ReLU qua các thanh ghi điều khiển MMIO.
+   - **Phân phối dữ liệu**: Đọc ma trận trọng số (Weights) và ma trận kích hoạt (Activations sau `im2col`) từ bộ nhớ hệ thống BRAM và nạp vào các bộ đệm `matrix_buffer_a`, `matrix_buffer_b` của bộ gia tốc.
+   - **Đồng bộ hóa tác vụ**: Phát xung kích hoạt `core_start`, rơi vào vòng lặp chờ cờ `core_done` (polling cờ trạng thái).
+   - **Giao tiếp ngoại vi**: Thu thập ma trận kết quả $C$ sau khi tính xong, định dạng dữ liệu và truyền trực tiếp ra cổng nối tiếp UART Console để kết nối với máy tính chủ.
+
+##### C. Các Thành Phần Ta DÙNG LẠI (Reuse) Của PicoRV32:
+- Toàn bộ lõi CPU RV32I (`picorv32_core`): Tập lệnh cơ bản 32-bit số nguyên (Branch, Jump, Load, Store, ALU).
+- Tập 32 thanh ghi vật lý (`ENABLE_REGS_16_31 = 1`, `ENABLE_REGS_DUALPORT = 1`).
+- Bộ chuyển đổi bus AXI4-Lite tích hợp sẵn (`picorv32_axi_adapter`).
+- Khối bẫy lỗi phần cứng (`CATCH_MISALIGN = 1`, `CATCH_ILLINSN = 1`) xuất tín hiệu ra chân `trap` trên FPGA.
+
+##### D. Các Thành Phần Ta TẮT / KHÔNG DÙNG Của PicoRV32 (Để Tối Ưu Diện Tích FPGA):
+- **Tắt bộ nhân/chia phần cứng của CPU (`ENABLE_MUL = 0`, `ENABLE_DIV = 0`)**:
+  * *Lý do kỹ thuật*: Mọi phép nhân tính toán nặng nhọc đã được **Bộ gia tốc Mảng tâm thu 16 PEs** xử lý bằng bộ nhân DSP phần cứng chuyên dụng. CPU chỉ làm nhiệm vụ điều phối và dịch địa chỉ nên không cần bộ nhân/chia nội bộ, giúp tiết kiệm hơn 1,200 LEs và giữ trọn bộ nhân DSP của chip Cyclone II cho AI.
+- **Tắt tập lệnh nén 16-bit (`COMPRESSED_ISA = 0`)**: Loại bỏ logic giải mã phức tạp của chuẩn RVC, tiết kiệm diện tích logic.
+- **Tắt giao diện Co-Processor (`ENABLE_PCPI = 0`) và Bộ ngắt đa mức (`ENABLE_IRQ = 0`)**: Điều khiển bộ gia tốc qua giao tiếp chuẩn MMIO AXI4-Lite giúp thiết kế trong sáng, dễ mô phỏng và tương thích tuyệt đối với chuẩn SoC ARM/AMBA.
 
 #### 2. Trục Chuyển Mạch Bus AXI4-Lite Crossbar ([`RTL/axi_interconnect.sv`](file:///e:/DATN/CNN_Systolic_Architecture/RTL/axi_interconnect.sv))
 - Hỗ trợ kiến trúc 1 Master kết nối 3 Slaves độc lập không nghẽn.
