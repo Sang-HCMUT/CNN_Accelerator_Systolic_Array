@@ -812,7 +812,7 @@ Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu 
 | **Waveform 1** | **Mảng Tâm Thu Cơ Sở (Phase 1)** | `cd VEFIFY`<br>`.\open_wave_gemm.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do run_gemm_sim.do` | Control, Skewing Wavefront ($0T..3T$), PEs Accumulators, Quantizer Output. |
 | **Waveform 2** | **Stress & Corner-Cases (Phase 1)** | `cd VEFIFY`<br>`.\open_wave_stress.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do run_stress_sim.do` | 6 kịch bản góc kẹt, cờ `pass_count = 6/6`, mạch Saturation Clamp ghìm $+127$. |
 | **Waveform 3** | **Đồng Mô Phỏng SoC RISC-V (Phase 3)** | `cd VEFIFY`<br>`.\open_wave_soc.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do wave_soc.do` | CPU ARADDR/AWADDR, `trap=0`, AXI4-Lite Routing, `core_start`/`core_done`, UART TX (607 chars). |
-| **Waveform 4** | **Ngoại Vi Vật Lý Kit DE1 (Phase 4)** | Tích hợp sẵn trong:<br>`.\open_wave_soc.bat` | Nằm trong nhóm `Terasic DE1 Board IO`<br>của script `wave_soc.do` | UART RXD 115200 Baud, `rx_valid`, LED 7 đoạn `HEX0/HEX1` (Active-Low), LED chẩn đoán. |
+| **Waveform 4** | **Ngoại Vi Vật Lý Kit DE1 (Phase 4)** | `cd VEFIFY`<br>`.\open_wave_de1_io.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do wave_de1_io.do` | UART RXD 115200 Baud, `rx_valid`, LED 7 đoạn `HEX0/HEX1` (Active-Low), LED chẩn đoán. |
 
 ---
 
@@ -855,10 +855,11 @@ Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu 
      - CPU đọc thanh ghi trạng thái `REG_ACCEL_STATUS & STATUS_DONE` và tiến hành đọc kết quả ma trận C từ địa chỉ `0x1000_0300`.
   4. **Nhóm UART Console**: Chân `uart_tx` liên tục phát xung nối tiếp 607 ký tự log ra Terminal ở tốc độ 115200 Baud.
 
-##### D. Waveform 4: Ngoại Vi Vật Lý Kit DE1 (Tích Hợp Trong `wave_soc.do`)
+##### D. Waveform 4: Ngoại Vi Vật Lý Kit DE1 ([`open_wave_de1_io.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_de1_io.bat))
+* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_de1_io.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_de1_io.bat) (hoặc chạy ModelSim CLI: `vsim -do wave_de1_io.do`).
 * **Các điểm then chốt cần chỉ cho Hội đồng**:
   1. **Tín hiệu UART RX**: Chuỗi bit nối tiếp `uart_rx` gửi từ máy tính xuống, đi qua bộ đồng bộ 2 tầng (2-stage synchronizer) để loại trừ hiện tượng chập chờn (metastability), tạo ra xung nhận hợp lệ `rx_valid`.
-  2. **Tín hiệu hiển thị LED 7 đoạn `hex0[6:0]`**:
+  2. **Tín hiệu hiển thị LED 7 đoạn `hex0[6:0]` & `hex1[6:0]`**:
      - Trỏ vào mã nhị phân 7 đoạn (Active-Low): Ví dụ khi AI nhận dạng ra số 7, `hex0 = 7'b1111000` (đoạn a, b, c sáng mức 0, các đoạn khác tắt mức 1).
   3. **Đèn LED chẩn đoán bo mạch**:
      - `ledr[0]` (CPU Trap): Tắt (0).
