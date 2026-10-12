@@ -29,8 +29,7 @@ __pycache__/
 *.py[cod]
 software_ref/data/
 
-# Local engineering specifications & reports (retained locally, excluded from git)
-PROJECT_SPECIFICATION.md
+# Local engineering reports
 BaoCao_*.md
 
 # OS & Editor temp
