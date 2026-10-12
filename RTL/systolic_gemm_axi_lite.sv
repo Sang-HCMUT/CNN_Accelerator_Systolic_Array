@@ -80,20 +80,58 @@ module systolic_gemm_axi_lite #(
     logic signed [DATA_WIDTH-1:0]             core_rd_c_data;
     logic signed [ACC_WIDTH-1:0]              core_rd_c_acc;
 
-    // AXI Write State Machine
+    // AXI Write Channel Signals
+    typedef enum logic [1:0] {
+        WR_IDLE,
+        WR_WAIT_DATA,
+        WR_WAIT_ADDR,
+        WR_RESP
+    } wr_state_t;
+
+    wr_state_t wr_state;
+    logic [C_S_AXI_ADDR_WIDTH-1:0] latched_awaddr;
+    logic [C_S_AXI_DATA_WIDTH-1:0] latched_wdata;
+
+    task automatic do_write_op(input [C_S_AXI_ADDR_WIDTH-1:0] write_addr, input [C_S_AXI_DATA_WIDTH-1:0] write_data);
+        if (write_addr == 12'h000) begin
+            control_reg <= write_data;
+            if (write_data[0]) begin
+                core_start    <= 1'b1;
+                status_reg[0] <= 1'b0; // Clear done bit on start
+            end
+        end else if (write_addr == 12'h008) begin
+            k_dim_reg <= write_data[7:0];
+        end else if (write_addr >= 12'h100 && write_addr < 12'h200) begin
+            core_wr_a_en   <= 1'b1;
+            core_wr_a_addr <= (write_addr - 12'h100) >> 2;
+            core_wr_a_data <= write_data[DATA_WIDTH-1:0];
+        end else if (write_addr >= 12'h200 && write_addr < 12'h300) begin
+            core_wr_b_en   <= 1'b1;
+            core_wr_b_addr <= (write_addr - 12'h200) >> 2;
+            core_wr_b_data <= write_data[DATA_WIDTH-1:0];
+        end
+    endtask
+
+    // AXI Write State Machine (Decoupled AW & W Channels)
     always_ff @(posedge s_axi_aclk or negedge rst_n) begin
         if (!rst_n) begin
-            s_axi_awready <= 1'b0;
-            s_axi_wready  <= 1'b0;
-            s_axi_bvalid  <= 1'b0;
-            s_axi_bresp   <= 2'b00;
-            axi_awaddr    <= '0;
-            control_reg   <= '0;
-            status_reg    <= '0;
-            k_dim_reg     <= 8'd4;
-            core_start    <= 1'b0;
-            core_wr_a_en  <= 1'b0;
-            core_wr_b_en  <= 1'b0;
+            s_axi_awready  <= 1'b0;
+            s_axi_wready   <= 1'b0;
+            s_axi_bvalid   <= 1'b0;
+            s_axi_bresp    <= 2'b00;
+            latched_awaddr <= '0;
+            latched_wdata  <= '0;
+            control_reg    <= '0;
+            status_reg     <= '0;
+            k_dim_reg      <= 8'd4;
+            core_start     <= 1'b0;
+            core_wr_a_en   <= 1'b0;
+            core_wr_a_addr <= '0;
+            core_wr_a_data <= '0;
+            core_wr_b_en   <= 1'b0;
+            core_wr_b_addr <= '0;
+            core_wr_b_data <= '0;
+            wr_state       <= WR_IDLE;
         end else begin
             core_start   <= 1'b0;
             core_wr_a_en <= 1'b0;
@@ -102,47 +140,76 @@ module systolic_gemm_axi_lite #(
             if (core_done) status_reg[0] <= 1'b1;
             status_reg[1] <= core_busy;
 
-            // AW Handshake
-            if (~s_axi_awready && s_axi_awvalid && s_axi_wvalid) begin
-                s_axi_awready <= 1'b1;
-                axi_awaddr    <= s_axi_awaddr;
-            end else begin
-                s_axi_awready <= 1'b0;
-            end
-
-            // W Handshake
-            if (~s_axi_wready && s_axi_wvalid && s_axi_awvalid) begin
-                s_axi_wready <= 1'b1;
-            end else begin
-                s_axi_wready <= 1'b0;
-            end
-
-            // Write Operation
-            if (s_axi_awready && s_axi_wready) begin
-                s_axi_bvalid <= 1'b1;
-                s_axi_bresp  <= 2'b00;
-
-                if (axi_awaddr == 12'h000) begin
-                    control_reg <= s_axi_wdata;
-                    if (s_axi_wdata[0]) begin
-                        core_start     <= 1'b1;
-                        status_reg[0]  <= 1'b0; // Clear done
+            case (wr_state)
+                WR_IDLE: begin
+                    s_axi_bvalid <= 1'b0;
+                    if (s_axi_awvalid && s_axi_wvalid) begin
+                        s_axi_awready <= 1'b1;
+                        s_axi_wready  <= 1'b1;
+                        do_write_op(s_axi_awaddr, s_axi_wdata);
+                        s_axi_bvalid  <= 1'b1;
+                        s_axi_bresp   <= 2'b00;
+                        wr_state      <= WR_RESP;
+                    end else if (s_axi_awvalid) begin
+                        s_axi_awready  <= 1'b1;
+                        s_axi_wready   <= 1'b0;
+                        latched_awaddr <= s_axi_awaddr;
+                        wr_state       <= WR_WAIT_DATA;
+                    end else if (s_axi_wvalid) begin
+                        s_axi_awready  <= 1'b0;
+                        s_axi_wready   <= 1'b1;
+                        latched_wdata  <= s_axi_wdata;
+                        wr_state       <= WR_WAIT_ADDR;
+                    end else begin
+                        s_axi_awready  <= 1'b0;
+                        s_axi_wready   <= 1'b0;
                     end
-                end else if (axi_awaddr == 12'h008) begin
-                    k_dim_reg <= s_axi_wdata[7:0];
-                end else if (axi_awaddr >= 12'h100 && axi_awaddr < 12'h200) begin
-                    core_wr_a_en   <= 1'b1;
-                    core_wr_a_addr <= (axi_awaddr - 12'h100) >> 2;
-                    core_wr_a_data <= s_axi_wdata[DATA_WIDTH-1:0];
-                end else if (axi_awaddr >= 12'h200 && axi_awaddr < 12'h300) begin
-                    core_wr_b_en   <= 1'b1;
-                    core_wr_b_addr <= (axi_awaddr - 12'h200) >> 2;
-                    core_wr_b_data <= s_axi_wdata[DATA_WIDTH-1:0];
                 end
-            end else if (s_axi_bvalid && s_axi_bready) begin
-                s_axi_bvalid <= 1'b0;
-            end
+
+                WR_WAIT_DATA: begin
+                    s_axi_awready <= 1'b0;
+                    if (s_axi_wvalid) begin
+                        s_axi_wready <= 1'b1;
+                        do_write_op(latched_awaddr, s_axi_wdata);
+                        s_axi_bvalid <= 1'b1;
+                        s_axi_bresp  <= 2'b00;
+                        wr_state     <= WR_RESP;
+                    end else begin
+                        s_axi_wready <= 1'b0;
+                    end
+                end
+
+                WR_WAIT_ADDR: begin
+                    s_axi_wready <= 1'b0;
+                    if (s_axi_awvalid) begin
+                        s_axi_awready <= 1'b1;
+                        do_write_op(s_axi_awaddr, latched_wdata);
+                        s_axi_bvalid  <= 1'b1;
+                        s_axi_bresp   <= 2'b00;
+                        wr_state      <= WR_RESP;
+                    end else begin
+                        s_axi_awready <= 1'b0;
+                    end
+                end
+
+                WR_RESP: begin
+                    s_axi_awready <= 1'b0;
+                    s_axi_wready  <= 1'b0;
+                    s_axi_bvalid  <= 1'b0;
+                    wr_state      <= WR_IDLE;
+                end
+
+                default: wr_state <= WR_IDLE;
+            endcase
         end
+    end
+
+    // Combinational readout address to matrix_buffer_c
+    always_comb begin
+        if (s_axi_araddr >= 12'h400 && s_axi_araddr < 12'h500)
+            core_rd_c_addr = (s_axi_araddr - 12'h400) >> 2;
+        else
+            core_rd_c_addr = (s_axi_araddr - 12'h300) >> 2;
     end
 
     // AXI Read State Machine
@@ -153,33 +220,36 @@ module systolic_gemm_axi_lite #(
             s_axi_rresp   <= 2'b00;
             s_axi_rdata   <= '0;
             axi_araddr    <= '0;
-            core_rd_c_addr <= '0;
         end else begin
-            if (~s_axi_arready && s_axi_arvalid) begin
-                s_axi_arready <= 1'b1;
-                axi_araddr    <= s_axi_araddr;
+            if (~s_axi_rvalid) begin
+                if (s_axi_arvalid && ~s_axi_arready) begin
+                    s_axi_arready <= 1'b1;
+                    axi_araddr    <= s_axi_araddr;
+                end else if (s_axi_arready && s_axi_arvalid) begin
+                    s_axi_arready <= 1'b0;
+                    s_axi_rvalid  <= 1'b1;
+                    s_axi_rresp   <= 2'b00;
+
+                    // Address Decoding for Read Channel
+                    if (s_axi_araddr == 12'h000) begin
+                        s_axi_rdata <= control_reg;
+                    end else if (s_axi_araddr == 12'h004) begin
+                        s_axi_rdata <= status_reg;
+                    end else if (s_axi_araddr == 12'h008) begin
+                        s_axi_rdata <= {24'd0, k_dim_reg};
+                    end else if (s_axi_araddr >= 12'h300 && s_axi_araddr < 12'h400) begin
+                        s_axi_rdata <= {24'd0, core_rd_c_data};
+                    end else if (s_axi_araddr >= 12'h400 && s_axi_araddr < 12'h500) begin
+                        s_axi_rdata <= core_rd_c_acc;
+                    end else begin
+                        s_axi_rdata <= 32'd0;
+                    end
+                end else begin
+                    s_axi_arready <= 1'b0;
+                end
             end else begin
                 s_axi_arready <= 1'b0;
-            end
-
-            if (s_axi_arready && s_axi_arvalid && ~s_axi_rvalid) begin
-                s_axi_rvalid <= 1'b1;
-                s_axi_rresp  <= 2'b00;
-
-                if (axi_araddr == 12'h000) begin
-                    s_axi_rdata <= control_reg;
-                end else if (axi_araddr == 12'h004) begin
-                    s_axi_rdata <= status_reg;
-                end else if (axi_araddr == 12'h008) begin
-                    s_axi_rdata <= {24'd0, k_dim_reg};
-                end else if (axi_araddr >= 12'h300 && axi_araddr < 12'h400) begin
-                    core_rd_c_addr <= (axi_araddr - 12'h300) >> 2;
-                    s_axi_rdata    <= {24'd0, core_rd_c_data};
-                end else begin
-                    s_axi_rdata <= 32'd0;
-                end
-            end else if (s_axi_rvalid && s_axi_rready) begin
-                s_axi_rvalid <= 1'b0;
+                s_axi_rvalid  <= 1'b0;
             end
         end
     end

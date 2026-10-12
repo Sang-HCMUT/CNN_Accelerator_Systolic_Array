@@ -1,0 +1,389 @@
+0000: 00008137   lui sp, 0x8
+0004: FF010113   addi sp, sp, 4080
+0008: 00000537   lui a0, 0x0 (str_banner)
+000C: 2B450513   addi a0, a0, 692
+0010: 1AC000EF   jal ra, uart_print_str (offset 428)
+0014: 00000537   lui a0, 0x0 (str_step1)
+0018: 37C50513   addi a0, a0, 892
+001C: 1A0000EF   jal ra, uart_print_str (offset 416)
+0020: 100002B7   lui t0, 0x10000
+0024: 00828293   addi t0, t0, 8
+0028: 00000337   lui t1, 0x0
+002C: 00430313   addi t1, t1, 4
+0030: 0062A023   sw t1, 0(t0)
+0034: 00000537   lui a0, 0x0 (str_step2)
+0038: 3A450513   addi a0, a0, 932
+003C: 180000EF   jal ra, uart_print_str (offset 384)
+0040: 000002B7   lui t0, 0x0 (tile_a_data)
+0044: 59428293   addi t0, t0, 1428
+0048: 10000337   lui t1, 0x10000
+004C: 10030313   addi t1, t1, 256
+0050: 000003B7   lui t2, 0x0
+0054: 00038393   addi t2, t2, 0
+0058: 0002AE03   lw t3, 0(t0)
+005C: 01C32023   sw t3, 0(t1)
+0060: 00428293   addi t0, t0, 4
+0064: 00430313   addi t1, t1, 4
+0068: 00138393   addi t2, t2, 1
+006C: 00000EB7   lui t4, 0x0
+0070: 010E8E93   addi t4, t4, 16
+0074: FFD3C2E3   blt t2, t4, loop_wr_a (offset -28)
+0078: 00000537   lui a0, 0x0 (str_step3)
+007C: 3D850513   addi a0, a0, 984
+0080: 13C000EF   jal ra, uart_print_str (offset 316)
+0084: 000002B7   lui t0, 0x0 (tile_b_data)
+0088: 5D428293   addi t0, t0, 1492
+008C: 10000337   lui t1, 0x10000
+0090: 20030313   addi t1, t1, 512
+0094: 000003B7   lui t2, 0x0
+0098: 00038393   addi t2, t2, 0
+009C: 0002AE03   lw t3, 0(t0)
+00A0: 01C32023   sw t3, 0(t1)
+00A4: 00428293   addi t0, t0, 4
+00A8: 00430313   addi t1, t1, 4
+00AC: 00138393   addi t2, t2, 1
+00B0: 00000EB7   lui t4, 0x0
+00B4: 010E8E93   addi t4, t4, 16
+00B8: FFD3C2E3   blt t2, t4, loop_wr_b (offset -28)
+00BC: 00000537   lui a0, 0x0 (str_step4)
+00C0: 41050513   addi a0, a0, 1040
+00C4: 0F8000EF   jal ra, uart_print_str (offset 248)
+00C8: 100002B7   lui t0, 0x10000
+00CC: 00000337   lui t1, 0x0
+00D0: 01D30313   addi t1, t1, 29
+00D4: 0062A023   sw t1, 0(t0)
+00D8: 00000537   lui a0, 0x0 (str_step5)
+00DC: 44C50513   addi a0, a0, 1100
+00E0: 0DC000EF   jal ra, uart_print_str (offset 220)
+00E4: 100002B7   lui t0, 0x10000
+00E8: 00428293   addi t0, t0, 4
+00EC: 0002A303   lw t1, 0(t0)
+00F0: 00137393   andi t2, t1, 1
+00F4: FE038CE3   beq t2, zero, poll_done (offset -8)
+00F8: 00000537   lui a0, 0x0 (str_step6)
+00FC: 48450513   addi a0, a0, 1156
+0100: 0BC000EF   jal ra, uart_print_str (offset 188)
+0104: 10000437   lui s0, 0x10000
+0108: 30040413   addi s0, s0, 768
+010C: 000004B7   lui s1, 0x0
+0110: 00048493   addi s1, s1, 0
+0114: 00000537   lui a0, 0x0 (str_row)
+0118: 4B050513   addi a0, a0, 1200
+011C: 0A0000EF   jal ra, uart_print_str (offset 160)
+0120: 00048513   addi a0, s1, 0
+0124: 100000EF   jal ra, uart_print_dec (offset 256)
+0128: 00000537   lui a0, 0x0 (str_colon)
+012C: 4BC50513   addi a0, a0, 1212
+0130: 08C000EF   jal ra, uart_print_str (offset 140)
+0134: 00000937   lui s2, 0x0
+0138: 00090913   addi s2, s2, 0
+013C: 00042503   lw a0, 0(s0)
+0140: 0E4000EF   jal ra, uart_print_dec (offset 228)
+0144: 00000537   lui a0, 0x0
+0148: 02050513   addi a0, a0, 32
+014C: 050000EF   jal ra, uart_putchar (offset 80)
+0150: 00440413   addi s0, s0, 4
+0154: 00190913   addi s2, s2, 1
+0158: 00000EB7   lui t4, 0x0
+015C: 004E8E93   addi t4, t4, 4
+0160: FDD94EE3   blt s2, t4, col_loop (offset -36)
+0164: 00000537   lui a0, 0x0
+0168: 05D50513   addi a0, a0, 93
+016C: 030000EF   jal ra, uart_putchar (offset 48)
+0170: 00000537   lui a0, 0x0
+0174: 00A50513   addi a0, a0, 10
+0178: 024000EF   jal ra, uart_putchar (offset 36)
+017C: 00148493   addi s1, s1, 1
+0180: 00000EB7   lui t4, 0x0
+0184: 004E8E93   addi t4, t4, 4
+0188: F9D4C6E3   blt s1, t4, row_loop (offset -116)
+018C: 00000537   lui a0, 0x0 (str_success)
+0190: 4C450513   addi a0, a0, 1220
+0194: 028000EF   jal ra, uart_print_str (offset 40)
+0198: 0000006F   jal zero, halt (offset 0)
+019C: 20000F37   lui t5, 0x20000
+01A0: 004F0F13   addi t5, t5, 4
+01A4: 000F2F83   lw t6, 0(t5)
+01A8: 001FFF93   andi t6, t6, 1
+01AC: FE0F8CE3   beq t6, zero, wait_tx (offset -8)
+01B0: 20000F37   lui t5, 0x20000
+01B4: 00AF2023   sw a0, 0(t5)
+01B8: 00008067   jalr zero, 0(ra)
+01BC: FF810113   addi sp, sp, -8
+01C0: 00112223   sw ra, 4(sp)
+01C4: 01312023   sw s3, 0(sp)
+01C8: 00050993   addi s3, a0, 0
+01CC: 0009A283   lw t0, 0(s3)
+01D0: 00000337   lui t1, 0x0
+01D4: 00030313   addi t1, t1, 0
+01D8: 0FF2F513   andi a0, t0, 255
+01DC: 02050C63   beq a0, zero, str_done (offset 56)
+01E0: FBDFF0EF   jal ra, uart_putchar (offset -68)
+01E4: 00028293   addi t0, t0, 0
+01E8: FFC10113   addi sp, sp, -4
+01EC: 00612023   sw t1, 0(sp)
+01F0: 0082D293   srli t0, t0, 8
+01F4: 00012303   lw t1, 0(sp)
+01F8: 00410113   addi sp, sp, 4
+01FC: 00130313   addi t1, t1, 1
+0200: 000003B7   lui t2, 0x0
+0204: 00438393   addi t2, t2, 4
+0208: FC7348E3   blt t1, t2, byte_loop (offset -48)
+020C: 00498993   addi s3, s3, 4
+0210: FBDFF06F   jal zero, str_loop (offset -68)
+0214: 00012983   lw s3, 0(sp)
+0218: 00412083   lw ra, 4(sp)
+021C: 00810113   addi sp, sp, 8
+0220: 00008067   jalr zero, 0(ra)
+0224: FF810113   addi sp, sp, -8
+0228: 00112223   sw ra, 4(sp)
+022C: 000002B7   lui t0, 0x0
+0230: 06428293   addi t0, t0, 100
+0234: 02554A63   blt a0, t0, check_10 (offset 52)
+0238: 00000337   lui t1, 0x0
+023C: 00030313   addi t1, t1, 0
+0240: 00554863   blt a0, t0, done_100 (offset 16)
+0244: 40550533   sub a0, a0, t0
+0248: 00130313   addi t1, t1, 1
+024C: FF5FF06F   jal zero, sub_100 (offset -12)
+0250: FFC10113   addi sp, sp, -4
+0254: 00A12023   sw a0, 0(sp)
+0258: 03030513   addi a0, t1, 48
+025C: F41FF0EF   jal ra, uart_putchar (offset -192)
+0260: 00012503   lw a0, 0(sp)
+0264: 00410113   addi sp, sp, 4
+0268: 000002B7   lui t0, 0x0
+026C: 00A28293   addi t0, t0, 10
+0270: 00000337   lui t1, 0x0
+0274: 00030313   addi t1, t1, 0
+0278: 00554863   blt a0, t0, done_10 (offset 16)
+027C: 40550533   sub a0, a0, t0
+0280: 00130313   addi t1, t1, 1
+0284: FF5FF06F   jal zero, sub_10 (offset -12)
+0288: FFC10113   addi sp, sp, -4
+028C: 00A12023   sw a0, 0(sp)
+0290: 03030513   addi a0, t1, 48
+0294: F09FF0EF   jal ra, uart_putchar (offset -248)
+0298: 00012503   lw a0, 0(sp)
+029C: 00410113   addi sp, sp, 4
+02A0: 03050513   addi a0, a0, 48
+02A4: EF9FF0EF   jal ra, uart_putchar (offset -264)
+02A8: 00412083   lw ra, 4(sp)
+02AC: 00810113   addi sp, sp, 8
+02B0: 00008067   jalr zero, 0(ra)
+02B4: 3D3D3D0A   .string "\x0a==="
+02B8: 3D3D3D3D   .string "===="
+02BC: 3D3D3D3D   .string "===="
+02C0: 3D3D3D3D   .string "===="
+02C4: 3D3D3D3D   .string "===="
+02C8: 3D3D3D3D   .string "===="
+02CC: 3D3D3D3D   .string "===="
+02D0: 3D3D3D3D   .string "===="
+02D4: 3D3D3D3D   .string "===="
+02D8: 3D3D3D3D   .string "===="
+02DC: 3D3D3D3D   .string "===="
+02E0: 3D3D3D3D   .string "===="
+02E4: 3D3D3D3D   .string "===="
+02E8: 5B200A3D   .string "=\x0a ["
+02EC: 43534952   .string "RISC"
+02F0: 5020562D   .string "-V P"
+02F4: 526F6369   .string "icoR"
+02F8: 20323356   .string "V32 "
+02FC: 5D436F53   .string "SoC]"
+0300: 73795320   .string " Sys"
+0304: 696C6F74   .string "toli"
+0308: 4E432063   .string "c CN"
+030C: 6341204E   .string "N Ac"
+0310: 656C6563   .string "cele"
+0314: 6F746172   .string "rato"
+0318: 48200A72   .string "r\x0a H"
+031C: 77647261   .string "ardw"
+0320: 2D657261   .string "are-"
+0324: 74666F53   .string "Soft"
+0328: 65726177   .string "ware"
+032C: 2D6F4320   .string " Co-"
+0330: 756D6953   .string "Simu"
+0334: 6974616C   .string "lati"
+0338: 52206E6F   .string "on R"
+033C: 696E6E75   .string "unni"
+0340: 2E2E676E   .string "ng.."
+0344: 3D3D0A2E   .string ".\x0a=="
+0348: 3D3D3D3D   .string "===="
+034C: 3D3D3D3D   .string "===="
+0350: 3D3D3D3D   .string "===="
+0354: 3D3D3D3D   .string "===="
+0358: 3D3D3D3D   .string "===="
+035C: 3D3D3D3D   .string "===="
+0360: 3D3D3D3D   .string "===="
+0364: 3D3D3D3D   .string "===="
+0368: 3D3D3D3D   .string "===="
+036C: 3D3D3D3D   .string "===="
+0370: 3D3D3D3D   .string "===="
+0374: 3D3D3D3D   .string "===="
+0378: 000A3D3D   .string "==\x0a\x00"
+037C: 205D315B   .string "[1] "
+0380: 666E6F43   .string "Conf"
+0384: 72756769   .string "igur"
+0388: 4D206465   .string "ed M"
+038C: 69727461   .string "atri"
+0390: 69442078   .string "x Di"
+0394: 736E656D   .string "mens"
+0398: 206E6F69   .string "ion "
+039C: 203D204B   .string "K = "
+03A0: 000A2E34   .string "4.\x0a\x00"
+03A4: 205D325B   .string "[2] "
+03A8: 65727453   .string "Stre"
+03AC: 64656D61   .string "amed"
+03B0: 74614D20   .string " Mat"
+03B4: 20786972   .string "rix "
+03B8: 57282041   .string "A (W"
+03BC: 68676965   .string "eigh"
+03C0: 34207374   .string "ts 4"
+03C4: 20293478   .string "x4) "
+03C8: 20616976   .string "via "
+03CC: 2D495841   .string "AXI-"
+03D0: 4F494D4D   .string "MMIO"
+03D4: 00000A2E   .string ".\x0a\x00\x00"
+03D8: 205D335B   .string "[3] "
+03DC: 65727453   .string "Stre"
+03E0: 64656D61   .string "amed"
+03E4: 74614D20   .string " Mat"
+03E8: 20786972   .string "rix "
+03EC: 41282042   .string "B (A"
+03F0: 76697463   .string "ctiv"
+03F4: 6F697461   .string "atio"
+03F8: 3420736E   .string "ns 4"
+03FC: 20293478   .string "x4) "
+0400: 20616976   .string "via "
+0404: 2D495841   .string "AXI-"
+0408: 4F494D4D   .string "MMIO"
+040C: 00000A2E   .string ".\x0a\x00\x00"
+0410: 205D345B   .string "[4] "
+0414: 72617453   .string "Star"
+0418: 20646574   .string "ted "
+041C: 74737953   .string "Syst"
+0420: 63696C6F   .string "olic"
+0424: 72724120   .string " Arr"
+0428: 45207961   .string "ay E"
+042C: 75636578   .string "xecu"
+0430: 6E6F6974   .string "tion"
+0434: 68532820   .string " (Sh"
+0438: 3D746669   .string "ift="
+043C: 52202C37   .string "7, R"
+0440: 3D554C65   .string "eLU="
+0444: 2E294E4F   .string "ON)."
+0448: 0000000A   .string "\x0a\x00\x00\x00"
+044C: 205D355B   .string "[5] "
+0450: 65636341   .string "Acce"
+0454: 6172656C   .string "lera"
+0458: 20726F74   .string "tor "
+045C: 63657865   .string "exec"
+0460: 6F697475   .string "utio"
+0464: 6966206E   .string "n fi"
+0468: 6873696E   .string "nish"
+046C: 20216465   .string "ed! "
+0470: 656E6F44   .string "Done"
+0474: 74696220   .string " bit"
+0478: 73736120   .string " ass"
+047C: 65747265   .string "erte"
+0480: 000A2E64   .string "d.\x0a\x00"
+0484: 205D365B   .string "[6] "
+0488: 64616552   .string "Read"
+048C: 20676E69   .string "ing "
+0490: 7274614D   .string "Matr"
+0494: 43207869   .string "ix C"
+0498: 74756F20   .string " out"
+049C: 20747570   .string "put "
+04A0: 69746361   .string "acti"
+04A4: 69746176   .string "vati"
+04A8: 3A736E6F   .string "ons:"
+04AC: 0000000A   .string "\x0a\x00\x00\x00"
+04B0: 20202020   .string "    "
+04B4: 20776F52   .string "Row "
+04B8: 00000000   .string "\x00\x00\x00\x00"
+04BC: 205B203A   .string ": [ "
+04C0: 00000000   .string "\x00\x00\x00\x00"
+04C4: 3D3D3D0A   .string "\x0a==="
+04C8: 3D3D3D3D   .string "===="
+04CC: 3D3D3D3D   .string "===="
+04D0: 3D3D3D3D   .string "===="
+04D4: 3D3D3D3D   .string "===="
+04D8: 3D3D3D3D   .string "===="
+04DC: 3D3D3D3D   .string "===="
+04E0: 3D3D3D3D   .string "===="
+04E4: 3D3D3D3D   .string "===="
+04E8: 3D3D3D3D   .string "===="
+04EC: 3D3D3D3D   .string "===="
+04F0: 3D3D3D3D   .string "===="
+04F4: 3D3D3D3D   .string "===="
+04F8: 5B200A3D   .string "=\x0a ["
+04FC: 55534552   .string "RESU"
+0500: 205D544C   .string "LT] "
+0504: 64726148   .string "Hard"
+0508: 65726177   .string "ware"
+050C: 666F532D   .string "-Sof"
+0510: 72617774   .string "twar"
+0514: 6F432065   .string "e Co"
+0518: 6D69532D   .string "-Sim"
+051C: 74616C75   .string "ulat"
+0520: 206E6F69   .string "ion "
+0524: 43435553   .string "SUCC"
+0528: 21535345   .string "ESS!"
+052C: 6C41200A   .string "\x0a Al"
+0530: 7953206C   .string "l Sy"
+0534: 6C6F7473   .string "stol"
+0538: 41206369   .string "ic A"
+053C: 79617272   .string "rray"
+0540: 4D454720   .string " GEM"
+0544: 6954204D   .string "M Ti"
+0548: 2073656C   .string "les "
+054C: 69726556   .string "Veri"
+0550: 64656966   .string "fied"
+0554: 20796220   .string " by "
+0558: 21555043   .string "CPU!"
+055C: 3D3D3D0A   .string "\x0a==="
+0560: 3D3D3D3D   .string "===="
+0564: 3D3D3D3D   .string "===="
+0568: 3D3D3D3D   .string "===="
+056C: 3D3D3D3D   .string "===="
+0570: 3D3D3D3D   .string "===="
+0574: 3D3D3D3D   .string "===="
+0578: 3D3D3D3D   .string "===="
+057C: 3D3D3D3D   .string "===="
+0580: 3D3D3D3D   .string "===="
+0584: 3D3D3D3D   .string "===="
+0588: 3D3D3D3D   .string "===="
+058C: 3D3D3D3D   .string "===="
+0590: 000A0A3D   .string "=\x0a\x0a\x00"
+0594: 0000000C   .word 0x0000000C
+0598: 000000F8   .word 0x000000F8
+059C: 00000019   .word 0x00000019
+05A0: 0000000A   .word 0x0000000A
+05A4: 000000F1   .word 0x000000F1
+05A8: 0000001E   .word 0x0000001E
+05AC: 00000012   .word 0x00000012
+05B0: 000000FB   .word 0x000000FB
+05B4: 00000016   .word 0x00000016
+05B8: 0000000E   .word 0x0000000E
+05BC: 000000E0   .word 0x000000E0
+05C0: 00000008   .word 0x00000008
+05C4: 00000009   .word 0x00000009
+05C8: 000000F9   .word 0x000000F9
+05CC: 00000010   .word 0x00000010
+05D0: 0000001C   .word 0x0000001C
+05D4: 0000002D   .word 0x0000002D
+05D8: 000000F4   .word 0x000000F4
+05DC: 00000021   .word 0x00000021
+05E0: 00000008   .word 0x00000008
+05E4: 00000014   .word 0x00000014
+05E8: 0000000F   .word 0x0000000F
+05EC: 000000F6   .word 0x000000F6
+05F0: 00000019   .word 0x00000019
+05F4: 000000E2   .word 0x000000E2
+05F8: 00000028   .word 0x00000028
+05FC: 00000012   .word 0x00000012
+0600: 000000F2   .word 0x000000F2
+0604: 00000012   .word 0x00000012
+0608: 00000016   .word 0x00000016
+060C: 000000F7   .word 0x000000F7
+0610: 0000001F   .word 0x0000001F

@@ -16,6 +16,7 @@
 **/transcript
 *.wlf
 *.vcd
+modelsim.ini
 
 # Object & binary build artifacts
 *.o

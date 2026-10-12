@@ -76,11 +76,27 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   ├── gemm_controller.sv       # 7-state centralized control FSM
 │   ├── systolic_accelerator_top.sv # Structural top-level module
 │   ├── systolic_accelerator_8x8.sv # 8x8 parameter wrapper
-│   └── systolic_gemm_axi_lite.sv   # AMBA AXI4-Lite slave wrapper
+│   ├── systolic_gemm_axi_lite.sv   # AMBA AXI4-Lite slave wrapper
+│   ├── picorv32.v               # RISC-V RV32I Soft Core CPU (YosysHQ)
+│   ├── axi_interconnect.sv      # 1-Master to 3-Slave AXI4-Lite Crossbar
+│   ├── axi_ram.sv               # 32 KB On-Chip BRAM (wstrb & $readmemh)
+│   ├── axi_uart.sv              # AXI4-Lite UART Serial Console
+│   └── soc_top.sv               # Complete Integrated SoC Top Module
+├── firmware/                    # RISC-V Embedded Firmware & Assembler
+│   ├── systolic.h               # Accelerator C MMIO driver & register definitions
+│   ├── main.c                   # C firmware application
+│   ├── start.s                  # Assembly startup (SP init & reset handler)
+│   ├── link.ld                  # Linker script (32 KB BRAM mapping)
+│   ├── Makefile                 # GNU RISC-V GCC build script
+│   ├── firmware_generator.py    # Standalone pure Python RV32I assembler
+│   ├── firmware.hex             # Verilog hex machine code loaded by axi_ram
+│   └── firmware.dis             # Instruction disassembly listing
 ├── VEFIFY/                      # ModelSim testbenches and simulation assets
 │   ├── tb_systolic_gemm.sv      # Bit-true scoreboard testbench vs. Python
 │   ├── tb_systolic_stress_test.sv # 6 corner-case & stress scenarios
-│   └── run_gemm_sim.do          # ModelSim execution script
+│   ├── run_gemm_sim.do          # Accelerator core simulation script
+│   ├── tb_soc_top.sv            # Full SoC hardware-software co-simulation TB
+│   └── run_soc_sim.do           # SoC co-simulation script
 ├── software_ref/                # Python Golden Reference Model & AI Pipeline
 │   ├── im2col.py                # Mathematical im2col & col2im matrix transformation
 │   ├── tiling_engine.py         # Hardware-aware NxN Systolic Tiling Engine
@@ -168,6 +184,18 @@ vsim -c -do "run -all; quit -f" tb_systolic_stress_test
 - **1-Click Full Demo**: Double-click `software_ref/run_phase2_demo.bat`
 - **Test a Specific Image**: `python software_ref/test_single_image.py 42`
 - **Test a Random Image**: `python software_ref/test_single_image.py random`
+
+### 5. Run Phase 3: RISC-V SoC Hardware-Software Co-Simulation
+- **Compile Firmware (Pure Python RV32I Assembler)**:
+  ```powershell
+  python firmware/firmware_generator.py
+  ```
+- **Run Full SoC Co-Simulation on ModelSim**:
+  ```powershell
+  cd VEFIFY
+  vsim -c -do run_soc_sim.do
+  ```
+  Observes CPU booting from BRAM (`0x0000_0000`), configuring the Systolic GEMM Accelerator via AXI4-Lite (`0x1000_0000`), executing GEMM tile calculations in 33 hardware cycles, and streaming verified results out via UART (`0x2000_0000`).
 
 ---
 
