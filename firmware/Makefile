@@ -28,8 +28,10 @@ firmware.bin: firmware.elf
 firmware.dis: firmware.elf
 	$(OBJDUMP) -d $< > $@
 
+PYTHON ?= python3
+
 firmware.hex: firmware.bin
-	python bin2hex.py $< $@
+	$(PYTHON) bin2hex.py $< $@
 
 clean:
 	rm -f *.o *.elf *.bin *.hex *.dis
