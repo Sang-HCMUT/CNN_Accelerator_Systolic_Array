@@ -31,7 +31,9 @@ software_ref/data/
 
 # Local engineering reports
 BaoCao_*.md
+PROJECT_SPECIFICATION.md
 scratch/
+
 
 # OS & Editor temp
 .DS_Store
