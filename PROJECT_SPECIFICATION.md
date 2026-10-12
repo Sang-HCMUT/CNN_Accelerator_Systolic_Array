@@ -801,6 +801,78 @@ Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu 
 
 ---
 
+### 8.6. Hướng Dẫn Chi Tiết Các Lệnh Mở Dạng Sóng (ModelSim Waveforms) Từng Giai Đoạn Trước Hội Đồng
+
+Để thuyết minh trực quan và chứng minh tính đúng đắn của toàn bộ chu trình thiết kế vi mạch trước Hội đồng chấm Luận văn, đồ án đã chuẩn bị sẵn hệ thống **4 Dạng sóng (Waveforms)** được định dạng màu sắc, phân nhóm (Dividers) và đặt hệ cơ số (Radix) tối ưu.
+
+#### 1. Bảng Tổng Hợp Lệnh Mở 1-Click Dạng Sóng Trên ModelSim:
+
+| STT Dạng Sóng | Tên Dạng Sóng & Giai Đoạn | Script Mở 1-Click (Windows CMD) | Lệnh ModelSim Tcl CLI | Nhóm Tín Hiệu Trọng Tâm |
+| :---: | :--- | :--- | :--- | :--- |
+| **Waveform 1** | **Mảng Tâm Thu Cơ Sở (Phase 1)** | `cd VEFIFY`<br>`open_wave_gemm.bat` | `cd VEFIFY`<br>`vsim -do run_gemm_sim.do` | Control, Skewing Wavefront ($0T..3T$), PEs Accumulators, Quantizer Output. |
+| **Waveform 2** | **Stress & Corner-Cases (Phase 1)** | `cd VEFIFY`<br>`vsim -do "run -all" tb_systolic_stress_test` | `vsim -voptargs=+acc work.tb_systolic_stress_test`<br>`run -all` | 6 kịch bản góc kẹt, cờ `pass_count = 6/6`, mạch Saturation Clamp ghìm $+127$. |
+| **Waveform 3** | **Đồng Mô Phỏng SoC RISC-V (Phase 3)** | `cd VEFIFY`<br>`open_wave_soc.bat` | `cd VEFIFY`<br>`vsim -do wave_soc.do` | CPU ARADDR/AWADDR, `trap=0`, AXI4-Lite Routing, `core_start`/`core_done`, UART TX (607 chars). |
+| **Waveform 4** | **Ngoại Vi Vật Lý Kit DE1 (Phase 4)** | Tích hợp sẵn trong:<br>`open_wave_soc.bat` | Nằm trong nhóm `Terasic DE1 Board IO`<br>của script `wave_soc.do` | UART RXD 115200 Baud, `rx_valid`, LED 7 đoạn `HEX0/HEX1` (Active-Low), LED chẩn đoán. |
+
+---
+
+#### 2. Chi Tiết Các Tín Hiệu & Vị Trí Zoom Thuyết Minh Cho Từng Waveform:
+
+##### A. Waveform 1: Lõi Mảng Tâm Thu 2D ([`open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat))
+* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat).
+* **Các điểm then chốt cần chỉ cho Hội đồng**:
+  1. **Tín hiệu điều khiển FSM**: Trỏ chuột vào thời điểm xung `start` tích cực ở chu kỳ $T_0$, cờ `busy` bật lên mức cao, và sau đúng **33 chu kỳ xung nhịp**, cờ `done` bật sáng.
+  2. **Dòng chảy lệch nhịp Wavefront Skewing**:
+     - Mở nhóm `Systolic Array Feeder`: Quan sát `a_row_skewed[0..3]` và `b_col_skewed[0..3]`.
+     - Chỉ rõ cho Hội đồng thấy: Hàng 0 nạp ngay ở chu kỳ $0T$, Hàng 1 trễ $1T$, Hàng 2 trễ $2T$, Hàng 3 trễ $3T$. Sự so le hình bậc thang này chứng minh mạng trễ nhịp sóng (Wavefront Flow) vận hành chuẩn xác.
+  3. **Tích lũy nội tại PE (Output-Stationary)**:
+     - Mở nhóm `Internal 2D Accumulators` hiển thị `c_matrix_core[0..3][0..3]`.
+     - Cho thấy giá trị tích lũy tăng dần theo thời gian trong từng PE mà không phát sinh bất kỳ thao tác đọc/ghi trung gian nào ra bộ nhớ ngoài.
+  4. **Đầu ra sau lượng tử & ReLU**:
+     - `rd_c_acc_data` (INT32) và `rd_c_data` (INT8 sau ReLU và Shift).
+     - So khớp trực tiếp 16 giá trị đầu ra này với file tham chiếu [`golden_output_int8.hex`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/golden_output_int8.hex), chứng minh đạt **100% BIT-TRUE MATCH**.
+
+##### B. Waveform 2: Kiểm Thử Chịu Tải Cực Đoan (Corner-Cases)
+* **Cách mở**: Trong ModelSim, gõ lệnh:
+  ```tcl
+  vsim -voptargs=+acc work.tb_systolic_stress_test
+  add wave -radix decimal /tb_systolic_stress_test/*
+  run -all
+  ```
+* **Các điểm then chốt cần chỉ cho Hội đồng**:
+  1. Trỏ vào thông báo Terminal: `[PASS] ALL 6/6 STRESS & CORNER-CASE TESTS PASSED PERFECTLY!`.
+  2. Tại kịch bản **Test 2 (Extreme Saturation)**: Tổng tích lũy vượt quá giới hạn $[-128, 127]$, dạng sóng chỉ ra mạch `quantize_relu_unit` ghìm chính xác tại $+127$, bảo vệ hệ thống không bị hiện tượng tràn số đổi dấu (Wrap-around Overflow).
+  3. Tại kịch bản **Test 6 (Back-to-Back)**: Hai lượt GEMM kích hoạt liên tiếp không nghỉ chu kỳ nào (`idle cycles = 0`), FSM xóa tích lũy `sys_clear_acc` và tính toán lại từ đầu hoàn hảo mà không bị lưu rác từ phép tính trước.
+
+##### C. Waveform 3: Toàn Hệ Thống SoC RISC-V PicoRV32 ([`open_wave_soc.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_soc.bat))
+* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_soc.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_soc.bat).
+* **Các điểm then chốt cần chỉ cho Hội đồng**:
+  1. **Nhóm PicoRV32 CPU**:
+     - Tín hiệu `cpu_axi_araddr`: CPU đọc lệnh tuần tự từ BRAM (vùng địa chỉ `0x0000_0000`).
+     - Tín hiệu `trap`: **Bằng 0 suốt 82,176 chu kỳ mô phỏng** (xác nhận mã C biên dịch không gây lỗi truy xuất bộ nhớ, không crash CPU).
+  2. **Nhóm AXI4-Lite Interconnect Routing**:
+     - Kênh đọc BRAM: `s0_arvalid` tích cực khi nạp mã lệnh.
+     - Kênh bộ gia tốc: `s1_awvalid` bật lên khi CPU ghi kích thước ma trận `K_DIM=4` (`0x1000_0008`), nạp ma trận A (`0x1000_0100`), ma trận B (`0x1000_0200`) và ghi thanh ghi điều khiển `CTRL_START` (`0x1000_0000`).
+     - Kênh ngoại vi: `s2_awvalid` bật lên khi CPU ghi từng byte ký tự ASCII vào thanh ghi UART (`0x2000_0000`).
+  3. **Thời điểm phối hợp phần cứng - phần mềm (HW-SW Handshake)**:
+     - Xung `core_start` phát ra tại chu kỳ **54,983**.
+     - Xung `core_done` phản hồi tại chu kỳ **55,016** (đúng 33 chu kỳ phần cứng của mảng tâm thu).
+     - CPU đọc thanh ghi trạng thái `REG_ACCEL_STATUS & STATUS_DONE` và tiến hành đọc kết quả ma trận C từ địa chỉ `0x1000_0300`.
+  4. **Nhóm UART Console**: Chân `uart_tx` liên tục phát xung nối tiếp 607 ký tự log ra Terminal ở tốc độ 115200 Baud.
+
+##### D. Waveform 4: Ngoại Vi Vật Lý Kit DE1 (Tích Hợp Trong `wave_soc.do`)
+* **Các điểm then chốt cần chỉ cho Hội đồng**:
+  1. **Tín hiệu UART RX**: Chuỗi bit nối tiếp `uart_rx` gửi từ máy tính xuống, đi qua bộ đồng bộ 2 tầng (2-stage synchronizer) để loại trừ hiện tượng chập chờn (metastability), tạo ra xung nhận hợp lệ `rx_valid`.
+  2. **Tín hiệu hiển thị LED 7 đoạn `hex0[6:0]`**:
+     - Trỏ vào mã nhị phân 7 đoạn (Active-Low): Ví dụ khi AI nhận dạng ra số 7, `hex0 = 7'b1111000` (đoạn a, b, c sáng mức 0, các đoạn khác tắt mức 1).
+  3. **Đèn LED chẩn đoán bo mạch**:
+     - `ledr[0]` (CPU Trap): Tắt (0).
+     - `ledr[1]` (Busy): Nhấp nháy trong khoảng thời gian `core_busy = 1`.
+     - `ledg[0]` (Done): Sáng (1) khi hoàn tất tile tính toán.
+     - `ledg[1]` (RX Valid): Chớp sáng mỗi khi nhận 1 byte ảnh từ máy tính.
+
+---
+
 ## 9. HIỆN THỰC GIAI ĐOẠN 3: TÍCH HỢP HỆ THỐNG SOC HOÀN CHỈNH VỚI CPU MỀM RISC-V (PICORV32) VÀ ĐỒNG MÔ PHỎNG PHẦN CỨNG - PHẦN MỀM (HARDWARE-SOFTWARE CO-SIMULATION)
 
 ### 9.1. Động Lực Kỹ Thuật & Kiến Trúc Tổng Thể Hệ Thống SoC (System Architecture)
@@ -1319,7 +1391,10 @@ Toàn bộ 36 chân tín hiệu I/O của hệ thống `soc_top` được đối
 
 ### 10.3. Kết Quả Tổng Hợp Phần Cứng Hoàn Chỉnh Trên Kit DE1
 
-Sau khi tích hợp toàn bộ ngoại vi (Bộ giải mã 7 đoạn, UART thu/phát hoàn chỉnh, các thanh ghi chốt hiển thị) và gán đầy đủ chân vật lý, toàn bộ thiết kế được biên dịch qua chu trình chuẩn: `quartus_map` $ightarrow$ `quartus_fit` $ightarrow$ `quartus_asm` $ightarrow$ `quartus_sta`.
+Sau khi tích hợp toàn bộ ngoại vi (Bộ giải mã 7 đoạn, UART thu/phát hoàn chỉnh, các thanh ghi chốt hiển thị) và gán đầy đủ chân vật lý, toàn bộ thiết kế được biên dịch qua chu trình chuẩn: `quartus_map` $
+ightarrow$ `quartus_fit` $
+ightarrow$ `quartus_asm` $
+ightarrow$ `quartus_sta`.
 
 Bảng thông số thực tế trích xuất từ các báo cáo [`soc_top.fit.summary`](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.fit.summary) và [`soc_top.sta.rpt`](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.sta.rpt):
 
