@@ -87,6 +87,7 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   ├── mnist_dataset.py         # Automatic MNIST loader & ASCII art renderer
 │   ├── mnist_cnn_model.py       # Quantized INT8 ConvNet model (100% Bit-True)
 │   ├── run_mnist_inference.py   # End-to-end digit recognition test script (97.06% Acc)
+│   ├── test_single_image.py     # Fast single-image inference tool (by index or random)
 │   ├── run_phase2_demo.bat      # One-click execution script for Phase 2 demo
 │   ├── gemm_golden.py           # Bit-accurate matrix generation script
 │   └── run_golden.bat           # One-click execution script
@@ -162,6 +163,11 @@ vsim -c -do "run -all; quit -f" tb_systolic_stress_test
 ### 3. Run Quartus Synthesis
 - For $4 \times 4$: Run `synthesis_gemm/compile_4x4.bat`
 - For $8 \times 8$: Run `synthesis_gemm_8x8/compile_8x8.bat`
+
+### 4. Run Phase 2: MNIST Handwritten Digit Inference
+- **1-Click Full Demo**: Double-click `software_ref/run_phase2_demo.bat`
+- **Test a Specific Image**: `python software_ref/test_single_image.py 42`
+- **Test a Random Image**: `python software_ref/test_single_image.py random`
 
 ---
 
