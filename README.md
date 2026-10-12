@@ -81,7 +81,13 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   ├── tb_systolic_gemm.sv      # Bit-true scoreboard testbench vs. Python
 │   ├── tb_systolic_stress_test.sv # 6 corner-case & stress scenarios
 │   └── run_gemm_sim.do          # ModelSim execution script
-├── software_ref/                # Python Golden Reference Model
+├── software_ref/                # Python Golden Reference Model & AI Pipeline
+│   ├── im2col.py                # Mathematical im2col & col2im matrix transformation
+│   ├── tiling_engine.py         # Hardware-aware NxN Systolic Tiling Engine
+│   ├── mnist_dataset.py         # Automatic MNIST loader & ASCII art renderer
+│   ├── mnist_cnn_model.py       # Quantized INT8 ConvNet model (100% Bit-True)
+│   ├── run_mnist_inference.py   # End-to-end digit recognition test script (97.06% Acc)
+│   ├── run_phase2_demo.bat      # One-click execution script for Phase 2 demo
 │   ├── gemm_golden.py           # Bit-accurate matrix generation script
 │   └── run_golden.bat           # One-click execution script
 ├── synthesis_gemm/              # Quartus II project for 4x4 configuration (16 PEs)

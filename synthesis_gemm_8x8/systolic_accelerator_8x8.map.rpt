@@ -1,5 +1,5 @@
 Analysis & Synthesis report for systolic_accelerator_8x8
-Mon Oct 12 09:24:38 2026
+Mon Oct 12 10:46:17 2026
 Quartus II 64-Bit Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
 
 
@@ -227,7 +227,7 @@ applicable agreement for further details.
 +--------------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                         ;
 +------------------------------------+-------------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Mon Oct 12 09:24:38 2026           ;
+; Analysis & Synthesis Status        ; Successful - Mon Oct 12 10:46:17 2026           ;
 ; Quartus II 64-Bit Version          ; 13.0.1 Build 232 06/12/2013 SP 1 SJ Web Edition ;
 ; Revision Name                      ; systolic_accelerator_8x8                        ;
 ; Top-level Entity Name              ; systolic_accelerator_8x8                        ;
@@ -340,45 +340,45 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +----------------------------+--------+
 
 
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Analysis & Synthesis Source Files Read                                                                                                                                  ;
-+------------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------+---------+
-; File Name with User-Entered Path   ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                            ; Library ;
-+------------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------+---------+
-; ../RTL/pe_gemm.sv                  ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/pe_gemm.sv                            ;         ;
-; ../RTL/systolic_skew_unit.sv       ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/systolic_skew_unit.sv                 ;         ;
-; ../RTL/systolic_array_core.sv      ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/systolic_array_core.sv                ;         ;
-; ../RTL/quantize_relu_unit.sv       ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/quantize_relu_unit.sv                 ;         ;
-; ../RTL/matrix_buffer_a.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/matrix_buffer_a.sv                    ;         ;
-; ../RTL/matrix_buffer_b.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/matrix_buffer_b.sv                    ;         ;
-; ../RTL/matrix_buffer_c.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/matrix_buffer_c.sv                    ;         ;
-; ../RTL/gemm_controller.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/gemm_controller.sv                    ;         ;
-; ../RTL/systolic_accelerator_top.sv ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/systolic_accelerator_top.sv           ;         ;
-; ../RTL/systolic_accelerator_8x8.sv ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Nios2_Integration/RTL/systolic_accelerator_8x8.sv           ;         ;
-; altsyncram.tdf                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altsyncram.tdf               ;         ;
-; stratix_ram_block.inc              ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/stratix_ram_block.inc        ;         ;
-; lpm_mux.inc                        ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_mux.inc                  ;         ;
-; lpm_decode.inc                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_decode.inc               ;         ;
-; aglobal130.inc                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/aglobal130.inc               ;         ;
-; a_rdenreg.inc                      ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/a_rdenreg.inc                ;         ;
-; altrom.inc                         ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altrom.inc                   ;         ;
-; altram.inc                         ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altram.inc                   ;         ;
-; altdpram.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altdpram.inc                 ;         ;
-; db/altsyncram_iog1.tdf             ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Nios2_Integration/synthesis_gemm_8x8/db/altsyncram_iog1.tdf ;         ;
-; lpm_mult.tdf                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_mult.tdf                 ;         ;
-; lpm_add_sub.inc                    ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_add_sub.inc              ;         ;
-; multcore.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/multcore.inc                 ;         ;
-; bypassff.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/bypassff.inc                 ;         ;
-; altshift.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altshift.inc                 ;         ;
-; db/mult_lus.tdf                    ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Nios2_Integration/synthesis_gemm_8x8/db/mult_lus.tdf        ;         ;
-; alt_mac_mult.tdf                   ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/alt_mac_mult.tdf             ;         ;
-; lpm_mult.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_mult.inc                 ;         ;
-; db/mac_mult_72h1.tdf               ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Nios2_Integration/synthesis_gemm_8x8/db/mac_mult_72h1.tdf   ;         ;
-; db/mult_19o.tdf                    ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Nios2_Integration/synthesis_gemm_8x8/db/mult_19o.tdf        ;         ;
-; alt_mac_out.tdf                    ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/alt_mac_out.tdf              ;         ;
-; alt_zaccum.inc                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/alt_zaccum.inc               ;         ;
-; db/mac_out_cn82.tdf                ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Nios2_Integration/synthesis_gemm_8x8/db/mac_out_cn82.tdf    ;         ;
-+------------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------+---------+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                      ;
++------------------------------------+-----------------+------------------------------+-----------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path   ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                                ; Library ;
++------------------------------------+-----------------+------------------------------+-----------------------------------------------------------------------------+---------+
+; ../RTL/pe_gemm.sv                  ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/pe_gemm.sv                            ;         ;
+; ../RTL/systolic_skew_unit.sv       ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/systolic_skew_unit.sv                 ;         ;
+; ../RTL/systolic_array_core.sv      ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/systolic_array_core.sv                ;         ;
+; ../RTL/quantize_relu_unit.sv       ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/quantize_relu_unit.sv                 ;         ;
+; ../RTL/matrix_buffer_a.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/matrix_buffer_a.sv                    ;         ;
+; ../RTL/matrix_buffer_b.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/matrix_buffer_b.sv                    ;         ;
+; ../RTL/matrix_buffer_c.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/matrix_buffer_c.sv                    ;         ;
+; ../RTL/gemm_controller.sv          ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/gemm_controller.sv                    ;         ;
+; ../RTL/systolic_accelerator_top.sv ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/systolic_accelerator_top.sv           ;         ;
+; ../RTL/systolic_accelerator_8x8.sv ; yes             ; User SystemVerilog HDL File  ; E:/DATN/CNN_Systolic_Architecture/RTL/systolic_accelerator_8x8.sv           ;         ;
+; altsyncram.tdf                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altsyncram.tdf                   ;         ;
+; stratix_ram_block.inc              ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/stratix_ram_block.inc            ;         ;
+; lpm_mux.inc                        ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_mux.inc                      ;         ;
+; lpm_decode.inc                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_decode.inc                   ;         ;
+; aglobal130.inc                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/aglobal130.inc                   ;         ;
+; a_rdenreg.inc                      ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/a_rdenreg.inc                    ;         ;
+; altrom.inc                         ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altrom.inc                       ;         ;
+; altram.inc                         ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altram.inc                       ;         ;
+; altdpram.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altdpram.inc                     ;         ;
+; db/altsyncram_iog1.tdf             ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/db/altsyncram_iog1.tdf ;         ;
+; lpm_mult.tdf                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_mult.tdf                     ;         ;
+; lpm_add_sub.inc                    ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_add_sub.inc                  ;         ;
+; multcore.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/multcore.inc                     ;         ;
+; bypassff.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/bypassff.inc                     ;         ;
+; altshift.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/altshift.inc                     ;         ;
+; db/mult_lus.tdf                    ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/db/mult_lus.tdf        ;         ;
+; alt_mac_mult.tdf                   ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/alt_mac_mult.tdf                 ;         ;
+; lpm_mult.inc                       ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/lpm_mult.inc                     ;         ;
+; db/mac_mult_72h1.tdf               ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/db/mac_mult_72h1.tdf   ;         ;
+; db/mult_19o.tdf                    ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/db/mult_19o.tdf        ;         ;
+; alt_mac_out.tdf                    ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/alt_mac_out.tdf                  ;         ;
+; alt_zaccum.inc                     ; yes             ; Megafunction                 ; c:/13.0sp1/quartus/libraries/megafunctions/alt_zaccum.inc                   ;         ;
+; db/mac_out_cn82.tdf                ; yes             ; Auto-Generated Megafunction  ; E:/DATN/CNN_Systolic_Architecture/synthesis_gemm_8x8/db/mac_out_cn82.tdf    ;         ;
++------------------------------------+-----------------+------------------------------+-----------------------------------------------------------------------------+---------+
 
 
 +------------------------------------------------------+
@@ -6578,7 +6578,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:34     ;
+; Top            ; 00:00:40     ;
 +----------------+--------------+
 
 
@@ -6601,31 +6601,31 @@ Info: Running Quartus II 64-Bit Analysis & Synthesis
     Info: programming logic devices manufactured by Altera and sold by 
     Info: Altera or its authorized distributors.  Please refer to the 
     Info: applicable agreement for further details.
-    Info: Processing started: Mon Oct 12 09:23:59 2026
+    Info: Processing started: Mon Oct 12 10:45:32 2026
 Info: Command: quartus_map systolic_accelerator_8x8
 Warning (20028): Parallel compilation is not licensed and has been disabled
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/pe_gemm.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/pe_gemm.sv
     Info (12023): Found entity 1: pe_gemm
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/systolic_skew_unit.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/systolic_skew_unit.sv
     Info (12023): Found entity 1: systolic_skew_unit
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/systolic_array_core.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/systolic_array_core.sv
     Info (12023): Found entity 1: systolic_array_core
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/systolic_array_gemm.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/systolic_array_gemm.sv
     Info (12023): Found entity 1: systolic_array_gemm
 Warning (10259): Verilog HDL error at quantize_relu_unit.sv(49): constant value overflow
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/quantize_relu_unit.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/quantize_relu_unit.sv
     Info (12023): Found entity 1: quantize_relu_unit
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/matrix_buffer_a.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/matrix_buffer_a.sv
     Info (12023): Found entity 1: matrix_buffer_a
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/matrix_buffer_b.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/matrix_buffer_b.sv
     Info (12023): Found entity 1: matrix_buffer_b
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/matrix_buffer_c.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/matrix_buffer_c.sv
     Info (12023): Found entity 1: matrix_buffer_c
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/gemm_controller.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/gemm_controller.sv
     Info (12023): Found entity 1: gemm_controller
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/systolic_accelerator_top.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/systolic_accelerator_top.sv
     Info (12023): Found entity 1: systolic_accelerator_top
-Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_nios2_integration/rtl/systolic_accelerator_8x8.sv
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/systolic_accelerator_8x8.sv
     Info (12023): Found entity 1: systolic_accelerator_8x8
 Info (12127): Elaborating entity "systolic_accelerator_8x8" for the top level hierarchy
 Info (12128): Elaborating entity "systolic_accelerator_top" for hierarchy "systolic_accelerator_top:u_core"
@@ -6879,9 +6879,9 @@ Info (21057): Implemented 17998 device resources after synthesis - the final res
     Info (21064): Implemented 8 RAM segments
     Info (21062): Implemented 52 DSP elements
 Info: Quartus II 64-Bit Analysis & Synthesis was successful. 0 errors, 5 warnings
-    Info: Peak virtual memory: 4673 megabytes
-    Info: Processing ended: Mon Oct 12 09:24:38 2026
-    Info: Elapsed time: 00:00:39
-    Info: Total CPU time (on all processors): 00:00:44
+    Info: Peak virtual memory: 4679 megabytes
+    Info: Processing ended: Mon Oct 12 10:46:17 2026
+    Info: Elapsed time: 00:00:45
+    Info: Total CPU time (on all processors): 00:01:43
 
 
