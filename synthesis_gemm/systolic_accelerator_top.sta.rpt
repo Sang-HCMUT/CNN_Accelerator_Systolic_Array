@@ -1,5 +1,5 @@
 TimeQuest Timing Analyzer report for systolic_accelerator_top
-Mon Oct 12 10:45:47 2026
+Mon Oct 12 13:24:53 2026
 Quartus II 64-Bit Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
 
 
@@ -104,7 +104,7 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +------------------------------+--------+--------------------------+
 ; SDC File Path                ; Status ; Read at                  ;
 +------------------------------+--------+--------------------------+
-; systolic_accelerator_top.sdc ; OK     ; Mon Oct 12 10:45:47 2026 ;
+; systolic_accelerator_top.sdc ; OK     ; Mon Oct 12 13:24:53 2026 ;
 +------------------------------+--------+--------------------------+
 
 
@@ -2604,7 +2604,7 @@ Info: Running Quartus II 64-Bit TimeQuest Timing Analyzer
     Info: programming logic devices manufactured by Altera and sold by 
     Info: Altera or its authorized distributors.  Please refer to the 
     Info: applicable agreement for further details.
-    Info: Processing started: Mon Oct 12 10:45:46 2026
+    Info: Processing started: Mon Oct 12 13:24:52 2026
 Info: Command: quartus_sta systolic_accelerator_top
 Info: qsta_default_script.tcl version: #1
 Warning (20028): Parallel compilation is not licensed and has been disabled
@@ -2647,8 +2647,8 @@ Info (332001): The selected device family is not supported by the report_metasta
 Info (332102): Design is not fully constrained for setup requirements
 Info (332102): Design is not fully constrained for hold requirements
 Info: Quartus II 64-Bit TimeQuest Timing Analyzer was successful. 0 errors, 3 warnings
-    Info: Peak virtual memory: 4614 megabytes
-    Info: Processing ended: Mon Oct 12 10:45:47 2026
+    Info: Peak virtual memory: 4611 megabytes
+    Info: Processing ended: Mon Oct 12 13:24:53 2026
     Info: Elapsed time: 00:00:01
     Info: Total CPU time (on all processors): 00:00:02
 

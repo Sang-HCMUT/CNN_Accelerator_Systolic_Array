@@ -14,7 +14,8 @@ vlog -sv -work work ../RTL/quantize_relu_unit.sv
 vlog -sv -work work ../RTL/systolic_accelerator_top.sv
 vlog -sv -work work ../RTL/systolic_gemm_axi_lite.sv
 
-# Compile SoC Bus, Memory, UART & CPU
+# Compile SoC Bus, Memory, UART, Decoders & CPU
+vlog -sv -work work ../RTL/seven_seg_decoder.sv
 vlog -sv -work work ../RTL/axi_ram.sv
 vlog -sv -work work ../RTL/axi_uart.sv
 vlog -sv -work work ../RTL/axi_interconnect.sv

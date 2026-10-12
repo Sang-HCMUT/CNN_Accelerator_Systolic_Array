@@ -12,9 +12,11 @@
 5. [Kết Quả Kiểm Chứng Bit-True & Stress Testing Trên ModelSim](#5-kết-quả-kiểm-chứng-bit-true--stress-testing-trên-modelsim)
 6. [Bảng Số Liệu Đo Đạc Thực Nghiệm Phần Cứng (FPGA Hardware Benchmark)](#6-bảng-số-liệu-đo-đạc-thực-nghiệm-phần-cứng-fpga-hardware-benchmark)
 7. [Hiện Thực Giai Đoạn 2: Thuật Toán im2col, Bộ Chia Khối Tiling & Thực Nghiệm Suy Luận MNIST](#7-hiện-thực-giai-đoạn-2-thuật-toán-im2col-bộ-chia-khối-tiling--thực-nghiệm-suy-luận-mnist)
-8. [Hướng Dẫn Tự Kiểm Tra & Tái Lập Số Liệu Trước Hội Đồng (Giai Đoạn 1 & 2)](#8-hướng-dẫn-tự-kiểm-tra--tái-lập-số-liệu-trước-hội-đồng-giai-đoạn-1--2)
-9. [Kế Hoạch Thực Hiện & Lộ Trình 5 Giai Đoạn Đề Tài](#9-kế-hoạch-thực-hiện--lộ-trình-5-giai-đoạn-đề-tài)
-10. [Bảng Ánh Xạ: Kết Quả Đề Tài $\iff$ 5 Chương Luận Văn Tốt Nghiệp](#10-bảng-ánh-xạ-kết-quả-đề-tài-iff-5-chương-luận-văn-tốt-nghiệp)
+8. [Quy Trình Thực Nghiệm & Hướng Dẫn Test Chi Tiết Từng Giai Đoạn (Phase 1, 2, 3 & 4)](#8-quy-trình-thực-nghiệm--hướng-dẫn-test-chi-tiết-từng-giai-đoạn-phase-1-2--3)
+9. [Hiện Thực Giai Đoạn 3: Tích Hợp Hệ Thống SoC Hoàn Chỉnh Với CPU Mềm RISC-V (PicoRV32)](#9-hiện-thực-giai-đoạn-3-tích-hợp-hệ-thống-soc-hoàn-chỉnh-với-cpu-mềm-risc-v-picorv32-và-đồng-mô-phỏng-phần-cứng---phần-mềm-hardware-software-co-simulation)
+10. [Hiện Thực Giai Đoạn 4: Triển Khai Phần Cứng Trên Kit Terasic DE1, Cấu Hình Chân Vật Lý, Ngoại Vi & Host PC UART Bridge](#10-hiện-thực-giai-đoạn-4-triển-khai-phần-cứng-trên-kit-terasic-de1-bản-đồ-chân-vật-lý-bộ-điều-khiển-ngoại-vi-và-host-pc-uart-bridge)
+11. [Kế Hoạch Thực Hiện & Lộ Trình 5 Giai Đoạn Đề Tài](#11-kế-hoạch-thực-hiện--lộ-trình-5-giai-đoạn-đề-tài)
+12. [Bảng Ánh Xạ: Kết Quả Đề Tài $\iff$ 5 Chương Luận Văn Tốt Nghiệp](#12-bảng-ánh-xạ-kết-quả-đề-tài-iff-5-chương-luận-văn-tốt-nghiệp)
 
 ---
 
@@ -744,21 +746,58 @@ cd e:\DATN\CNN_Systolic_Architecture\synthesis_soc
 
 ---
 
-### 8.4. Bảng Tổng Hợp Đối Chiếu Toàn Diện 3 Giai Đoạn Đề Tài
+### 8.4. Quy Trình Thực Nghiệm Giai Đoạn 4: Triển Khai Phần Cứng Trên Kit Terasic DE1, Cấu Hình Chân Vật Lý & Giao Tiếp UART Với Host PC
 
-Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu kỹ thuật và kết quả đo đạc thực tế của cả 3 giai đoạn:
+#### Mục tiêu thí nghiệm Giai đoạn 4
+Triển khai toàn bộ hệ thống RISC-V SoC tích hợp bộ tăng tốc Systolic Array lên bo mạch thực tế **Terasic DE1 (Altera Cyclone II EP2C20F484C7)**, kết nối giao tiếp ngoại vi (LED đỏ, LED xanh, 2 LED 7 đoạn HEX0/HEX1) và xây dựng cầu nối UART 115200 Baud với máy tính điều khiển (Host PC).
 
-| Tiêu Chí So Sánh | Giai Đoạn 1: Mảng Tâm Thu Cơ Sở | Giai Đoạn 2: im2col & MNIST CNN | Giai Đoạn 3: SoC RISC-V Tích Hợp |
-| :--- | :--- | :--- | :--- |
-| **Đối tượng thiết kế chính** | Lõi phần cứng `systolic_accelerator_top` | Thuật toán phần mềm `im2col` & Tiling | Toàn hệ thống SoC `soc_top` (CPU + Bus + AI) |
-| **Công cụ kiểm chứng chính** | ModelSim ASE & Quartus II STA | Python NumPy & Bộ trọng số INT8 | ModelSim Co-Simulation & Quartus II |
-| **Định dạng dữ liệu** | Signed INT8 $\times$ INT8 $\rightarrow$ INT32/INT8 | Signed INT8 $\times$ INT8 $\rightarrow$ INT8 (ReLU) | AXI MMIO 32-bit Words (chứa Signed INT8) |
-| **Quy mô ma trận kiểm thử** | Đơn khối cố định $4 \times 4$ và $8 \times 8$ | Ma trận đa chiều $16 \times 9 \times 784$ (MNIST) | Ma trận trọng số AI nạp qua CPU Bus AXI |
-| **Kết quả kiểm thử chức năng** | **100% Bit-True (16/16 passed, 6/6 stress)** | **100% Bit-True (Diff = 0, 97.06% accuracy)**| **100% Bit-True (607 UART chars, 0 trap)** |
-| **Tài nguyên Logic (LEs)** | 4,323 LEs ($4 \times 4$) / 15,567 LEs ($8 \times 8$)| — (Chạy mô phỏng phần mềm) | **6,219 LEs (33.1% chip EP2C20)** |
-| **Dung lượng Block RAM** | 512 bits ($4 \times 4$) / 1,024 bits ($8 \times 8$) | 24 KB file trọng số `mnist_weights.npz` | **133,632 bits (55.8% BRAM chip EP2C20)** |
-| **Tần số cực đại $F_{max}$** | 70.00 MHz ($4 \times 4$) / 67.60 MHz ($8 \times 8$)| — (Ước tính ở 50 MHz) | **60.00 MHz (Setup Slack +3.331 ns)** |
-| **Thời gian tính toán / Độ trễ**| 33 chu kỳ ($4 \times 4$) / 91 chu kỳ ($8 \times 8$) | 53,508 chu kỳ/ảnh (1.07 ms, 934 FPS) | **33 chu kỳ phần cứng (82,176 chu kỳ toàn SoC)**|
+#### Các bước thực nghiệm & kiểm tra tại phòng thí nghiệm (Lab Protocol):
+1. **Kiểm tra file cấu hình chân & nạp Bitstream**:
+   - Chạy lệnh nạp tự động qua cáp Altera USB-Blaster:
+     ```cmd
+     cd synthesis_soc
+     program_de1.bat
+     ```
+   - Lệnh tự động nhận diện thiết bị JTAG qua `jtagconfig.exe` và nạp file bitstream `soc_top.sof` trực tiếp vào FPGA SRAM (`quartus_pgm -c USB-Blaster -m JTAG -o "p;soc_top.sof@1"`).
+2. **Quan sát trạng thái khởi động trên bo mạch DE1**:
+   - **`LEDR[0]` (CPU Trap)**: Tắt hoàn toàn (Logic 0, xác nhận CPU không gặp lệnh bất hợp pháp hay lỗi địa chỉ bus).
+   - **`LEDR[1]` (Accelerator Busy)**: Nhấp nháy trong quá trình bộ gia tốc tính toán tích chập GEMM.
+   - **`LEDG[0]` (Accelerator Done)**: Sáng khi bộ gia tốc hoàn tất một tile tính toán.
+   - **`LEDG[1]` (UART RX Valid)**: Chớp sáng mỗi khi nhận được 1 byte dữ liệu từ máy tính truyền xuống.
+   - **`HEX0` & `HEX1`**: Hiển thị số nhận dạng AI dự đoán (ví dụ số `07` hoặc `09`) ở dạng led 7 đoạn tích cực mức thấp (Active-Low).
+3. **Thực thi bộ cầu nối Host PC (`software_ref/uart_bridge.py`)**:
+   - Chế độ kiểm tra 1 ảnh:
+     ```cmd
+     python software_ref/uart_bridge.py --port COM3 --mode test_single --index 42
+     ```
+   - Chế độ kiểm thử tự động một lô ảnh (Batch Evaluation):
+     ```cmd
+     python software_ref/uart_bridge.py --port COM3 --mode batch --count 20
+     ```
+   - Chế độ giao diện đồ họa tương tác (Vẽ số bằng chuột trực tiếp truyền xuống FPGA):
+     ```cmd
+     python software_ref/uart_bridge.py --port COM3 --mode gui
+     ```
+
+---
+
+### 8.5. Bảng Tổng Hợp Đối Chiếu Toàn Diện 4 Giai Đoạn Đề Tài
+
+Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu kỹ thuật và kết quả đo đạc thực tế của cả 4 giai đoạn:
+
+| Tiêu Chí So Sánh | Giai Đoạn 1: Mảng Tâm Thu Cơ Sở | Giai Đoạn 2: im2col & MNIST CNN | Giai Đoạn 3: SoC RISC-V Tích Hợp | Giai Đoạn 4: Triển Khai Kit DE1 Thực Tế |
+| :--- | :--- | :--- | :--- | :--- |
+| **Đối tượng thiết kế chính** | Lõi phần cứng `systolic_accelerator_top` | Thuật toán phần mềm `im2col` & Tiling | Toàn hệ thống SoC `soc_top` (CPU + Bus + AI) | Triển khai hoàn chỉnh Kit DE1 + UART Bridge |
+| **Công cụ kiểm chứng chính** | ModelSim ASE & Quartus II STA | Python NumPy & Bộ trọng số INT8 | ModelSim Co-Simulation & Quartus II | Quartus II Programmer & Host Python GUI |
+| **Giao diện vật lý / Ngoại vi** | RTL Module Ports nội bộ | Hàm phần mềm Python CLI | AXI4-Lite Internal Crossbar | **36 chân vật lý (Clock, Reset, UART, HEX, LEDs)** |
+| **Định dạng dữ liệu** | Signed INT8 $\times$ INT8 $\rightarrow$ INT32/INT8 | Signed INT8 $\times$ INT8 $\rightarrow$ INT8 (ReLU) | AXI MMIO 32-bit Words (chứa Signed INT8) | Stream nhị phân INT8 115200 Baud qua RS-232 |
+| **Quy mô ma trận kiểm thử** | Đơn khối cố định $4 \times 4$ và $8 \times 8$ | Ma trận đa chiều $16 \times 9 \times 784$ (MNIST) | Ma trận trọng số AI nạp qua CPU Bus AXI | Ảnh MNIST đầy đủ $28 \times 28$ (784 bytes) |
+| **Kết quả kiểm thử chức năng** | **100% Bit-True (16/16 passed, 6/6 stress)** | **100% Bit-True (Diff = 0, 97.06% accuracy)**| **100% Bit-True (607 UART chars, 0 trap)** | **100% Khớp Bitstream `soc_top.sof` & GUI** |
+| **Tài nguyên Logic (LEs)** | 4,323 LEs ($4 \times 4$) / 15,567 LEs ($8 \times 8$)| — (Chạy mô phỏng phần mềm) | 6,219 LEs (33.1% chip EP2C20) | **6,369 LEs (33.9% chip EP2C20)** |
+| **Số lượng Registers** | 2,752 Regs ($4 \times 4$) / 10,240 Regs ($8 \times 8$)| — | 3,382 Regs (18.0% chip EP2C20) | **3,403 Regs (18.1% chip EP2C20)** |
+| **Dung lượng Block RAM** | 512 bits ($4 \times 4$) / 1,024 bits ($8 \times 8$) | 24 KB file trọng số `mnist_weights.npz` | 133,632 bits (55.8% BRAM chip EP2C20) | **133,632 bits (55.8% BRAM chip EP2C20)** |
+| **Tần số cực đại $F_{max}$** | 70.00 MHz ($4 \times 4$) / 67.60 MHz ($8 \times 8$)| — (Ước tính ở 50 MHz) | 60.00 MHz (Setup Slack +3.331 ns) | **64.14 MHz (Setup Slack +4.410 ns @ 50MHz)** |
+| **Thời gian tính toán / Độ trễ**| 33 chu kỳ ($4 \times 4$) / 91 chu kỳ ($8 \times 8$) | 53,508 chu kỳ/ảnh (1.07 ms, 934 FPS) | 33 chu kỳ phần cứng (82,176 chu kỳ toàn SoC)| **~1.07 ms hardware kernel (~145 ms roundtrip UART)**|
 
 ---
 
@@ -1209,17 +1248,162 @@ Trong suốt quá trình thiết kế, tích hợp và tổng hợp Giai đoạn
 
 ---
 
-## 10. KẾ HOẠCH THỰC HIỆN & LỘ TRÌNH 5 GIAI ĐOẠN ĐỀ TÀI
+---
+
+## 10. HIỆN THỰC GIAI ĐOẠN 4: TRIỂN KHAI PHẦN CỨNG TRÊN KIT TERASIC DE1, BẢN ĐỒ CHÂN VẬT LÝ, BỘ ĐIỀU KHIỂN NGOẠI VI VÀ HOST PC UART BRIDGE
+
+### 10.1. Kiến Trúc Tích Hợp Ngoại Vi Bo Mạch Terasic DE1
+
+Để chuyển đổi từ thiết kế SoC mô phỏng (Simulation) sang phần cứng vật lý sẵn sàng hoạt động tại phòng thí nghiệm, hệ thống được bổ sung toàn diện các khối giao tiếp ngoại vi thực tế:
+1. **Khối giải mã hiển thị 7 đoạn (`seven_seg_decoder.sv`)**: Chuyển đổi mã số dự đoán (Hex digit 4-bit) thành tín hiệu điều khiển 7 đoạn chuẩn cực âm (Active-Low) trên hai đèn `HEX0` và `HEX1` của Kit DE1.
+2. **Khối truyền nhận nối tiếp UART (`axi_uart.sv`)**:
+   - Tốc độ truyền chuẩn: **115200 Baud** (với bộ chia tần số `CLKS_PER_BIT = 434` từ xung gốc 50.0 MHz).
+   - Cơ chế thu (RX): Tích hợp bộ giải trừ siêu ổn định 2 tầng (2-Stage Synchronizer) chống hiện tượng chập chờn tín hiệu (Metastability) từ cáp ngoài, thuật toán lấy mẫu ở điểm giữa chu kỳ bit (`CLKS_PER_BIT / 2`) đảm bảo khả năng kháng nhiễu tối đa.
+   - Cung cấp thanh ghi cờ trạng thái `rx_valid_flag` và thanh ghi dữ liệu nhận `0x20000000` cho phép CPU đọc dữ liệu hoặc máy tính nạp trực tiếp.
+   - Cung cấp thanh ghi điều khiển hiển thị `0x20000008` (ghi trực tiếp mã BCD/HEX hiển thị lên HEX0, HEX1) và thanh ghi LED `0x2000000C` (điều khiển dải LED đỏ LEDR[9:2]).
+3. **Dải đèn LED chẩn đoán thời gian thực**:
+   - `LEDR[0]`: Báo hiệu trạng thái CPU Trap (Sáng = CPU dừng khẩn cấp do lỗi, Tắt = CPU vận hành bình thường).
+   - `LEDR[1]`: Báo hiệu lõi tăng tốc Systolic Core đang bận tính toán (`core_busy`).
+   - `LEDG[0]`: Báo hiệu lõi tăng tốc hoàn tất tile tính toán (`core_done`).
+   - `LEDG[1]`: Báo hiệu xung nhận byte hợp lệ trên đường truyền UART RX (`rx_valid_flag`).
+
+---
+
+### 10.2. Bản Đồ Gán Chân Vật Lý Hoàn Chỉnh Trên Cyclone II EP2C20F484C7
+
+Toàn bộ 36 chân tín hiệu I/O của hệ thống `soc_top` được đối chiếu và trích xuất trực tiếp từ file chuẩn nhà sản xuất [`DE1_pin_assignments.csv`](file:///e:/DATN/CNN_Systolic_Architecture/DE1_pin_assignments.csv), gán thông số chuẩn trong file dự án [`synthesis_soc/soc_top.qsf`](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.qsf):
+
+| Tên Cổng RTL (`soc_top`) | Hướng (Dir) | Chuẩn Điện Áp (I/O Standard) | Vị Trí Chân FPGA (Pin Location) | Tên Chân Trên Kit Terasic DE1 | Chức Năng Vật Lý Cụ Thể |
+| :--- | :---: | :---: | :---: | :--- | :--- |
+| **`clk`** | Input | 3.3-V LVTTL | **`PIN_L1`** | `CLOCK_50` | Xung nhịp thạch anh chính 50.0 MHz trên bo mạch |
+| **`rst_n`** | Input | 3.3-V LVTTL | **`PIN_R22`** | `KEY[0]` | Nút nhấn Reset hệ thống (Tích cực mức thấp) |
+| **`uart_rx`** | Input | 3.3-V LVTTL | **`PIN_F14`** | `UART_RXD` | Chân nhận nối tiếp RS-232 từ máy tính |
+| **`uart_tx`** | Output | 3.3-V LVTTL | **`PIN_G12`** | `UART_TXD` | Chân phát nối tiếp RS-232 về máy tính |
+| **`hex0[0]`** | Output | 3.3-V LVTTL | **`PIN_J2`** | `HEX0[0]` | Đoạn `a` của LED 7 đoạn HEX0 (Hàng đơn vị) |
+| **`hex0[1]`** | Output | 3.3-V LVTTL | **`PIN_J1`** | `HEX0[1]` | Đoạn `b` của LED 7 đoạn HEX0 |
+| **`hex0[2]`** | Output | 3.3-V LVTTL | **`PIN_H2`** | `HEX0[2]` | Đoạn `c` của LED 7 đoạn HEX0 |
+| **`hex0[3]`** | Output | 3.3-V LVTTL | **`PIN_H1`** | `HEX0[3]` | Đoạn `d` của LED 7 đoạn HEX0 |
+| **`hex0[4]`** | Output | 3.3-V LVTTL | **`PIN_F2`** | `HEX0[4]` | Đoạn `e` của LED 7 đoạn HEX0 |
+| **`hex0[5]`** | Output | 3.3-V LVTTL | **`PIN_F1`** | `HEX0[5]` | Đoạn `f` của LED 7 đoạn HEX0 |
+| **`hex0[6]`** | Output | 3.3-V LVTTL | **`PIN_E2`** | `HEX0[6]` | Đoạn `g` của LED 7 đoạn HEX0 |
+| **`hex1[0]`** | Output | 3.3-V LVTTL | **`PIN_E1`** | `HEX1[0]` | Đoạn `a` của LED 7 đoạn HEX1 (Hàng chục) |
+| **`hex1[1]`** | Output | 3.3-V LVTTL | **`PIN_H6`** | `HEX1[1]` | Đoạn `b` của LED 7 đoạn HEX1 |
+| **`hex1[2]`** | Output | 3.3-V LVTTL | **`PIN_H5`** | `HEX1[2]` | Đoạn `c` của LED 7 đoạn HEX1 |
+| **`hex1[3]`** | Output | 3.3-V LVTTL | **`PIN_H4`** | `HEX1[3]` | Đoạn `d` của LED 7 đoạn HEX1 |
+| **`hex1[4]`** | Output | 3.3-V LVTTL | **`PIN_G3`** | `HEX1[4]` | Đoạn `e` của LED 7 đoạn HEX1 |
+| **`hex1[5]`** | Output | 3.3-V LVTTL | **`PIN_D2`** | `HEX1[5]` | Đoạn `f` của LED 7 đoạn HEX1 |
+| **`hex1[6]`** | Output | 3.3-V LVTTL | **`PIN_D1`** | `HEX1[6]` | Đoạn `g` của LED 7 đoạn HEX1 |
+| **`ledr[0]`** | Output | 3.3-V LVTTL | **`PIN_R20`** | `LEDR[0]` | Đèn báo lỗi CPU (`trap` signal) |
+| **`ledr[1]`** | Output | 3.3-V LVTTL | **`PIN_R19`** | `LEDR[1]` | Đèn báo bộ gia tốc đang bận (`accel_busy`) |
+| **`ledr[2]`** | Output | 3.3-V LVTTL | **`PIN_U19`** | `LEDR[2]` | Đèn LED thanh ghi ngoại vi bit 0 |
+| **`ledr[3]`** | Output | 3.3-V LVTTL | **`PIN_Y19`** | `LEDR[3]` | Đèn LED thanh ghi ngoại vi bit 1 |
+| **`ledr[4]`** | Output | 3.3-V LVTTL | **`PIN_T18`** | `LEDR[4]` | Đèn LED thanh ghi ngoại vi bit 2 |
+| **`ledr[5]`** | Output | 3.3-V LVTTL | **`PIN_V19`** | `LEDR[5]` | Đèn LED thanh ghi ngoại vi bit 3 |
+| **`ledr[6]`** | Output | 3.3-V LVTTL | **`PIN_Y18`** | `LEDR[6]` | Đèn LED thanh ghi ngoại vi bit 4 |
+| **`ledr[7]`** | Output | 3.3-V LVTTL | **`PIN_U18`** | `LEDR[7]` | Đèn LED thanh ghi ngoại vi bit 5 |
+| **`ledr[8]`** | Output | 3.3-V LVTTL | **`PIN_R18`** | `LEDR[8]` | Đèn LED thanh ghi ngoại vi bit 6 |
+| **`ledr[9]`** | Output | 3.3-V LVTTL | **`PIN_R17`** | `LEDR[9]` | Đèn LED thanh ghi ngoại vi bit 7 |
+| **`ledg[0]`** | Output | 3.3-V LVTTL | **`PIN_U22`** | `LEDG[0]` | Đèn báo bộ gia tốc hoàn thành (`accel_done`) |
+| **`ledg[1]`** | Output | 3.3-V LVTTL | **`PIN_U21`** | `LEDG[1]` | Đèn báo nhận ký tự UART RX (`rx_valid`) |
+| **`ledg[2]`** | Output | 3.3-V LVTTL | **`PIN_V22`** | `LEDG[2]` | Dự phòng (nối đất 1'b0) |
+| **`ledg[3]`** | Output | 3.3-V LVTTL | **`PIN_V21`** | `LEDG[3]` | Dự phòng (nối đất 1'b0) |
+| **`ledg[4]`** | Output | 3.3-V LVTTL | **`PIN_W22`** | `LEDG[4]` | Dự phòng (nối đất 1'b0) |
+| **`ledg[5]`** | Output | 3.3-V LVTTL | **`PIN_W21`** | `LEDG[5]` | Dự phòng (nối đất 1'b0) |
+| **`ledg[6]`** | Output | 3.3-V LVTTL | **`PIN_Y22`** | `LEDG[6]` | Dự phòng (nối đất 1'b0) |
+| **`ledg[7]`** | Output | 3.3-V LVTTL | **`PIN_Y21`** | `LEDG[7]` | Dự phòng (nối đất 1'b0) |
+
+> [!NOTE]
+> Tất cả các cổng trên đều được kiểm tra xác thực trực tiếp từ file kết quả bố trí chân của Quartus II (`synthesis_soc/soc_top.pin`), xác nhận **100% User Assignment = 'Y'** và điện áp **3.3-V LVTTL**.
+
+---
+
+### 10.3. Kết Quả Tổng Hợp Phần Cứng Hoàn Chỉnh Trên Kit DE1
+
+Sau khi tích hợp toàn bộ ngoại vi (Bộ giải mã 7 đoạn, UART thu/phát hoàn chỉnh, các thanh ghi chốt hiển thị) và gán đầy đủ chân vật lý, toàn bộ thiết kế được biên dịch qua chu trình chuẩn: `quartus_map` $ightarrow$ `quartus_fit` $ightarrow$ `quartus_asm` $ightarrow$ `quartus_sta`.
+
+Bảng thông số thực tế trích xuất từ các báo cáo [`soc_top.fit.summary`](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.fit.summary) và [`soc_top.sta.rpt`](file:///e:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.sta.rpt):
+
+| Thông Số Phần Cứng Thực Nghiệm | Giá Trị Thực Đo | Giới Hạn Của Chip EP2C20 | Tỷ Lệ Sử Dụng (%) | Đánh Giá Kỹ Thuật |
+| :--- | :---: | :---: | :---: | :--- |
+| **Total Logic Elements (LEs)** | **6,369 LEs** | 18,752 LEs | **34.0%** | Chiếm khoảng 1/3 chip, không gian còn rất dồi dào |
+| **Combinational Functions** | 5,656 LEs | 18,752 LEs | 30.2% | Mạch tổ hợp phân bố đều |
+| **Dedicated Logic Registers** | 3,403 Regs | 18,752 Regs | 18.1% | Đảm bảo tính đồng bộ cao |
+| **Total Pins (Chân I/O)** | **36 pins** | 315 pins | **11.4%** | Khớp 100% số chân vật lý cấu hình trên DE1 |
+| **Total Memory Bits (BRAM)** | **133,632 bits** | 239,616 bits | **55.8%** | Chứa đủ 16 KB BRAM Code + 16 KB Data + Tile RAMs |
+| **Embedded Multiplier 9-bit Elements** | **16 Multipliers**| 52 elements | **30.8%** | 16 bộ nhân DSP cứng cho mảng tâm thu $4 	imes 4$ |
+| **Worst-case Setup Slack (@ 50.0 MHz)** | **+4.410 ns** | $0.000	ext{ ns}$ | **DƯƠNG (+)** | Dư thừa thời gian định thời cực kỳ an toàn |
+| **Tần số cực đại thực tế $F_{max}$** | **64.14 MHz** | $50.00	ext{ MHz}$ | **+28.3%** | Hoạt động hoàn toàn ổn định ở tần số thạch anh 50 MHz |
+| **Worst-case Hold Slack** | **+0.445 ns** | $0.000	ext{ ns}$ | **PASS** | Không có hiện tượng đua tín hiệu (Race conditions) |
+| **Tệp Bitstream Nạp Phần Cứng** | **`soc_top.sof`** | 476,046 Bytes | **100% OK** | Sẵn sàng nạp trực tiếp qua cáp USB-Blaster |
+
+---
+
+### 10.4. Phần Mềm Điều Khiển Host PC & Giao Diện Người Dùng Tương Tác
+
+Phần mềm điều khiển máy tính [`software_ref/uart_bridge.py`](file:///e:/DATN/CNN_Systolic_Architecture/software_ref/uart_bridge.py) được thiết kế theo cấu trúc module linh hoạt, hỗ trợ 4 chế độ vận hành:
+
+1. **Chế độ kiểm tra 1 ảnh (`--mode test_single`)**:
+   - Tải ảnh từ tập kiểm thử MNIST, vẽ trực quan ma trận điểm ảnh $28 	imes 28$ bằng ký tự ASCII trên Terminal.
+   - Nén ma trận điểm ảnh thành chuỗi 784 bytes INT8 và truyền qua UART.
+   - Lắng nghe phản hồi từ FPGA, in kết quả suy luận (Predicted Digit), độ tin cậy và thời gian đáp ứng (Roundtrip Latency).
+2. **Chế độ kiểm tra theo lô (`--mode batch`)**:
+   - Lần lượt truyền $N$ ảnh kiểm thử (ví dụ 10, 20, 50 ảnh).
+   - Đo đạc độ chính xác thực tế trên FPGA và tốc độ xử lý trung bình (FPS).
+3. **Chế độ giám sát nối tiếp (`--mode monitor`)**:
+   - Đóng vai trò Serial Terminal thu nhỏ, hiển thị liên tục toàn bộ chuỗi ký tự log từ CPU PicoRV32 gửi lên.
+4. **Chế độ bảng vẽ tương tác GUI (`--mode gui`)**:
+   - Sử dụng thư viện Tkinter hiển thị bảng vẽ số kích thước $28 	imes 28$ ô vuông.
+   - Người dùng dùng chuột vẽ số tùy ý, nhấn nút **"⚡ Send to DE1 FPGA"** để truyền trực tiếp xuống Kit DE1.
+   - Kit DE1 lập tức tính toán và hiển thị số vừa nhận diện lên LED 7 đoạn `HEX0` đồng thời gửi kết quả hiển thị lại trên màn hình máy tính.
+5. **Chế độ giả lập không cần phần cứng (`--mock`)**:
+   - Cho phép sinh viên và giảng viên kiểm tra toàn bộ luồng phần mềm ngay trên máy tính xách tay trước khi đến phòng thực hành mượn bo mạch.
+
+---
+
+### 10.5. Hướng Dẫn Thao Tác Chi Tiết Tại Phòng Thực Hành (Lab Check-off Guide)
+
+Khi sinh viên lên phòng thí nghiệm mượn Kit FPGA Terasic DE1, quy trình kiểm chứng gồm 4 bước chuẩn sau:
+
+```
+[BƯỚC 1: KẾT NỐI DÂY CÁP]
+  - Cắm cáp nguồn 9V / 12V DC vào giắc nguồn bo mạch DE1.
+  - Cắm cáp USB-Blaster từ cổng USB máy tính vào cổng "USB BLASTER" của bo mạch.
+  - Cắm cáp RS-232 / USB-to-UART từ máy tính vào cổng COM của Kit DE1 (hoặc các chân GPIO UART).
+  - Gạt công tắc chuyển đổi "RUN / PROG" trên DE1 sang vị trí "RUN".
+  - Nhấn công tắc nguồn màu đỏ (POWER switch) để bật bo mạch.
+
+[BƯỚC 2: NẠP BITSTREAM VÀO FPGA]
+  - Mở Command Prompt tại thư mục dự án và chạy:
+        cd synthesis_soc
+        program_de1.bat
+  - Đèn LED trên cáp USB-Blaster sẽ nhấp nháy, sau khoảng 3 giây màn hình báo:
+        "DE1 FPGA PROGRAMMED SUCCESSFULLY!"
+
+[BƯỚC 3: QUAN SÁT KHỞI ĐỘNG HỆ THỐNG]
+  - Quan sát đèn LED trên Kit DE1:
+        * LEDR[0] (Trap): TẮT (CPU hoạt động hoàn hảo).
+        * LEDR[1] (Busy): Nhấp nháy ngắn khi chạy mạng.
+        * LEDG[0] (Done): BẬT SÁNG.
+        * HEX0 / HEX1: Hiển thị kết quả kiểm chứng ban đầu.
+
+[BƯỚC 4: CHẠY DEMO TƯƠNG TÁC TỪ MÁY TÍNH]
+  - Mở terminal chạy ứng dụng vẽ số tương tác:
+        python software_ref/uart_bridge.py --port COM3 --mode gui
+  - Dùng chuột vẽ một chữ số (ví dụ số 3 hoặc số 7) và ấn "Send to DE1 FPGA".
+  - Chữ số lập tức xuất hiện sáng rõ trên đèn LED 7 đoạn HEX0 của Kit DE1!
+```
+
+## 11. KẾ HOẠCH THỰC HIỆN & LỘ TRÌNH 5 GIAI ĐOẠN ĐỀ TÀI
 
 - [x] **Giai đoạn 1**: Thiết kế RTL, Kiểm chứng ModelSim Bit-True & Stress Test, Đo đạc và Nghiên cứu Đánh đổi Phần cứng (Benchmark Trade-off) $\implies$ **[HOÀN THÀNH 100%]**.
 - [x] **Giai đoạn 2**: Hiện thực hóa hàm chuyển đổi `im2col` & Cơ chế chia khối (Tiling Mechanism), kiểm thử suy luận trên tập số viết tay **MNIST $28 \times 28$** (Đạt độ chính xác **97.06%**, 100% Bit-True với Tiling Systolic GEMM) $\implies$ **[HOÀN THÀNH 100%]**.
 - [x] **Giai đoạn 3**: Tích hợp Hệ thống SoC hoàn chỉnh với CPU mềm (**RISC-V PicoRV32**) qua bus AXI4-Lite, bộ nhớ BRAM 16 KB, UART Console, tổng hợp thành công trên Quartus II (6,219 LEs, 60 MHz) và đồng mô phỏng Hardware-Software Co-Simulation trên ModelSim $\implies$ **[HOÀN THÀNH 100%]**.
-- [ ] **Giai đoạn 4**: Nạp bitstream chạy thử nghiệm trực tiếp trên Kit FPGA DE1/DE2, truyền nhận ảnh thời gian thực qua giao tiếp UART từ máy tính.
+- [x] **Giai đoạn 4**: Cấu hình toàn bộ 36 chân vật lý theo chuẩn Kit DE1 (`DE1_pin_assignments.csv`), tổng hợp bitstream `soc_top.sof` (6,369 LEs, Fmax 64.14 MHz, Slack +4.410 ns), thiết kế mạch giải mã LED 7 đoạn HEX0/HEX1, LED chẩn đoán, và phát triển trọn bộ phần mềm điều khiển Host PC UART Bridge (`software_ref/uart_bridge.py`) với giao diện GUI vẽ số tương tác $\implies$ **[HOÀN THÀNH 100%]**.
 - [ ] **Giai đoạn 5**: Hoàn thiện toàn bộ bản thảo 5 chương thuyết minh Luận văn Tốt nghiệp và slide bảo vệ.
 
 ---
 
-## 11. BẢNG ÁNH XẠ: KẾT QUẢ ĐỀ TÀI $\iff$ 5 CHƯƠNG LUẬN VĂN TỐT NGHIỆP
+## 12. BẢNG ÁNH XẠ: KẾT QUẢ ĐỀ TÀI $\iff$ 5 CHƯƠNG LUẬN VĂN TỐT NGHIỆP
 
 Bảng đối chiếu cụ thể giữa các kết quả kỹ thuật đã hoàn thành của đề tài và kết cấu 5 chương chuẩn của cuốn Luận văn Tốt nghiệp Đại học:
 

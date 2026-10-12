@@ -44,7 +44,11 @@ module systolic_gemm_axi_lite #(
     output logic [C_S_AXI_DATA_WIDTH-1:0]         s_axi_rdata,
     output logic [1:0]                            s_axi_rresp,
     output logic                                  s_axi_rvalid,
-    input  logic                                  s_axi_rready
+    input  logic                                  s_axi_rready,
+
+    // Hardware Status Probes (for Board LEDs)
+    output logic                                  core_busy_out,
+    output logic                                  core_done_out
 );
 
     wire rst_n = s_axi_aresetn;
@@ -67,6 +71,9 @@ module systolic_gemm_axi_lite #(
     logic        core_start;
     logic        core_done;
     logic        core_busy;
+
+    assign core_busy_out = core_busy;
+    assign core_done_out = core_done;
 
     logic                                     core_wr_a_en;
     logic [$clog2(ARRAY_SIZE*16)-1:0]         core_wr_a_addr;

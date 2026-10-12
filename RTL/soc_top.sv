@@ -17,15 +17,19 @@ module soc_top #(
     parameter MEM_INIT_FILE = "firmware.hex",
     parameter UART_CLKS_PER_BIT = 434
 )(
-    input  logic clk,
-    input  logic rst_n,
-    output logic trap,
-    output logic uart_tx
+    input  logic       clk,
+    input  logic       rst_n,
+    input  logic       uart_rx,
+    output logic       uart_tx,
+    output logic [6:0] hex0,
+    output logic [6:0] hex1,
+    output logic [9:0] ledr,
+    output logic [7:0] ledg
 );
 
     // ========================================================================
     // Master Bus Signals (CPU -> Interconnect)
-    // ========================================================================
+    logic        trap;
     logic [31:0] cpu_axi_awaddr;
     logic [2:0]  cpu_axi_awprot;
     logic        cpu_axi_awvalid;
@@ -322,6 +326,9 @@ module soc_top #(
     // ========================================================================
     // 4. Slave 1: Systolic Array GEMM Accelerator
     // ========================================================================
+    logic accel_busy;
+    logic accel_done;
+
     systolic_gemm_axi_lite #(
         .ARRAY_SIZE         (ARRAY_SIZE),
         .DATA_WIDTH         (DATA_WIDTH),
@@ -354,18 +361,54 @@ module soc_top #(
         .s_axi_rdata   (s1_rdata),
         .s_axi_rresp   (s1_rresp),
         .s_axi_rvalid  (s1_rvalid),
-        .s_axi_rready  (s1_rready)
+        .s_axi_rready  (s1_rready),
+
+        .core_busy_out (accel_busy),
+        .core_done_out (accel_done)
     );
 
     // ========================================================================
-    // 5. Slave 2: UART / Console Output
+    // 5. Slave 2: UART / Console & Board Peripheral Controller
     // ========================================================================
+    // Hardware board interfaces
+    logic [3:0] hex_digit_0;
+    logic [3:0] hex_digit_1;
+    logic [7:0] board_leds;
+    logic       rx_valid_flag;
+
+    // 7-Segment Displays for Terasic DE1
+    seven_seg_decoder u_hex0 (
+        .digit (hex_digit_0),
+        .blank (1'b0),
+        .seg   (hex0)
+    );
+
+    seven_seg_decoder u_hex1 (
+        .digit (hex_digit_1),
+        .blank (1'b0),
+        .seg   (hex1)
+    );
+
+    // Board Status LEDs
+    assign ledr[0]   = trap;
+    assign ledr[1]   = accel_busy;
+    assign ledr[9:2] = board_leds[7:0];
+
+    assign ledg[0]   = accel_done;
+    assign ledg[1]   = rx_valid_flag;
+    assign ledg[7:2] = 6'b000000;
+
     axi_uart #(
         .CLKS_PER_BIT (UART_CLKS_PER_BIT)
     ) u_uart (
         .clk          (clk),
         .rst_n        (rst_n),
+        .uart_rx      (uart_rx),
         .uart_tx      (uart_tx),
+        .hex_digit_0  (hex_digit_0),
+        .hex_digit_1  (hex_digit_1),
+        .board_leds   (board_leds),
+        .rx_valid_flag(rx_valid_flag),
 
         .s_axi_awaddr (s2_awaddr),
         .s_axi_awprot (s2_awprot),

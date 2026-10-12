@@ -17,6 +17,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/systolic_gemm_axi_lite.sv
 set_global_assignment -name VERILOG_FILE ../RTL/picorv32.v
 set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_interconnect.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_ram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/seven_seg_decoder.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_uart.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top.sv
 set_global_assignment -name SDC_FILE soc_top.sdc
@@ -27,6 +28,94 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+
+# ============================================================================
+# Terasic DE1 Pin Assignments (from DE1_pin_assignments.csv)
+# ============================================================================
+
+# Clocks & Reset
+set_location_assignment PIN_L1 -to clk
+set_location_assignment PIN_R22 -to rst_n
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rst_n
+
+# UART RS-232 Port
+set_location_assignment PIN_F14 -to uart_rx
+set_location_assignment PIN_G12 -to uart_tx
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to uart_rx
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to uart_tx
+
+# 7-Segment Displays (Active-Low)
+set_location_assignment PIN_J2 -to hex0[0]
+set_location_assignment PIN_J1 -to hex0[1]
+set_location_assignment PIN_H2 -to hex0[2]
+set_location_assignment PIN_H1 -to hex0[3]
+set_location_assignment PIN_F2 -to hex0[4]
+set_location_assignment PIN_F1 -to hex0[5]
+set_location_assignment PIN_E2 -to hex0[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[6]
+
+set_location_assignment PIN_E1 -to hex1[0]
+set_location_assignment PIN_H6 -to hex1[1]
+set_location_assignment PIN_H5 -to hex1[2]
+set_location_assignment PIN_H4 -to hex1[3]
+set_location_assignment PIN_G3 -to hex1[4]
+set_location_assignment PIN_D2 -to hex1[5]
+set_location_assignment PIN_D1 -to hex1[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[6]
+
+# Red LEDs (Active-High)
+set_location_assignment PIN_R20 -to ledr[0]
+set_location_assignment PIN_R19 -to ledr[1]
+set_location_assignment PIN_U19 -to ledr[2]
+set_location_assignment PIN_Y19 -to ledr[3]
+set_location_assignment PIN_T18 -to ledr[4]
+set_location_assignment PIN_V19 -to ledr[5]
+set_location_assignment PIN_Y18 -to ledr[6]
+set_location_assignment PIN_U18 -to ledr[7]
+set_location_assignment PIN_R18 -to ledr[8]
+set_location_assignment PIN_R17 -to ledr[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[9]
+
+# Green LEDs (Active-High)
+set_location_assignment PIN_U22 -to ledg[0]
+set_location_assignment PIN_U21 -to ledg[1]
+set_location_assignment PIN_V22 -to ledg[2]
+set_location_assignment PIN_V21 -to ledg[3]
+set_location_assignment PIN_W22 -to ledg[4]
+set_location_assignment PIN_W21 -to ledg[5]
+set_location_assignment PIN_Y22 -to ledg[6]
+set_location_assignment PIN_Y21 -to ledg[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledg[7]
 
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top

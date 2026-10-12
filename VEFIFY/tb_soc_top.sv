@@ -18,13 +18,20 @@ module tb_soc_top;
     logic clk;
     logic rst_n;
     logic trap;
-    logic uart_tx;
+    logic       uart_rx;
+    logic [6:0] hex0;
+    logic [6:0] hex1;
+    logic [9:0] ledr;
+    logic [7:0] ledg;
 
     // Clock Generation
     initial begin
         clk = 0;
         forever #(CLK_PERIOD / 2) clk = ~clk;
     end
+
+    // Default idle for uart_rx
+    initial uart_rx = 1'b1;
 
     // DUT Instantiation
     soc_top #(
@@ -37,8 +44,12 @@ module tb_soc_top;
     ) dut (
         .clk     (clk),
         .rst_n   (rst_n),
-        .trap    (trap),
-        .uart_tx (uart_tx)
+        .uart_rx (uart_rx),
+        .uart_tx (uart_tx),
+        .hex0    (hex0),
+        .hex1    (hex1),
+        .ledr    (ledr),
+        .ledg    (ledg)
     );
 
     // Cycle Counter & Watchdog
@@ -51,7 +62,7 @@ module tb_soc_top;
         if (dut.u_accelerator.core_start) $display("\n[TB-ACCEL] core_start pulsed at cycle %0d!", cycle_cnt);
         if (dut.u_accelerator.core_done)  $display("\n[TB-ACCEL] core_done pulsed at cycle %0d!", cycle_cnt);
 
-        if (trap) begin
+        if (ledr[0]) begin
             $display("\n=======================================================");
             $display("[FATAL ERROR] PicoRV32 CPU entered TRAP state at cycle %0d!", cycle_cnt);
             $display("  PC         = 0x%08X", dut.u_cpu.picorv32_core.reg_pc);

@@ -1,5 +1,5 @@
 Analysis & Synthesis report for soc_top
-Mon Oct 12 12:17:27 2026
+Mon Oct 12 13:51:55 2026
 Quartus II 64-Bit Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
 
 
@@ -17,88 +17,91 @@ Quartus II 64-Bit Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edit
   9. Analysis & Synthesis RAM Summary
  10. Analysis & Synthesis DSP Block Usage Summary
  11. State Machine - |soc_top|axi_uart:u_uart|wr_state
- 12. State Machine - |soc_top|systolic_gemm_axi_lite:u_accelerator|wr_state
- 13. State Machine - |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|state
- 14. State Machine - |soc_top|axi_ram:u_bram|wr_state
- 15. State Machine - |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wordsize
- 16. State Machine - |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state
- 17. Registers Removed During Synthesis
- 18. Removed Registers Triggering Further Register Optimizations
- 19. General Register Statistics
- 20. Inverted Register Statistics
- 21. Registers Added for RAM Pass-Through Logic
- 22. Registers Packed Into Inferred Megafunctions
- 23. Multiplexer Restructuring Statistics (Restructuring Performed)
- 24. Source assignments for picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_0|altsyncram_bnd1:auto_generated
- 25. Source assignments for picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_1|altsyncram_bnd1:auto_generated
- 26. Source assignments for axi_ram:u_bram|altsyncram:mem_rtl_0|altsyncram_4ml1:auto_generated
- 27. Source assignments for systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|altsyncram:ram_rtl_0|altsyncram_elg1:auto_generated
- 28. Parameter Settings for User Entity Instance: Top-level Entity: |soc_top
- 29. Parameter Settings for User Entity Instance: picorv32_axi:u_cpu
- 30. Parameter Settings for User Entity Instance: picorv32_axi:u_cpu|picorv32:picorv32_core
- 31. Parameter Settings for User Entity Instance: axi_ram:u_bram
- 32. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator
- 33. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst
- 34. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller
- 35. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a
- 36. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_b:u_buffer_b
- 37. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit
- 38. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core
- 39. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst
- 40. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[1].pe_inst
- 41. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst
- 42. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst
- 43. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[0].pe_inst
- 44. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[1].pe_inst
- 45. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[2].pe_inst
- 46. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[3].pe_inst
- 47. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[0].pe_inst
- 48. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[1].pe_inst
- 49. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[2].pe_inst
- 50. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[3].pe_inst
- 51. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[0].pe_inst
- 52. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[1].pe_inst
- 53. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[2].pe_inst
- 54. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst
- 55. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer
- 56. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_c:u_buffer_c
- 57. Parameter Settings for User Entity Instance: axi_uart:u_uart
- 58. Parameter Settings for Inferred Entity Instance: picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_0
- 59. Parameter Settings for Inferred Entity Instance: picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_1
- 60. Parameter Settings for Inferred Entity Instance: axi_ram:u_bram|altsyncram:mem_rtl_0
- 61. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|altsyncram:ram_rtl_0
- 62. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[2].pe_inst|lpm_mult:Mult0
- 63. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[1].pe_inst|lpm_mult:Mult0
- 64. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[0].pe_inst|lpm_mult:Mult0
- 65. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[3].pe_inst|lpm_mult:Mult0
- 66. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[1].pe_inst|lpm_mult:Mult0
- 67. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[2].pe_inst|lpm_mult:Mult0
- 68. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[0].pe_inst|lpm_mult:Mult0
- 69. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[3].pe_inst|lpm_mult:Mult0
- 70. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst|lpm_mult:Mult0
- 71. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[1].pe_inst|lpm_mult:Mult0
- 72. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst|lpm_mult:Mult0
- 73. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst|lpm_mult:Mult0
- 74. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[1].pe_inst|lpm_mult:Mult0
- 75. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[2].pe_inst|lpm_mult:Mult0
- 76. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[0].pe_inst|lpm_mult:Mult0
- 77. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst|lpm_mult:Mult0
- 78. altsyncram Parameter Settings by Entity Instance
- 79. lpm_mult Parameter Settings by Entity Instance
- 80. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst"
- 81. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[2].pe_inst"
- 82. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[1].pe_inst"
- 83. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[0].pe_inst"
- 84. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[3].pe_inst"
- 85. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[3].pe_inst"
- 86. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst"
- 87. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller"
- 88. Port Connectivity Checks: "axi_interconnect:u_interconnect"
- 89. Port Connectivity Checks: "picorv32_axi:u_cpu|picorv32:picorv32_core"
- 90. Port Connectivity Checks: "picorv32_axi:u_cpu"
- 91. Elapsed Time Per Partition
- 92. Analysis & Synthesis Messages
- 93. Analysis & Synthesis Suppressed Messages
+ 12. State Machine - |soc_top|axi_uart:u_uart|rx_state
+ 13. State Machine - |soc_top|systolic_gemm_axi_lite:u_accelerator|wr_state
+ 14. State Machine - |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|state
+ 15. State Machine - |soc_top|axi_ram:u_bram|wr_state
+ 16. State Machine - |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wordsize
+ 17. State Machine - |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state
+ 18. Registers Removed During Synthesis
+ 19. Removed Registers Triggering Further Register Optimizations
+ 20. General Register Statistics
+ 21. Inverted Register Statistics
+ 22. Registers Added for RAM Pass-Through Logic
+ 23. Registers Packed Into Inferred Megafunctions
+ 24. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 25. Source assignments for picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_0|altsyncram_bnd1:auto_generated
+ 26. Source assignments for picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_1|altsyncram_bnd1:auto_generated
+ 27. Source assignments for axi_ram:u_bram|altsyncram:mem_rtl_0|altsyncram_4ml1:auto_generated
+ 28. Source assignments for systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|altsyncram:ram_rtl_0|altsyncram_elg1:auto_generated
+ 29. Parameter Settings for User Entity Instance: Top-level Entity: |soc_top
+ 30. Parameter Settings for User Entity Instance: picorv32_axi:u_cpu
+ 31. Parameter Settings for User Entity Instance: picorv32_axi:u_cpu|picorv32:picorv32_core
+ 32. Parameter Settings for User Entity Instance: axi_ram:u_bram
+ 33. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator
+ 34. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst
+ 35. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller
+ 36. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a
+ 37. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_b:u_buffer_b
+ 38. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit
+ 39. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core
+ 40. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst
+ 41. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[1].pe_inst
+ 42. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst
+ 43. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst
+ 44. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[0].pe_inst
+ 45. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[1].pe_inst
+ 46. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[2].pe_inst
+ 47. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[3].pe_inst
+ 48. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[0].pe_inst
+ 49. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[1].pe_inst
+ 50. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[2].pe_inst
+ 51. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[3].pe_inst
+ 52. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[0].pe_inst
+ 53. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[1].pe_inst
+ 54. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[2].pe_inst
+ 55. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst
+ 56. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer
+ 57. Parameter Settings for User Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_c:u_buffer_c
+ 58. Parameter Settings for User Entity Instance: axi_uart:u_uart
+ 59. Parameter Settings for Inferred Entity Instance: picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_0
+ 60. Parameter Settings for Inferred Entity Instance: picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_1
+ 61. Parameter Settings for Inferred Entity Instance: axi_ram:u_bram|altsyncram:mem_rtl_0
+ 62. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|altsyncram:ram_rtl_0
+ 63. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[2].pe_inst|lpm_mult:Mult0
+ 64. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[1].pe_inst|lpm_mult:Mult0
+ 65. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[0].pe_inst|lpm_mult:Mult0
+ 66. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[3].pe_inst|lpm_mult:Mult0
+ 67. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[1].pe_inst|lpm_mult:Mult0
+ 68. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[2].pe_inst|lpm_mult:Mult0
+ 69. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[0].pe_inst|lpm_mult:Mult0
+ 70. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[3].pe_inst|lpm_mult:Mult0
+ 71. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst|lpm_mult:Mult0
+ 72. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[1].pe_inst|lpm_mult:Mult0
+ 73. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst|lpm_mult:Mult0
+ 74. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst|lpm_mult:Mult0
+ 75. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[1].pe_inst|lpm_mult:Mult0
+ 76. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[2].pe_inst|lpm_mult:Mult0
+ 77. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[0].pe_inst|lpm_mult:Mult0
+ 78. Parameter Settings for Inferred Entity Instance: systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst|lpm_mult:Mult0
+ 79. altsyncram Parameter Settings by Entity Instance
+ 80. lpm_mult Parameter Settings by Entity Instance
+ 81. Port Connectivity Checks: "seven_seg_decoder:u_hex1"
+ 82. Port Connectivity Checks: "seven_seg_decoder:u_hex0"
+ 83. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst"
+ 84. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[2].pe_inst"
+ 85. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[1].pe_inst"
+ 86. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[0].pe_inst"
+ 87. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[2].pe_col[3].pe_inst"
+ 88. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[3].pe_inst"
+ 89. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst"
+ 90. Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller"
+ 91. Port Connectivity Checks: "axi_interconnect:u_interconnect"
+ 92. Port Connectivity Checks: "picorv32_axi:u_cpu|picorv32:picorv32_core"
+ 93. Port Connectivity Checks: "picorv32_axi:u_cpu"
+ 94. Elapsed Time Per Partition
+ 95. Analysis & Synthesis Messages
+ 96. Analysis & Synthesis Suppressed Messages
 
 
 
@@ -124,16 +127,16 @@ applicable agreement for further details.
 +--------------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                         ;
 +------------------------------------+-------------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Mon Oct 12 12:17:27 2026           ;
+; Analysis & Synthesis Status        ; Successful - Mon Oct 12 13:51:55 2026           ;
 ; Quartus II 64-Bit Version          ; 13.0.1 Build 232 06/12/2013 SP 1 SJ Web Edition ;
 ; Revision Name                      ; soc_top                                         ;
 ; Top-level Entity Name              ; soc_top                                         ;
 ; Family                             ; Cyclone II                                      ;
-; Total logic elements               ; 7,344                                           ;
-;     Total combinational functions  ; 5,538                                           ;
-;     Dedicated logic registers      ; 3,401                                           ;
-; Total registers                    ; 3401                                            ;
-; Total pins                         ; 4                                               ;
+; Total logic elements               ; 7,486                                           ;
+;     Total combinational functions  ; 5,655                                           ;
+;     Dedicated logic registers      ; 3,467                                           ;
+; Total registers                    ; 3467                                            ;
+; Total pins                         ; 36                                              ;
 ; Total virtual pins                 ; 0                                               ;
 ; Total memory bits                  ; 133,632                                         ;
 ; Embedded Multiplier 9-bit elements ; 16                                              ;
@@ -264,6 +267,7 @@ Parallel compilation was disabled, but you have multiple processors available. E
 ; ../RTL/picorv32.v                        ; yes             ; User Verilog HDL File                                 ; E:/DATN/CNN_Systolic_Architecture/RTL/picorv32.v                                         ;         ;
 ; ../RTL/axi_interconnect.sv               ; yes             ; User SystemVerilog HDL File                           ; E:/DATN/CNN_Systolic_Architecture/RTL/axi_interconnect.sv                                ;         ;
 ; ../RTL/axi_ram.sv                        ; yes             ; User SystemVerilog HDL File                           ; E:/DATN/CNN_Systolic_Architecture/RTL/axi_ram.sv                                         ;         ;
+; ../RTL/seven_seg_decoder.sv              ; yes             ; User SystemVerilog HDL File                           ; E:/DATN/CNN_Systolic_Architecture/RTL/seven_seg_decoder.sv                               ;         ;
 ; ../RTL/axi_uart.sv                       ; yes             ; User SystemVerilog HDL File                           ; E:/DATN/CNN_Systolic_Architecture/RTL/axi_uart.sv                                        ;         ;
 ; ../RTL/soc_top.sv                        ; yes             ; User SystemVerilog HDL File                           ; E:/DATN/CNN_Systolic_Architecture/RTL/soc_top.sv                                         ;         ;
 ; altsyncram.tdf                           ; yes             ; Megafunction                                          ; c:/13.0sp1/quartus/libraries/megafunctions/altsyncram.tdf                                ;         ;
@@ -293,29 +297,29 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +---------------------------------------------+--------+
 ; Resource                                    ; Usage  ;
 +---------------------------------------------+--------+
-; Estimated Total logic elements              ; 7,344  ;
+; Estimated Total logic elements              ; 7,486  ;
 ;                                             ;        ;
-; Total combinational functions               ; 5538   ;
+; Total combinational functions               ; 5655   ;
 ; Logic element usage by number of LUT inputs ;        ;
-;     -- 4 input functions                    ; 3537   ;
-;     -- 3 input functions                    ; 1333   ;
-;     -- <=2 input functions                  ; 668    ;
+;     -- 4 input functions                    ; 3598   ;
+;     -- 3 input functions                    ; 1368   ;
+;     -- <=2 input functions                  ; 689    ;
 ;                                             ;        ;
 ; Logic elements by mode                      ;        ;
-;     -- normal mode                          ; 4594   ;
-;     -- arithmetic mode                      ; 944    ;
+;     -- normal mode                          ; 4696   ;
+;     -- arithmetic mode                      ; 959    ;
 ;                                             ;        ;
-; Total registers                             ; 3401   ;
-;     -- Dedicated logic registers            ; 3401   ;
+; Total registers                             ; 3467   ;
+;     -- Dedicated logic registers            ; 3467   ;
 ;     -- I/O registers                        ; 0      ;
 ;                                             ;        ;
-; I/O pins                                    ; 4      ;
+; I/O pins                                    ; 36     ;
 ; Total memory bits                           ; 133632 ;
 ; Embedded Multiplier 9-bit elements          ; 16     ;
 ; Maximum fan-out node                        ; clk    ;
-; Maximum fan-out                             ; 3505   ;
-; Total fan-out                               ; 33715  ;
-; Average fan-out                             ; 3.71   ;
+; Maximum fan-out                             ; 3571   ;
+; Total fan-out                               ; 34377  ;
+; Average fan-out                             ; 3.70   ;
 +---------------------------------------------+--------+
 
 
@@ -324,29 +328,31 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +---------------------------------------------------+-------------------+--------------+-------------+--------------+---------+-----------+------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
 ; Compilation Hierarchy Node                        ; LC Combinationals ; LC Registers ; Memory Bits ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                                                             ; Library Name ;
 +---------------------------------------------------+-------------------+--------------+-------------+--------------+---------+-----------+------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
-; |soc_top                                          ; 5538 (1)          ; 3401 (0)     ; 133632      ; 16           ; 16      ; 0         ; 4    ; 0            ; |soc_top                                                                                                                                                                                        ; work         ;
-;    |axi_interconnect:u_interconnect|              ; 51 (51)           ; 6 (6)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_interconnect:u_interconnect                                                                                                                                                        ; work         ;
+; |soc_top                                          ; 5655 (1)          ; 3467 (0)     ; 133632      ; 16           ; 16      ; 0         ; 36   ; 0            ; |soc_top                                                                                                                                                                                        ; work         ;
+;    |axi_interconnect:u_interconnect|              ; 60 (60)           ; 6 (6)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_interconnect:u_interconnect                                                                                                                                                        ; work         ;
 ;    |axi_ram:u_bram|                               ; 48 (48)           ; 58 (58)      ; 131072      ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_ram:u_bram                                                                                                                                                                         ; work         ;
 ;       |altsyncram:mem_rtl_0|                      ; 0 (0)             ; 0 (0)        ; 131072      ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_ram:u_bram|altsyncram:mem_rtl_0                                                                                                                                                    ; work         ;
 ;          |altsyncram_4ml1:auto_generated|         ; 0 (0)             ; 0 (0)        ; 131072      ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_ram:u_bram|altsyncram:mem_rtl_0|altsyncram_4ml1:auto_generated                                                                                                                     ; work         ;
-;    |axi_uart:u_uart|                              ; 86 (86)           ; 60 (60)      ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_uart:u_uart                                                                                                                                                                        ; work         ;
-;    |picorv32_axi:u_cpu|                           ; 1775 (0)          ; 584 (0)      ; 2048        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu                                                                                                                                                                     ; work         ;
-;       |picorv32:picorv32_core|                    ; 1761 (1761)       ; 580 (580)    ; 2048        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core                                                                                                                                              ; work         ;
+;    |axi_uart:u_uart|                              ; 182 (182)         ; 126 (126)    ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|axi_uart:u_uart                                                                                                                                                                        ; work         ;
+;    |picorv32_axi:u_cpu|                           ; 1774 (0)          ; 584 (0)      ; 2048        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu                                                                                                                                                                     ; work         ;
+;       |picorv32:picorv32_core|                    ; 1760 (1760)       ; 580 (580)    ; 2048        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core                                                                                                                                              ; work         ;
 ;          |altsyncram:cpuregs_rtl_0|               ; 0 (0)             ; 0 (0)        ; 1024        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_0                                                                                                                     ; work         ;
 ;             |altsyncram_bnd1:auto_generated|      ; 0 (0)             ; 0 (0)        ; 1024        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_0|altsyncram_bnd1:auto_generated                                                                                      ; work         ;
 ;          |altsyncram:cpuregs_rtl_1|               ; 0 (0)             ; 0 (0)        ; 1024        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_1                                                                                                                     ; work         ;
 ;             |altsyncram_bnd1:auto_generated|      ; 0 (0)             ; 0 (0)        ; 1024        ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|altsyncram:cpuregs_rtl_1|altsyncram_bnd1:auto_generated                                                                                      ; work         ;
 ;       |picorv32_axi_adapter:axi_adapter|          ; 14 (14)           ; 4 (4)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|picorv32_axi:u_cpu|picorv32_axi_adapter:axi_adapter                                                                                                                                    ; work         ;
-;    |systolic_gemm_axi_lite:u_accelerator|         ; 3577 (169)        ; 2693 (156)   ; 512         ; 16           ; 16      ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator                                                                                                                                                   ; work         ;
-;       |systolic_accelerator_top:core_inst|        ; 3408 (320)        ; 2537 (0)     ; 512         ; 16           ; 16      ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst                                                                                                                ; work         ;
+;    |seven_seg_decoder:u_hex0|                     ; 7 (7)             ; 0 (0)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|seven_seg_decoder:u_hex0                                                                                                                                                               ; work         ;
+;    |seven_seg_decoder:u_hex1|                     ; 7 (7)             ; 0 (0)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|seven_seg_decoder:u_hex1                                                                                                                                                               ; work         ;
+;    |systolic_gemm_axi_lite:u_accelerator|         ; 3576 (167)        ; 2693 (156)   ; 512         ; 16           ; 16      ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator                                                                                                                                                   ; work         ;
+;       |systolic_accelerator_top:core_inst|        ; 3409 (320)        ; 2537 (0)     ; 512         ; 16           ; 16      ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst                                                                                                                ; work         ;
 ;          |gemm_controller:u_controller|           ; 77 (77)           ; 40 (40)      ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller                                                                                   ; work         ;
 ;          |matrix_buffer_a:u_buffer_a|             ; 125 (125)         ; 536 (536)    ; 512         ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a                                                                                     ; work         ;
 ;             |altsyncram:ram_rtl_0|                ; 0 (0)             ; 0 (0)        ; 512         ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|altsyncram:ram_rtl_0                                                                ; work         ;
 ;                |altsyncram_elg1:auto_generated|   ; 0 (0)             ; 0 (0)        ; 512         ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|altsyncram:ram_rtl_0|altsyncram_elg1:auto_generated                                 ; work         ;
 ;          |matrix_buffer_b:u_buffer_b|             ; 160 (160)         ; 512 (512)    ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_b:u_buffer_b                                                                                     ; work         ;
-;          |matrix_buffer_c:u_buffer_c|             ; 464 (464)         ; 640 (640)    ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_c:u_buffer_c                                                                                     ; work         ;
-;          |quantize_relu_unit:u_quantizer|         ; 212 (212)         ; 9 (9)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer                                                                                 ; work         ;
-;          |systolic_array_core:u_systolic_core|    ; 706 (0)           ; 704 (0)      ; 0           ; 16           ; 16      ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core                                                                            ; work         ;
+;          |matrix_buffer_c:u_buffer_c|             ; 463 (463)         ; 640 (640)    ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_c:u_buffer_c                                                                                     ; work         ;
+;          |quantize_relu_unit:u_quantizer|         ; 214 (214)         ; 9 (9)        ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer                                                                                 ; work         ;
+;          |systolic_array_core:u_systolic_core|    ; 705 (0)           ; 704 (0)      ; 0           ; 16           ; 16      ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core                                                                            ; work         ;
 ;             |pe_gemm:pe_row[0].pe_col[0].pe_inst| ; 49 (49)           ; 48 (48)      ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst                                        ; work         ;
 ;                |lpm_mult:Mult0|                   ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst|lpm_mult:Mult0                         ; work         ;
 ;                   |mult_lus:auto_generated|       ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst|lpm_mult:Mult0|mult_lus:auto_generated ; work         ;
@@ -356,7 +362,7 @@ Parallel compilation was disabled, but you have multiple processors available. E
 ;             |pe_gemm:pe_row[0].pe_col[2].pe_inst| ; 48 (48)           ; 48 (48)      ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst                                        ; work         ;
 ;                |lpm_mult:Mult0|                   ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst|lpm_mult:Mult0                         ; work         ;
 ;                   |mult_lus:auto_generated|       ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[2].pe_inst|lpm_mult:Mult0|mult_lus:auto_generated ; work         ;
-;             |pe_gemm:pe_row[0].pe_col[3].pe_inst| ; 41 (41)           ; 40 (40)      ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst                                        ; work         ;
+;             |pe_gemm:pe_row[0].pe_col[3].pe_inst| ; 40 (40)           ; 40 (40)      ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst                                        ; work         ;
 ;                |lpm_mult:Mult0|                   ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst|lpm_mult:Mult0                         ; work         ;
 ;                   |mult_lus:auto_generated|       ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst|lpm_mult:Mult0|mult_lus:auto_generated ; work         ;
 ;             |pe_gemm:pe_row[1].pe_col[0].pe_inst| ; 48 (48)           ; 48 (48)      ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[0].pe_inst                                        ; work         ;
@@ -395,7 +401,7 @@ Parallel compilation was disabled, but you have multiple processors available. E
 ;             |pe_gemm:pe_row[3].pe_col[3].pe_inst| ; 32 (32)           ; 32 (32)      ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst                                        ; work         ;
 ;                |lpm_mult:Mult0|                   ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst|lpm_mult:Mult0                         ; work         ;
 ;                   |mult_lus:auto_generated|       ; 0 (0)             ; 0 (0)        ; 0           ; 1            ; 1       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst|lpm_mult:Mult0|mult_lus:auto_generated ; work         ;
-;          |systolic_skew_unit:u_skew_unit|         ; 1344 (1344)       ; 96 (96)      ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit                                                                                 ; work         ;
+;          |systolic_skew_unit:u_skew_unit|         ; 1345 (1345)       ; 96 (96)      ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit                                                                                 ; work         ;
 +---------------------------------------------------+-------------------+--------------+-------------+--------------+---------+-----------+------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
@@ -441,6 +447,19 @@ Encoding Type:  One-Hot
 ; wr_state.WR_WAIT_ADDR ; 0                ; 1                     ; 0                     ; 1                ;
 ; wr_state.WR_RESP      ; 1                ; 0                     ; 0                     ; 1                ;
 +-----------------------+------------------+-----------------------+-----------------------+------------------+
+
+
+Encoding Type:  One-Hot
++------------------------------------------------------------------------------------------------+
+; State Machine - |soc_top|axi_uart:u_uart|rx_state                                              ;
++-------------------+------------------+------------------+-------------------+------------------+
+; Name              ; rx_state.RX_STOP ; rx_state.RX_DATA ; rx_state.RX_START ; rx_state.RX_IDLE ;
++-------------------+------------------+------------------+-------------------+------------------+
+; rx_state.RX_IDLE  ; 0                ; 0                ; 0                 ; 0                ;
+; rx_state.RX_START ; 0                ; 0                ; 1                 ; 1                ;
+; rx_state.RX_DATA  ; 0                ; 1                ; 0                 ; 1                ;
+; rx_state.RX_STOP  ; 1                ; 0                ; 0                 ; 1                ;
++-------------------+------------------+------------------+-------------------+------------------+
 
 
 Encoding Type:  One-Hot
@@ -529,7 +548,7 @@ Encoding Type:  One-Hot
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|instr_maskirq                                                                 ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|instr_timer                                                                   ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|do_waitirq                                                                    ; Stuck at GND due to stuck port data_in                                                                                    ;
-; axi_uart:u_uart|s_axi_rdata[1..31]                                                                                      ; Stuck at GND due to stuck port data_in                                                                                    ;
+; axi_uart:u_uart|s_axi_rdata[8..31]                                                                                      ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|mem_addr[0,1]                                                                 ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|latched_compr                                                                 ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; axi_uart:u_uart|latched_awaddr[0,1]                                                                                     ; Stuck at GND due to stuck port data_in                                                                                    ;
@@ -545,8 +564,8 @@ Encoding Type:  One-Hot
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_rs2[3]                                                                ; Merged with picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm_j[3]                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_rs2[2]                                                                ; Merged with picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm_j[2]                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_rs2[1]                                                                ; Merged with picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm_j[1]                                                    ;
-; picorv32_axi:u_cpu|picorv32:picorv32_core|reg_next_pc[0]                                                                ; Merged with picorv32_axi:u_cpu|picorv32:picorv32_core|reg_pc[0]                                                           ;
-; picorv32_axi:u_cpu|picorv32:picorv32_core|reg_pc[0]                                                                     ; Stuck at GND due to stuck port data_in                                                                                    ;
+; picorv32_axi:u_cpu|picorv32:picorv32_core|reg_pc[0]                                                                     ; Merged with picorv32_axi:u_cpu|picorv32:picorv32_core|reg_next_pc[0]                                                      ;
+; picorv32_axi:u_cpu|picorv32:picorv32_core|reg_next_pc[0]                                                                ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|latched_is_lu                                                                 ; Lost fanout                                                                                                               ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|is_lbu_lhu_lw                                                                 ; Lost fanout                                                                                                               ;
 ; axi_uart:u_uart|tx_shift_reg[9]                                                                                         ; Stuck at VCC due to stuck port data_in                                                                                    ;
@@ -606,6 +625,8 @@ Encoding Type:  One-Hot
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|cpuregs_rtl_1_bypass[16]                                                      ; Merged with picorv32_axi:u_cpu|picorv32:picorv32_core|cpuregs_rtl_0_bypass[16]                                            ;
 ; axi_uart:u_uart|wr_state~8                                                                                              ; Lost fanout                                                                                                               ;
 ; axi_uart:u_uart|wr_state~9                                                                                              ; Lost fanout                                                                                                               ;
+; axi_uart:u_uart|rx_state~8                                                                                              ; Lost fanout                                                                                                               ;
+; axi_uart:u_uart|rx_state~9                                                                                              ; Lost fanout                                                                                                               ;
 ; systolic_gemm_axi_lite:u_accelerator|wr_state~8                                                                         ; Lost fanout                                                                                                               ;
 ; systolic_gemm_axi_lite:u_accelerator|wr_state~9                                                                         ; Lost fanout                                                                                                               ;
 ; systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|state~10           ; Lost fanout                                                                                                               ;
@@ -615,7 +636,7 @@ Encoding Type:  One-Hot
 ; axi_ram:u_bram|wr_state~9                                                                                               ; Lost fanout                                                                                                               ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state.cpu_state_ld_rs2                                                    ; Stuck at GND due to stuck port data_in                                                                                    ;
 ; picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state.cpu_state_shift                                                     ; Stuck at GND due to stuck port data_in                                                                                    ;
-; Total Number of Removed Registers = 168                                                                                 ;                                                                                                                           ;
+; Total Number of Removed Registers = 163                                                                                 ;                                                                                                                           ;
 +-------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------+
 
 
@@ -640,12 +661,12 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 3401  ;
-; Number of registers using Synchronous Clear  ; 788   ;
-; Number of registers using Synchronous Load   ; 135   ;
-; Number of registers using Asynchronous Clear ; 1130  ;
+; Total registers                              ; 3467  ;
+; Number of registers using Synchronous Clear  ; 794   ;
+; Number of registers using Synchronous Load   ; 141   ;
+; Number of registers using Asynchronous Clear ; 1196  ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 3084  ;
+; Number of registers using Clock Enable       ; 3116  ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
 
@@ -658,15 +679,17 @@ Encoding Type:  One-Hot
 ; axi_uart:u_uart|uart_tx                           ; 2       ;
 ; axi_uart:u_uart|tx_shift_reg[0]                   ; 2       ;
 ; axi_uart:u_uart|tx_shift_reg[1]                   ; 1       ;
+; axi_uart:u_uart|rx_sync_2                         ; 12      ;
 ; axi_uart:u_uart|tx_shift_reg[2]                   ; 1       ;
-; systolic_gemm_axi_lite:u_accelerator|k_dim_reg[2] ; 8       ;
+; axi_uart:u_uart|rx_sync_1                         ; 1       ;
 ; axi_uart:u_uart|tx_shift_reg[3]                   ; 1       ;
+; systolic_gemm_axi_lite:u_accelerator|k_dim_reg[2] ; 8       ;
 ; axi_uart:u_uart|tx_shift_reg[4]                   ; 1       ;
 ; axi_uart:u_uart|tx_shift_reg[5]                   ; 1       ;
 ; axi_uart:u_uart|tx_shift_reg[6]                   ; 1       ;
 ; axi_uart:u_uart|tx_shift_reg[7]                   ; 1       ;
 ; axi_uart:u_uart|tx_shift_reg[8]                   ; 1       ;
-; Total number of inverted registers = 11           ;         ;
+; Total number of inverted registers = 13           ;         ;
 +---------------------------------------------------+---------+
 
 
@@ -794,90 +817,98 @@ Encoding Type:  One-Hot
 +---------------------------------+--------------------------+------+
 
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                                                                                                                     ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                                                                                                           ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; 3:1                ; 95 bits   ; 190 LEs       ; 95 LEs               ; 95 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_pc[26]                                                                                                        ;
-; 3:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_addr[5]                                                                                                       ;
-; 3:1                ; 23 bits   ; 46 LEs        ; 23 LEs               ; 23 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|instr_sra                                                                                                         ;
-; 3:1                ; 528 bits  ; 1056 LEs      ; 528 LEs              ; 528 LEs                ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[3].pe_inst|acc_reg[12] ;
-; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_sh[1]                                                                                                         ;
-; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_sh[2]                                                                                                         ;
-; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wdata[26]                                                                                                     ;
-; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wstrb[2]                                                                                                      ;
-; 4:1                ; 16 bits   ; 32 LEs        ; 16 LEs               ; 16 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|tx_clk_cnt[1]                                                                                                                               ;
-; 5:1                ; 30 bits   ; 90 LEs        ; 60 LEs               ; 30 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_next_pc[5]                                                                                                    ;
-; 5:1                ; 4 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; Yes        ; |soc_top|axi_uart:u_uart|tx_bit_cnt[0]                                                                                                                               ;
-; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm[5]                                                                                                    ;
-; 3:1                ; 19 bits   ; 38 LEs        ; 38 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm[22]                                                                                                   ;
-; 5:1                ; 4 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|latched_rd[3]                                                                                                     ;
-; 6:1                ; 3 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|dout[4]                                              ;
-; 6:1                ; 24 bits   ; 96 LEs        ; 48 LEs               ; 48 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|s_axi_rdata[18]                                                                                                        ;
-; 6:1                ; 6 bits    ; 24 LEs        ; 18 LEs               ; 6 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|s_axi_rdata[5]                                                                                                         ;
-; 6:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|s_axi_rdata[0]                                                                                                         ;
-; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm[3]                                                                                                    ;
-; 5:1                ; 8 bits    ; 24 LEs        ; 8 LEs                ; 16 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|drain_cnt[4]                                           ;
-; 7:1                ; 2 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|dout[2]                                              ;
-; 6:1                ; 8 bits    ; 32 LEs        ; 8 LEs                ; 24 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|read_cnt[0]                                            ;
-; 19:1               ; 16 bits   ; 192 LEs       ; 176 LEs              ; 16 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_b[2].delay_pipe[0][5]                       ;
-; 7:1                ; 12 bits   ; 48 LEs        ; 12 LEs               ; 36 LEs                 ; Yes        ; |soc_top|axi_ram:u_bram|ram_waddr[0]                                                                                                                                 ;
-; 7:1                ; 12 bits   ; 48 LEs        ; 12 LEs               ; 36 LEs                 ; Yes        ; |soc_top|axi_ram:u_bram|ram_wdata[4]                                                                                                                                 ;
-; 67:1               ; 8 bits    ; 352 LEs       ; 344 LEs              ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[2].delay_pipe[0][0]                       ;
-; 67:1               ; 8 bits    ; 352 LEs       ; 344 LEs              ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[3].delay_pipe[0][1]                       ;
-; 6:1                ; 5 bits    ; 20 LEs        ; 10 LEs               ; 10 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op2[4]                                                                                                        ;
-; 11:1               ; 2 bits    ; 14 LEs        ; 6 LEs                ; 8 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_state[0]                                                                                                      ;
-; 10:1               ; 32 bits   ; 192 LEs       ; 32 LEs               ; 160 LEs                ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|control_reg[14]                                                                                                        ;
-; 10:1               ; 8 bits    ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[19]                                                                                                     ;
-; 10:1               ; 8 bits    ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[11]                                                                                                     ;
-; 10:1               ; 8 bits    ; 48 LEs        ; 8 LEs                ; 40 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|tx_byte_latch[1]                                                                                                                            ;
-; 11:1               ; 4 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[24]                                                                                                     ;
-; 11:1               ; 4 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[6]                                                                                                      ;
-; 12:1               ; 2 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[29]                                                                                                     ;
-; 12:1               ; 2 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[3]                                                                                                      ;
-; 7:1                ; 27 bits   ; 108 LEs       ; 54 LEs               ; 54 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op2[21]                                                                                                       ;
-; 13:1               ; 7 bits    ; 56 LEs        ; 7 LEs                ; 49 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|k_dim_reg[1]                                                                                                           ;
-; 13:1               ; 2 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[31]                                                                                                     ;
-; 12:1               ; 6 bits    ; 48 LEs        ; 6 LEs                ; 42 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_a_addr[5]                                                                                                      ;
-; 9:1                ; 7 bits    ; 42 LEs        ; 42 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[8]                                                                                                        ;
-; 14:1               ; 6 bits    ; 54 LEs        ; 6 LEs                ; 48 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_b_addr[4]                                                                                                      ;
-; 16:1               ; 3 bits    ; 30 LEs        ; 12 LEs               ; 18 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op1[30]                                                                                                       ;
-; 17:1               ; 3 bits    ; 33 LEs        ; 15 LEs               ; 18 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op1[1]                                                                                                        ;
-; 17:1               ; 24 bits   ; 264 LEs       ; 144 LEs              ; 120 LEs                ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op1[4]                                                                                                        ;
-; 16:1               ; 8 bits    ; 80 LEs        ; 8 LEs                ; 72 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_a_data[4]                                                                                                      ;
-; 11:1               ; 16 bits   ; 112 LEs       ; 96 LEs               ; 16 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[30]                                                                                                       ;
-; 11:1               ; 4 bits    ; 28 LEs        ; 24 LEs               ; 4 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[0]                                                                                                        ;
-; 11:1               ; 3 bits    ; 21 LEs        ; 18 LEs               ; 3 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[5]                                                                                                        ;
-; 19:1               ; 8 bits    ; 96 LEs        ; 8 LEs                ; 88 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_b_data[0]                                                                                                      ;
-; 3:1                ; 224 bits  ; 448 LEs       ; 224 LEs              ; 224 LEs                ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst|a_out[0]    ;
-; 4:1                ; 8 bits    ; 16 LEs        ; 8 LEs                ; 8 LEs                  ; Yes        ; |soc_top|axi_uart:u_uart|tx_shift_reg[5]                                                                                                                             ;
-; 19:1               ; 8 bits    ; 96 LEs        ; 88 LEs               ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_b[1].delay_pipe[0][6]                       ;
-; 67:1               ; 8 bits    ; 352 LEs       ; 344 LEs              ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[1].delay_pipe[0][7]                       ;
-; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |soc_top|axi_interconnect:u_interconnect|Mux2                                                                                                                        ;
-; 4:1                ; 31 bits   ; 62 LEs        ; 62 LEs               ; 0 LEs                  ; No         ; |soc_top|axi_interconnect:u_interconnect|Mux22                                                                                                                       ;
-; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |soc_top|axi_interconnect:u_interconnect|Mux6                                                                                                                        ;
-; 3:1                ; 31 bits   ; 62 LEs        ; 31 LEs               ; 31 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|current_pc                                                                                                        ;
-; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|ShiftRight0                                          ;
-; 3:1                ; 31 bits   ; 62 LEs        ; 31 LEs               ; 31 LEs                 ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|relu_data[27]                                        ;
-; 3:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpuregs_rs2[2]                                                                                                    ;
-; 3:1                ; 3 bits    ; 6 LEs         ; 3 LEs                ; 3 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|latched_is_lu                                                                                                     ;
-; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|row_data_out[0][7]                                       ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|Selector8                                                                                                         ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|Selector11                                                                                                        ;
-; 17:1               ; 8 bits    ; 88 LEs        ; 88 LEs               ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_b:u_buffer_b|col_data_out[0][7]                                       ;
-; 7:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; No         ; |soc_top|axi_uart:u_uart|Selector14                                                                                                                                  ;
-; 7:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|Selector77                                                                                                             ;
-; 7:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; No         ; |soc_top|axi_ram:u_bram|Selector30                                                                                                                                   ;
-; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |soc_top|axi_uart:u_uart|Selector16                                                                                                                                  ;
-; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|Selector79                                                                                                             ;
-; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |soc_top|axi_ram:u_bram|Selector33                                                                                                                                   ;
-; 9:1                ; 4 bits    ; 24 LEs        ; 16 LEs               ; 8 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|Selector17                                             ;
-; 9:1                ; 3 bits    ; 18 LEs        ; 6 LEs                ; 12 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wordsize                                                                                                      ;
-; 16:1               ; 32 bits   ; 320 LEs       ; 320 LEs              ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|Mux157                                                                              ;
-; 16:1               ; 3 bits    ; 30 LEs        ; 18 LEs               ; 12 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state                                                                                                         ;
-; 17:1               ; 3 bits    ; 33 LEs        ; 18 LEs               ; 15 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state                                                                                                         ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                                                                                                                  ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                                                                                                        ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; 3:1                ; 95 bits   ; 190 LEs       ; 95 LEs               ; 95 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_pc[25]                                                                                                     ;
+; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |soc_top|axi_uart:u_uart|s_axi_rdata[4]                                                                                                                           ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |soc_top|axi_uart:u_uart|s_axi_rdata[0]                                                                                                                           ;
+; 3:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_addr[3]                                                                                                    ;
+; 3:1                ; 23 bits   ; 46 LEs        ; 23 LEs               ; 23 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|instr_blt                                                                                                      ;
+; 3:1                ; 528 bits  ; 1056 LEs      ; 528 LEs              ; 528 LEs                ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[3].delay_pipe[1][3]                    ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_sh[0]                                                                                                      ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_sh[2]                                                                                                      ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wdata[31]                                                                                                  ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wstrb[3]                                                                                                   ;
+; 4:1                ; 16 bits   ; 32 LEs        ; 16 LEs               ; 16 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|tx_clk_cnt[4]                                                                                                                            ;
+; 5:1                ; 30 bits   ; 90 LEs        ; 60 LEs               ; 30 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_next_pc[15]                                                                                                ;
+; 5:1                ; 4 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; Yes        ; |soc_top|axi_uart:u_uart|tx_bit_cnt[2]                                                                                                                            ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm[5]                                                                                                 ;
+; 3:1                ; 19 bits   ; 38 LEs        ; 38 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm[24]                                                                                                ;
+; 5:1                ; 4 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|latched_rd[2]                                                                                                  ;
+; 6:1                ; 3 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|dout[4]                                           ;
+; 6:1                ; 24 bits   ; 96 LEs        ; 48 LEs               ; 48 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|s_axi_rdata[10]                                                                                                     ;
+; 6:1                ; 6 bits    ; 24 LEs        ; 18 LEs               ; 6 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|s_axi_rdata[6]                                                                                                      ;
+; 6:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|s_axi_rdata[0]                                                                                                      ;
+; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|decoded_imm[4]                                                                                                 ;
+; 5:1                ; 8 bits    ; 24 LEs        ; 8 LEs                ; 16 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|drain_cnt[7]                                        ;
+; 7:1                ; 2 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|dout[2]                                           ;
+; 6:1                ; 8 bits    ; 32 LEs        ; 8 LEs                ; 24 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|read_cnt[4]                                         ;
+; 6:1                ; 16 bits   ; 64 LEs        ; 16 LEs               ; 48 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|rx_clk_cnt[13]                                                                                                                           ;
+; 19:1               ; 16 bits   ; 192 LEs       ; 176 LEs              ; 16 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_b[3].delay_pipe[0][2]                    ;
+; 7:1                ; 12 bits   ; 48 LEs        ; 12 LEs               ; 36 LEs                 ; Yes        ; |soc_top|axi_ram:u_bram|ram_waddr[8]                                                                                                                              ;
+; 7:1                ; 12 bits   ; 48 LEs        ; 12 LEs               ; 36 LEs                 ; Yes        ; |soc_top|axi_ram:u_bram|ram_wdata[3]                                                                                                                              ;
+; 67:1               ; 8 bits    ; 352 LEs       ; 344 LEs              ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[2].delay_pipe[0][4]                    ;
+; 67:1               ; 8 bits    ; 352 LEs       ; 344 LEs              ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[3].delay_pipe[0][2]                    ;
+; 6:1                ; 5 bits    ; 20 LEs        ; 10 LEs               ; 10 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op2[3]                                                                                                     ;
+; 10:1               ; 8 bits    ; 48 LEs        ; 8 LEs                ; 40 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|tx_byte_latch[2]                                                                                                                         ;
+; 10:1               ; 8 bits    ; 48 LEs        ; 8 LEs                ; 40 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|reg_hex_1[3]                                                                                                                             ;
+; 10:1               ; 8 bits    ; 48 LEs        ; 8 LEs                ; 40 LEs                 ; Yes        ; |soc_top|axi_uart:u_uart|reg_leds[5]                                                                                                                              ;
+; 11:1               ; 2 bits    ; 14 LEs        ; 6 LEs                ; 8 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_state[0]                                                                                                   ;
+; 10:1               ; 32 bits   ; 192 LEs       ; 32 LEs               ; 160 LEs                ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|control_reg[20]                                                                                                     ;
+; 10:1               ; 8 bits    ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[20]                                                                                                  ;
+; 10:1               ; 8 bits    ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[8]                                                                                                   ;
+; 11:1               ; 4 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[27]                                                                                                  ;
+; 11:1               ; 4 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[4]                                                                                                   ;
+; 12:1               ; 2 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[29]                                                                                                  ;
+; 12:1               ; 2 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[3]                                                                                                   ;
+; 7:1                ; 27 bits   ; 108 LEs       ; 54 LEs               ; 54 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op2[8]                                                                                                     ;
+; 13:1               ; 7 bits    ; 56 LEs        ; 7 LEs                ; 49 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|k_dim_reg[1]                                                                                                        ;
+; 13:1               ; 2 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|alu_out_q[31]                                                                                                  ;
+; 12:1               ; 6 bits    ; 48 LEs        ; 6 LEs                ; 42 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_a_addr[1]                                                                                                   ;
+; 9:1                ; 7 bits    ; 42 LEs        ; 42 LEs               ; 0 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[9]                                                                                                     ;
+; 14:1               ; 6 bits    ; 54 LEs        ; 6 LEs                ; 48 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_b_addr[2]                                                                                                   ;
+; 16:1               ; 3 bits    ; 30 LEs        ; 12 LEs               ; 18 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op1[28]                                                                                                    ;
+; 17:1               ; 3 bits    ; 33 LEs        ; 15 LEs               ; 18 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op1[2]                                                                                                     ;
+; 17:1               ; 24 bits   ; 264 LEs       ; 144 LEs              ; 120 LEs                ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_op1[25]                                                                                                    ;
+; 16:1               ; 8 bits    ; 80 LEs        ; 8 LEs                ; 72 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_a_data[0]                                                                                                   ;
+; 11:1               ; 16 bits   ; 112 LEs       ; 96 LEs               ; 16 LEs                 ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[31]                                                                                                    ;
+; 11:1               ; 4 bits    ; 28 LEs        ; 24 LEs               ; 4 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[3]                                                                                                     ;
+; 11:1               ; 3 bits    ; 21 LEs        ; 18 LEs               ; 3 LEs                  ; Yes        ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|reg_out[6]                                                                                                     ;
+; 19:1               ; 8 bits    ; 96 LEs        ; 8 LEs                ; 88 LEs                 ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|core_wr_b_data[4]                                                                                                   ;
+; 3:1                ; 224 bits  ; 448 LEs       ; 224 LEs              ; 224 LEs                ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[1].pe_col[2].pe_inst|a_out[3] ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 8 LEs                ; 8 LEs                  ; Yes        ; |soc_top|axi_uart:u_uart|tx_shift_reg[5]                                                                                                                          ;
+; 19:1               ; 8 bits    ; 96 LEs        ; 88 LEs               ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_b[1].delay_pipe[0][7]                    ;
+; 67:1               ; 8 bits    ; 352 LEs       ; 344 LEs              ; 8 LEs                  ; Yes        ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_skew_unit:u_skew_unit|gen_skew_a[1].delay_pipe[0][4]                    ;
+; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |soc_top|axi_interconnect:u_interconnect|Mux0                                                                                                                     ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 3 LEs                ; 3 LEs                  ; No         ; |soc_top|axi_uart:u_uart|rx_bit_idx                                                                                                                               ;
+; 4:1                ; 24 bits   ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; No         ; |soc_top|axi_interconnect:u_interconnect|Mux30                                                                                                                    ;
+; 4:1                ; 10 bits   ; 20 LEs        ; 20 LEs               ; 0 LEs                  ; No         ; |soc_top|axi_interconnect:u_interconnect|Mux36                                                                                                                    ;
+; 3:1                ; 31 bits   ; 62 LEs        ; 31 LEs               ; 31 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|current_pc                                                                                                     ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|ShiftRight0                                       ;
+; 3:1                ; 31 bits   ; 62 LEs        ; 31 LEs               ; 31 LEs                 ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer|relu_data[16]                                     ;
+; 3:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpuregs_rs2[2]                                                                                                 ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 3 LEs                ; 3 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|latched_is_lh                                                                                                  ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_a:u_buffer_a|row_data_out[0][2]                                    ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|Selector8                                                                                                      ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|Selector10                                                                                                     ;
+; 17:1               ; 8 bits    ; 88 LEs        ; 88 LEs               ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_b:u_buffer_b|col_data_out[0][7]                                    ;
+; 7:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; No         ; |soc_top|axi_uart:u_uart|Selector53                                                                                                                               ;
+; 7:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|Selector78                                                                                                          ;
+; 7:1                ; 2 bits    ; 8 LEs         ; 6 LEs                ; 2 LEs                  ; No         ; |soc_top|axi_ram:u_bram|Selector30                                                                                                                                ;
+; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |soc_top|axi_uart:u_uart|Selector56                                                                                                                               ;
+; 9:1                ; 2 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; No         ; |soc_top|axi_uart:u_uart|Selector20                                                                                                                               ;
+; 9:1                ; 2 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; No         ; |soc_top|axi_uart:u_uart|Selector19                                                                                                                               ;
+; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|Selector80                                                                                                          ;
+; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; No         ; |soc_top|axi_ram:u_bram|Selector32                                                                                                                                ;
+; 9:1                ; 4 bits    ; 24 LEs        ; 16 LEs               ; 8 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller|Selector13                                          ;
+; 9:1                ; 3 bits    ; 18 LEs        ; 6 LEs                ; 12 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|mem_wordsize                                                                                                   ;
+; 16:1               ; 32 bits   ; 320 LEs       ; 320 LEs              ; 0 LEs                  ; No         ; |soc_top|systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|Mux138                                                                           ;
+; 16:1               ; 3 bits    ; 30 LEs        ; 18 LEs               ; 12 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state                                                                                                      ;
+; 17:1               ; 3 bits    ; 33 LEs        ; 18 LEs               ; 15 LEs                 ; No         ; |soc_top|picorv32_axi:u_cpu|picorv32:picorv32_core|cpu_state                                                                                                      ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
 +--------------------------------------------------------------------------------------------------------------------------+
@@ -2353,6 +2384,24 @@ Note: In order to hide this table in the UI and the text report file, please set
 +---------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
++------------------------------------------------------+
+; Port Connectivity Checks: "seven_seg_decoder:u_hex1" ;
++-------+-------+----------+---------------------------+
+; Port  ; Type  ; Severity ; Details                   ;
++-------+-------+----------+---------------------------+
+; blank ; Input ; Info     ; Stuck at GND              ;
++-------+-------+----------+---------------------------+
+
+
++------------------------------------------------------+
+; Port Connectivity Checks: "seven_seg_decoder:u_hex0" ;
++-------+-------+----------+---------------------------+
+; Port  ; Type  ; Severity ; Details                   ;
++-------+-------+----------+---------------------------+
+; blank ; Input ; Info     ; Stuck at GND              ;
++-------+-------+----------+---------------------------+
+
+
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ; Port Connectivity Checks: "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[3].pe_col[3].pe_inst" ;
 +-------+--------+----------+-------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -2476,7 +2525,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:14     ;
+; Top            ; 00:00:15     ;
 +----------------+--------------+
 
 
@@ -2486,8 +2535,21 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus II 64-Bit Analysis & Synthesis
     Info: Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
-    Info: Processing started: Mon Oct 12 12:17:09 2026
-Info: Command: quartus_map --read_settings_files=on --write_settings_files=off soc_top -c soc_top
+    Info: Copyright (C) 1991-2013 Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions 
+    Info: and other software and tools, and its AMPP partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Altera Program License 
+    Info: Subscription Agreement, Altera MegaCore Function License 
+    Info: Agreement, or other applicable license agreement, including, 
+    Info: without limitation, that your use is for the sole purpose of 
+    Info: programming logic devices manufactured by Altera and sold by 
+    Info: Altera or its authorized distributors.  Please refer to the 
+    Info: applicable agreement for further details.
+    Info: Processing started: Mon Oct 12 13:51:35 2026
+Info: Command: quartus_map soc_top
 Warning (20028): Parallel compilation is not licensed and has been disabled
 Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/pe_gemm.sv
     Info (12023): Found entity 1: pe_gemm
@@ -2549,6 +2611,8 @@ Info (12021): Found 1 design units, including 1 entities, in source file /datn/c
     Info (12023): Found entity 1: axi_interconnect
 Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/axi_ram.sv
     Info (12023): Found entity 1: axi_ram
+Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/seven_seg_decoder.sv
+    Info (12023): Found entity 1: seven_seg_decoder
 Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/axi_uart.sv
     Info (12023): Found entity 1: axi_uart
 Info (12021): Found 1 design units, including 1 entities, in source file /datn/cnn_systolic_architecture/rtl/soc_top.sv
@@ -2606,11 +2670,11 @@ Info (12128): Elaborating entity "axi_interconnect" for hierarchy "axi_interconn
 Info (12128): Elaborating entity "axi_ram" for hierarchy "axi_ram:u_bram"
 Warning (10850): Verilog HDL warning at axi_ram.sv(58): number of words (389) in memory file does not match the number of elements in the address range [0:4095]
 Info (12128): Elaborating entity "systolic_gemm_axi_lite" for hierarchy "systolic_gemm_axi_lite:u_accelerator"
-Warning (10036): Verilog HDL or VHDL warning at systolic_gemm_axi_lite.sv(64): object "axi_araddr" assigned a value but never read
-Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(106): truncated value with size 12 to match size of target (6)
-Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(110): truncated value with size 12 to match size of target (6)
-Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(211): truncated value with size 12 to match size of target (4)
-Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(213): truncated value with size 12 to match size of target (4)
+Warning (10036): Verilog HDL or VHDL warning at systolic_gemm_axi_lite.sv(68): object "axi_araddr" assigned a value but never read
+Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(113): truncated value with size 12 to match size of target (6)
+Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(117): truncated value with size 12 to match size of target (6)
+Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(218): truncated value with size 12 to match size of target (4)
+Warning (10230): Verilog HDL assignment warning at systolic_gemm_axi_lite.sv(220): truncated value with size 12 to match size of target (4)
 Info (12128): Elaborating entity "systolic_accelerator_top" for hierarchy "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst"
 Info (10008): Verilog HDL or VHDL information: EDA Netlist Writer cannot regroup multidimensional array "c_matrix_core" into its bus
 Info (12128): Elaborating entity "gemm_controller" for hierarchy "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|gemm_controller:u_controller"
@@ -2627,6 +2691,7 @@ Info (10008): Verilog HDL or VHDL information: EDA Netlist Writer cannot regroup
 Info (12128): Elaborating entity "pe_gemm" for hierarchy "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|systolic_array_core:u_systolic_core|pe_gemm:pe_row[0].pe_col[0].pe_inst"
 Info (12128): Elaborating entity "quantize_relu_unit" for hierarchy "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|quantize_relu_unit:u_quantizer"
 Info (12128): Elaborating entity "matrix_buffer_c" for hierarchy "systolic_gemm_axi_lite:u_accelerator|systolic_accelerator_top:core_inst|matrix_buffer_c:u_buffer_c"
+Info (12128): Elaborating entity "seven_seg_decoder" for hierarchy "seven_seg_decoder:u_hex0"
 Info (12128): Elaborating entity "axi_uart" for hierarchy "axi_uart:u_uart"
 Warning (276020): Inferred RAM node "picorv32_axi:u_cpu|picorv32:picorv32_core|cpuregs_rtl_0" from synchronous design logic.  Pass-through logic has been added to match the read-during-write behavior of the original design.
 Warning (276020): Inferred RAM node "picorv32_axi:u_cpu|picorv32:picorv32_core|cpuregs_rtl_1" from synchronous design logic.  Pass-through logic has been added to match the read-during-write behavior of the original design.
@@ -2790,21 +2855,28 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/mult
 Warning (12241): 1 hierarchies have connectivity warnings - see the Connectivity Checks report folder
 Info (13000): Registers with preset signals will power-up high
 Info (13003): DEV_CLRn pin will set, and not reset, register with preset signal due to NOT Gate Push-Back
-Info (17049): 11 registers lost all their fanouts during netlist optimizations.
+Warning (13024): Output pins are stuck at VCC or GND
+    Warning (13410): Pin "ledg[2]" is stuck at GND
+    Warning (13410): Pin "ledg[3]" is stuck at GND
+    Warning (13410): Pin "ledg[4]" is stuck at GND
+    Warning (13410): Pin "ledg[5]" is stuck at GND
+    Warning (13410): Pin "ledg[6]" is stuck at GND
+    Warning (13410): Pin "ledg[7]" is stuck at GND
+Info (17049): 13 registers lost all their fanouts during netlist optimizations.
 Info (144001): Generated suppressed messages file E:/DATN/CNN_Systolic_Architecture/synthesis_soc/soc_top.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
-Info (21057): Implemented 7594 device resources after synthesis - the final resource count might be different
-    Info (21058): Implemented 2 input pins
-    Info (21059): Implemented 2 output pins
-    Info (21061): Implemented 7470 logic cells
+Info (21057): Implemented 7777 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 3 input pins
+    Info (21059): Implemented 33 output pins
+    Info (21061): Implemented 7621 logic cells
     Info (21064): Implemented 104 RAM segments
     Info (21062): Implemented 16 DSP elements
-Info: Quartus II 64-Bit Analysis & Synthesis was successful. 0 errors, 85 warnings
-    Info: Peak virtual memory: 4643 megabytes
-    Info: Processing ended: Mon Oct 12 12:17:27 2026
-    Info: Elapsed time: 00:00:18
-    Info: Total CPU time (on all processors): 00:00:18
+Info: Quartus II 64-Bit Analysis & Synthesis was successful. 0 errors, 92 warnings
+    Info: Peak virtual memory: 4638 megabytes
+    Info: Processing ended: Mon Oct 12 13:51:55 2026
+    Info: Elapsed time: 00:00:20
+    Info: Total CPU time (on all processors): 00:00:19
 
 
 +------------------------------------------+

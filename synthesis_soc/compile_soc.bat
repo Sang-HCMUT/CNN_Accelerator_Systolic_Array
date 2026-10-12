@@ -5,21 +5,28 @@ echo ========================================================
 
 cd /d "%~dp0"
 
-echo [1/3] Running Quartus Analysis & Synthesis (quartus_map)...
+echo [1/4] Running Quartus Analysis and Synthesis (quartus_map)...
 C:\13.0sp1\quartus\bin64\quartus_map.exe soc_top
 if %errorlevel% neq 0 (
     echo [ERROR] Synthesis failed!
     exit /b %errorlevel%
 )
 
-echo [2/3] Running Quartus Fitter Place & Route (quartus_fit)...
+echo [2/4] Running Quartus Fitter Place and Route (quartus_fit)...
 C:\13.0sp1\quartus\bin64\quartus_fit.exe soc_top
 if %errorlevel% neq 0 (
     echo [ERROR] Fitting failed!
     exit /b %errorlevel%
 )
 
-echo [3/3] Running TimeQuest Timing Analyzer (quartus_sta)...
+echo [3/4] Running Quartus Assembler (quartus_asm) to generate .sof...
+C:\13.0sp1\quartus\bin64\quartus_asm.exe soc_top
+if %errorlevel% neq 0 (
+    echo [ERROR] Assembler failed!
+    exit /b %errorlevel%
+)
+
+echo [4/4] Running TimeQuest Timing Analyzer (quartus_sta)...
 C:\13.0sp1\quartus\bin64\quartus_sta.exe soc_top
 if %errorlevel% neq 0 (
     echo [ERROR] STA failed!
@@ -29,3 +36,4 @@ if %errorlevel% neq 0 (
 echo ========================================================
 echo   COMPILATION COMPLETED SUCCESSFULLY!
 echo ========================================================
+

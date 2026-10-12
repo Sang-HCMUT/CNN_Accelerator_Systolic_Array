@@ -216,9 +216,55 @@ vsim -c -do "run -all; quit -f" tb_systolic_stress_test
   .\compile_soc.bat
   ```
 
+### 6. Run Phase 4: Terasic DE1 FPGA Board Deployment & Live Host PC GUI Demo
+- **Step 1: Connect Hardware**:
+  - Connect DC Power (9V/12V) and Altera USB-Blaster cable to the Terasic DE1 board.
+  - Connect RS-232 / USB-to-UART cable (Pins `F14` RXD, `G12` TXD, GND) to Host PC.
+  - Set `RUN/PROG` switch to `RUN`, turn on board Power.
+- **Step 2: Program Bitstream to FPGA (1-Click)**:
+  ```powershell
+  cd synthesis_soc
+  .\program_de1.bat
+  ```
+- **Step 3: Test Real-Time MNIST Inference via UART Bridge**:
+  - **Interactive Drawing GUI**: Draw digits with your mouse and see real-time classification on the DE1 7-segment display `HEX0`:
+    ```powershell
+    python software_ref/uart_bridge.py --port COM3 --mode gui
+    ```
+  - **Single Test Sample**:
+    ```powershell
+    python software_ref/uart_bridge.py --port COM3 --mode test_single --index 42
+    ```
+  - **Batch Evaluation**:
+    ```powershell
+    python software_ref/uart_bridge.py --port COM3 --mode batch --count 20
+    ```
+  - **Offline Mock Mode (No Hardware Needed)**:
+    ```powershell
+    python software_ref/uart_bridge.py --mock --mode gui
+    ```
+
+---
+
+## Terasic DE1 Hardware Pinout Map
+
+| Pin | Cyclone II Pin | Hardware Function | Behavior |
+| :--- | :---: | :--- | :--- |
+| **`clk`** | `PIN_L1` | 50.0 MHz Master Clock (`CLOCK_50`) | Oscillator Input |
+| **`rst_n`** | `PIN_R22` | Active-low Master Reset (`KEY[0]`) | Push-button Reset |
+| **`uart_rx`** | `PIN_F14` | RS-232 RXD (115200 Baud, 8N1) | Input from Host PC |
+| **`uart_tx`** | `PIN_G12` | RS-232 TXD (115200 Baud, 8N1) | Output to Host PC |
+| **`hex0[6:0]`** | `PIN_E2`..`PIN_J2` | 7-Segment Display (`HEX0`) | Active-low Predicted Digit Output |
+| **`hex1[6:0]`** | `PIN_D1`..`PIN_E1` | 7-Segment Display (`HEX1`) | Active-low Tens Digit Output |
+| **`ledr[0]`** | `PIN_R20` | Red LED 0 (`LEDR[0]`) | CPU Trap Flag (OFF = Normal, ON = Trap) |
+| **`ledr[1]`** | `PIN_R19` | Red LED 1 (`LEDR[1]`) | Accelerator Busy Flag (`core_busy`) |
+| **`ledg[0]`** | `PIN_U22` | Green LED 0 (`LEDG[0]`) | Accelerator Done Flag (`core_done`) |
+| **`ledg[1]`** | `PIN_U21` | Green LED 1 (`LEDG[1]`) | UART RX Valid Flag (`rx_valid`) |
+
 ---
 
 ## License & Author
 - **Author**: Nguyen Hoang Sang ([Sang-HCMUT](https://github.com/Sang-HCMUT))
 - **Project**: Graduation Capstone Project - Ho Chi Minh City University of Technology (HCMUT - VNU-HCM)
 - **License**: MIT License
+
