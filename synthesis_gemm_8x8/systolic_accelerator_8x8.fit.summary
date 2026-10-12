@@ -1,0 +1,16 @@
+Fitter Status : Successful - Mon Oct 12 09:26:55 2026
+Quartus II 64-Bit Version : 13.0.1 Build 232 06/12/2013 SP 1 SJ Web Edition
+Revision Name : systolic_accelerator_8x8
+Top-level Entity Name : systolic_accelerator_8x8
+Family : Cyclone II
+Device : EP2C20F484C7
+Timing Models : Final
+Total logic elements : 15,567 / 18,752 ( 83 % )
+    Total combinational functions : 13,211 / 18,752 ( 70 % )
+    Dedicated logic registers : 8,012 / 18,752 ( 43 % )
+Total registers : 8012
+Total pins : 97 / 315 ( 31 % )
+Total virtual pins : 0
+Total memory bits : 1,024 / 239,616 ( < 1 % )
+Embedded Multiplier 9-bit elements : 52 / 52 ( 100 % )
+Total PLLs : 0 / 4 ( 0 % )

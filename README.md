@@ -1,0 +1,165 @@
+# Parameterized 2D Systolic Array CNN Accelerator on FPGA
+
+[![FPGA](https://img.shields.io/badge/FPGA-Altera%20Cyclone%20II%20EP2C20-blue.svg)](https://www.intel.com/)
+[![HDL](https://img.shields.io/badge/HDL-SystemVerilog%20(IEEE%201800--2012)-orange.svg)](https://en.wikipedia.org/wiki/SystemVerilog)
+[![Tool](https://img.shields.io/badge/EDA-Quartus%20II%20%26%20ModelSim-green.svg)](https://www.intel.com/)
+[![Verification](https://img.shields.io/badge/Verification-100%25%20Bit--True%20(16%2F16%20%26%206%2F6%20Stress%20Passed)-brightgreen.svg)](#verification--test-results)
+
+An open-source, modular, and parameterized hardware accelerator designed for Convolutional Neural Networks (CNNs) based on an **Output-Stationary 2D Systolic Array**. Optimized for low-cost FPGA platforms (such as the Altera Cyclone II on Terasic DE1), featuring quantized **Signed INT8** inputs/weights, **Signed INT32** accumulation, on-the-fly **ReLU / Arithmetic Scaling / Saturation Clamping**, and an **AMBA AXI4-Lite** interface.
+
+---
+
+## Key Architectural Highlights
+
+- **GEMM via `im2col`**: Transforms high-dimensional 2D convolutions into generalized matrix multiplication ($C = A \times B$), eliminating complex multi-nested loops.
+- **Output-Stationary 2D Systolic Array**: Accumulates partial products locally within Processing Elements (PEs), drastically minimizing data movement.
+- **Wavefront Skew Network**: Dedicated input pipeline skew unit delaying rows ($i \cdot T$) and columns ($j \cdot T$) for rhythmic pulse-based synchronization.
+- **Pure Structural Hierarchy**: Modularized into 7 clean, decoupled modules with pristine schematic visualization in Quartus RTL Viewer.
+- **Dual-Channel Output Buffer**: Simultaneously stores 32-bit raw accumulated values (`mem_c_acc`) for precision verification and 8-bit quantized activations (`mem_c`) for subsequent CNN layers.
+- **Parameterized Architecture (`ARRAY_SIZE`)**: Seamless scaling between $4 \times 4$ (16 PEs) and $8 \times 8$ (64 PEs) configurations.
+- **AXI4-Lite Ready**: Memory-mapped register file ready for host CPU integration (RISC-V / Nios II).
+
+---
+
+## Pure Structural Block Diagram
+
+```text
+                      +-------------------+
+                      |   u_controller    |
+                      | (gemm_controller) |
+                      +---------+---------+
+                                |
+             +------------------+------------------+
+             | stream_en, k_step                   | sys_en, clear_acc
+             v                                     v
+     +---------------+                     +--------------------+
+     |  u_buffer_a   |---(a_row_raw)------>|    u_skew_unit     |
+     | (Weight RAM)  |                     | (systolic_skew_    |
+     +---------------+                     |      unit)         |
+                                           +---------+----------+
+     +---------------+                               | (a_row_skewed, b_col_skewed)
+     |  u_buffer_b   |---(b_col_raw)---------------->|
+     | (Input RAM)   |                               v
+     +---------------+                     +--------------------+
+                                           |  u_systolic_core   | (2D PE Mesh)
+                                           |  (systolic_array_  |
+                                           |       core)        |
+                                           +---------+----------+
+                                                     | (c_matrix_core)
+                                                     v
+                                           +--------------------+
+                                           |    u_quantizer     | (ReLU + Shift + Clamp)
+                                           | (quantize_relu_    |
+                                           |      unit)         |
+                                           +---------+----------+
+                                                     | (dout, valid)
+                                                     v
+                                           +--------------------+
+                                           |    u_buffer_c      |====> rd_c_data (INT8)
+                                           |  (Output RAM C)    |====> rd_c_acc_data (INT32)
+                                           +--------------------+
+```
+
+---
+
+## Directory Organization
+
+```text
+├── RTL/                         # SystemVerilog hardware source files
+│   ├── pe_gemm.sv               # Processing Element (INT8 mult + INT32 acc)
+│   ├── systolic_skew_unit.sv    # Wavefront delay skew registers (0T, 1T, ...)
+│   ├── systolic_array_core.sv   # NxN nearest-neighbor 2D PE mesh
+│   ├── matrix_buffer_a.sv       # Weight on-chip RAM buffer
+│   ├── matrix_buffer_b.sv       # Activation on-chip RAM buffer
+│   ├── matrix_buffer_c.sv       # Dual-channel output RAM buffer
+│   ├── quantize_relu_unit.sv    # Post-processing: ReLU, Arithmetic Shift, Clamp
+│   ├── gemm_controller.sv       # 7-state centralized control FSM
+│   ├── systolic_accelerator_top.sv # Structural top-level module
+│   ├── systolic_accelerator_8x8.sv # 8x8 parameter wrapper
+│   └── systolic_gemm_axi_lite.sv   # AMBA AXI4-Lite slave wrapper
+├── VEFIFY/                      # ModelSim testbenches and simulation assets
+│   ├── tb_systolic_gemm.sv      # Bit-true scoreboard testbench vs. Python
+│   ├── tb_systolic_stress_test.sv # 6 corner-case & stress scenarios
+│   └── run_gemm_sim.do          # ModelSim execution script
+├── software_ref/                # Python Golden Reference Model
+│   ├── gemm_golden.py           # Bit-accurate matrix generation script
+│   └── run_golden.bat           # One-click execution script
+├── synthesis_gemm/              # Quartus II project for 4x4 configuration (16 PEs)
+│   └── compile_4x4.bat          # Automated command-line build script
+├── synthesis_gemm_8x8/          # Quartus II project for 8x8 configuration (64 PEs)
+│   └── compile_8x8.bat          # Automated command-line build script
+└── PROJECT_SPECIFICATION.md     # Comprehensive system specification & engineering report
+```
+
+---
+
+## Hardware Benchmark (Altera Cyclone II EP2C20F484C7)
+
+Compiled with **Quartus II 64-Bit 13.0 SP1** and analyzed via **TimeQuest Timing Analyzer**:
+
+| Metric | $4 \times 4$ Array (16 PEs) | $8 \times 8$ Array (64 PEs) | Scaling Ratio |
+| :--- | :---: | :---: | :---: |
+| **Logic Elements (LEs)** | **4,323 / 18,752 (23.1%)** | **15,567 / 18,752 (83.0%)** | **$3.60\times$** |
+| - *Combinational Functions* | 3,412 (18.2%) | 13,211 (70.5%) | $3.87\times$ |
+| - *Dedicated Logic Registers* | 2,473 (13.2%) | 8,012 (42.7%) | $3.24\times$ |
+| **Embedded Multipliers (9-bit)** | **16 / 52 (30.8%)** | **52 / 52 (100.0% - Saturated)** | **$3.25\times$** (12 mults in LUTs) |
+| **Memory Bits (Block RAM)** | **512 / 239,616 (< 1%)** | **1,024 / 239,616 (< 1%)** | $2.00\times$ |
+| **Total I/O Pins** | 93 / 315 (29.5%) | 97 / 315 (30.8%) | $+4$ pins |
+| **Max Frequency $F_{max}$ (Slow 85°C)** | **70.00 MHz** ($T_{clk} = 14.286 \text{ ns}$) | **67.60 MHz** ($T_{clk} = 14.793 \text{ ns}$) | **Stable (-3.4%)** |
+| **Max Frequency $F_{max}$ (Fast 0°C)** | **186.04 MHz** ($T_{clk} = 5.37 \text{ ns}$) | **184.74 MHz** ($T_{clk} = 5.41 \text{ ns}$) | **Stable (-0.7%)** |
+| **Compute Latency ($K=N$)** | 13 clock cycles | 25 clock cycles | $1.92\times$ |
+| **Total Latency (with Readout)** | 33 clock cycles | 91 clock cycles | $2.75\times$ |
+| **Peak Throughput (Slow 85°C)** | **2.240 GOPS** | **8.653 GOPS** | **$3.86\times$ (Near-linear)** |
+| **Peak Throughput (Fast 0°C)** | **5.953 GOPS** | **23.647 GOPS** | **$3.97\times$** |
+
+### Key Academic Takeaways:
+1. **$F_{max}$ Frequency Preservation**: By eliminating global broadcast routes and inserting pipelined registers between adjacent PEs, increasing the compute density by $4\times$ ($16 \to 64$ PEs) causes only a negligible $3.4\%$ frequency drop.
+2. **DSP Saturation**: Cyclone II `EP2C20` features 52 9-bit DSP blocks. The $4 \times 4$ array consumes only $30.8\%$ DSPs, leaving ample resources for a full System-on-Chip (SoC) with a soft RISC-V CPU. The $8 \times 8$ array fully saturates the DSP blocks, achieving maximum computation throughput ($8.65 \text{ GOPS}$).
+
+---
+
+## Verification & Test Results
+
+### 1. Python Golden Model Comparison
+- Scoreboard verifies both **INT32 Accumulator** and **INT8 Post-ReLU Quantized** values against Python NumPy:
+```text
+VERIFICATION RESULT: ALL 16 ELEMENTS PASSED (0 ERRORS)!
+100% BIT-FOR-BIT MATCH WITH PYTHON GOLDEN MODEL!
+```
+
+### 2. Comprehensive Stress & Corner-Case Suite
+- **Scenario 1**: Extreme Min ($-128 \times -128 = +16384$) $\implies$ **PASSED**
+- **Scenario 2**: Saturation Clamping (Clamped to $+127$) $\implies$ **PASSED**
+- **Scenario 3**: Bypass ReLU (Negative values preserved) $\implies$ **PASSED**
+- **Scenario 4**: Zero Matrix (Quiescent stability) $\implies$ **PASSED**
+- **Scenario 5**: Back-to-Back Run #1 (Accumulator auto-clear) $\implies$ **PASSED**
+- **Scenario 6**: Back-to-Back Run #2 (Pipeline residual flush) $\implies$ **PASSED**
+
+---
+
+## Quickstart Guide
+
+### 1. Generate Golden Reference Vectors
+Double click `software_ref/run_golden.bat` or run:
+```powershell
+python software_ref/gemm_golden.py
+```
+
+### 2. Run ModelSim Simulation
+```powershell
+cd VEFIFY
+vlog -sv -work work ../RTL/*.sv tb_systolic_gemm.sv tb_systolic_stress_test.sv
+vsim -c -do "run -all; quit -f" tb_systolic_gemm
+vsim -c -do "run -all; quit -f" tb_systolic_stress_test
+```
+
+### 3. Run Quartus Synthesis
+- For $4 \times 4$: Run `synthesis_gemm/compile_4x4.bat`
+- For $8 \times 8$: Run `synthesis_gemm_8x8/compile_8x8.bat`
+
+---
+
+## License & Author
+- **Author**: Nguyen Hoang Sang ([Sang-HCMUT](https://github.com/Sang-HCMUT))
+- **Project**: Graduation Capstone Project - Ho Chi Minh City University of Technology (HCMUT - VNU-HCM)
+- **License**: MIT License

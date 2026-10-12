@@ -1,0 +1,6 @@
+QUARTUS_VERSION = "13.0"
+DATE = "14:30:00  October 11, 2026"
+
+# Revisions
+
+PROJECT_REVISION = "systolic_accelerator_8x8"

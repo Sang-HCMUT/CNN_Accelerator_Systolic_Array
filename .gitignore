@@ -1,0 +1,38 @@
+# Quartus temporary synthesis database & cache
+**/db/
+**/incremental_db/
+**/.qsys_edit/
+**/output_files/
+*.done
+*.jdi
+*.pin
+*.pof
+*.qws
+*.smsg
+*.bak
+
+# ModelSim simulation artifacts
+**/work/
+**/transcript
+*.wlf
+*.vcd
+
+# Object & binary build artifacts
+*.o
+*.d
+*.obj
+*.elf
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local engineering specifications & reports (retained locally, excluded from git)
+PROJECT_SPECIFICATION.md
+BaoCao_*.md
+
+# OS & Editor temp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
