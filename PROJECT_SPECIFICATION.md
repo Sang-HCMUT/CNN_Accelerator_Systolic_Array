@@ -807,23 +807,23 @@ Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu 
 
 #### 1. Bảng Tổng Hợp Lệnh Mở 1-Click Dạng Sóng Trên ModelSim:
 
-| STT Dạng Sóng | Tên Dạng Sóng & Giai Đoạn | Script Mở 1-Click (Windows CMD) | Lệnh ModelSim Tcl CLI | Nhóm Tín Hiệu Trọng Tâm |
+| STT Dạng Sóng | Tên Dạng Sóng & Giai Đoạn | Script Mở 1-Click (PowerShell / CMD) | Lệnh ModelSim Tcl CLI | Nhóm Tín Hiệu Trọng Tâm |
 | :---: | :--- | :--- | :--- | :--- |
-| **Waveform 1** | **Mảng Tâm Thu Cơ Sở (Phase 1)** | `cd VEFIFY`<br>`open_wave_gemm.bat` | `cd VEFIFY`<br>`vsim -do run_gemm_sim.do` | Control, Skewing Wavefront ($0T..3T$), PEs Accumulators, Quantizer Output. |
-| **Waveform 2** | **Stress & Corner-Cases (Phase 1)** | `cd VEFIFY`<br>`vsim -do "run -all" tb_systolic_stress_test` | `vsim -voptargs=+acc work.tb_systolic_stress_test`<br>`run -all` | 6 kịch bản góc kẹt, cờ `pass_count = 6/6`, mạch Saturation Clamp ghìm $+127$. |
-| **Waveform 3** | **Đồng Mô Phỏng SoC RISC-V (Phase 3)** | `cd VEFIFY`<br>`open_wave_soc.bat` | `cd VEFIFY`<br>`vsim -do wave_soc.do` | CPU ARADDR/AWADDR, `trap=0`, AXI4-Lite Routing, `core_start`/`core_done`, UART TX (607 chars). |
-| **Waveform 4** | **Ngoại Vi Vật Lý Kit DE1 (Phase 4)** | Tích hợp sẵn trong:<br>`open_wave_soc.bat` | Nằm trong nhóm `Terasic DE1 Board IO`<br>của script `wave_soc.do` | UART RXD 115200 Baud, `rx_valid`, LED 7 đoạn `HEX0/HEX1` (Active-Low), LED chẩn đoán. |
+| **Waveform 1** | **Mảng Tâm Thu Cơ Sở (Phase 1)** | `cd VEFIFY`<br>`.\open_wave_gemm.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do run_gemm_sim.do` | Control, Skewing Wavefront ($0T..3T$), PEs Accumulators, Quantizer Output. |
+| **Waveform 2** | **Stress & Corner-Cases (Phase 1)** | `cd VEFIFY`<br>`.\open_wave_stress.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do run_stress_sim.do` | 6 kịch bản góc kẹt, cờ `pass_count = 6/6`, mạch Saturation Clamp ghìm $+127$. |
+| **Waveform 3** | **Đồng Mô Phỏng SoC RISC-V (Phase 3)** | `cd VEFIFY`<br>`.\open_wave_soc.bat` *(hoặc nhấp đúp file)* | `cd VEFIFY`<br>`vsim -do wave_soc.do` | CPU ARADDR/AWADDR, `trap=0`, AXI4-Lite Routing, `core_start`/`core_done`, UART TX (607 chars). |
+| **Waveform 4** | **Ngoại Vi Vật Lý Kit DE1 (Phase 4)** | Tích hợp sẵn trong:<br>`.\open_wave_soc.bat` | Nằm trong nhóm `Terasic DE1 Board IO`<br>của script `wave_soc.do` | UART RXD 115200 Baud, `rx_valid`, LED 7 đoạn `HEX0/HEX1` (Active-Low), LED chẩn đoán. |
 
 ---
 
 #### 2. Chi Tiết Các Tín Hiệu & Vị Trí Zoom Thuyết Minh Cho Từng Waveform:
 
 ##### A. Waveform 1: Lõi Mảng Tâm Thu 2D ([`open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat))
-* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat).
+* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat) (hoặc gõ `.\open_wave_gemm.bat` trong PowerShell).
 * **Các điểm then chốt cần chỉ cho Hội đồng**:
   1. **Tín hiệu điều khiển FSM**: Trỏ chuột vào thời điểm xung `start` tích cực ở chu kỳ $T_0$, cờ `busy` bật lên mức cao, và sau đúng **33 chu kỳ xung nhịp**, cờ `done` bật sáng.
   2. **Dòng chảy lệch nhịp Wavefront Skewing**:
-     - Mở nhóm `Systolic Array Feeder`: Quan sát `a_row_skewed[0..3]` và `b_col_skewed[0..3]`.
+     - Mở nhóm `Systolic Array Feeder`: Quan sát `a_row_skew[0..3]` và `b_col_skew[0..3]`.
      - Chỉ rõ cho Hội đồng thấy: Hàng 0 nạp ngay ở chu kỳ $0T$, Hàng 1 trễ $1T$, Hàng 2 trễ $2T$, Hàng 3 trễ $3T$. Sự so le hình bậc thang này chứng minh mạng trễ nhịp sóng (Wavefront Flow) vận hành chuẩn xác.
   3. **Tích lũy nội tại PE (Output-Stationary)**:
      - Mở nhóm `Internal 2D Accumulators` hiển thị `c_matrix_core[0..3][0..3]`.
@@ -832,13 +832,8 @@ Bảng tóm lược toàn bộ quy trình, công cụ kiểm thử, chỉ tiêu 
      - `rd_c_acc_data` (INT32) và `rd_c_data` (INT8 sau ReLU và Shift).
      - So khớp trực tiếp 16 giá trị đầu ra này với file tham chiếu [`golden_output_int8.hex`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/golden_output_int8.hex), chứng minh đạt **100% BIT-TRUE MATCH**.
 
-##### B. Waveform 2: Kiểm Thử Chịu Tải Cực Đoan (Corner-Cases)
-* **Cách mở**: Trong ModelSim, gõ lệnh:
-  ```tcl
-  vsim -voptargs=+acc work.tb_systolic_stress_test
-  add wave -radix decimal /tb_systolic_stress_test/*
-  run -all
-  ```
+##### B. Waveform 2: Kiểm Thử Chịu Tải Cực Đoan (Corner-Cases) ([`open_wave_stress.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_stress.bat))
+* **Cách mở**: Nhấp đúp chuột vào file [`VEFIFY/open_wave_stress.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_stress.bat) (hoặc gõ `.\open_wave_stress.bat` trong PowerShell, hoặc chạy lệnh ModelSim: `vsim -do run_stress_sim.do`).
 * **Các điểm then chốt cần chỉ cho Hội đồng**:
   1. Trỏ vào thông báo Terminal: `[PASS] ALL 6/6 STRESS & CORNER-CASE TESTS PASSED PERFECTLY!`.
   2. Tại kịch bản **Test 2 (Extreme Saturation)**: Tổng tích lũy vượt quá giới hạn $[-128, 127]$, dạng sóng chỉ ra mạch `quantize_relu_unit` ghìm chính xác tại $+127$, bảo vệ hệ thống không bị hiện tượng tràn số đổi dấu (Wrap-around Overflow).
