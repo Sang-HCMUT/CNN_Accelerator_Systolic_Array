@@ -40,8 +40,8 @@ add wave -color "Green"  /tb_systolic_gemm/done
 
 # Wavefront Skew feeder
 add wave -divider "Systolic Array Feeder"
-add wave -radix decimal  /tb_systolic_gemm/dut/u_skew_unit/a_row_skewed
-add wave -radix decimal  /tb_systolic_gemm/dut/u_skew_unit/b_col_skewed
+add wave -radix decimal  /tb_systolic_gemm/dut/u_skew_unit/a_row_skew
+add wave -radix decimal  /tb_systolic_gemm/dut/u_skew_unit/b_col_skew
 
 # Internal 2D Accumulators
 add wave -divider "Internal 2D Accumulators"
@@ -54,3 +54,4 @@ add wave -radix decimal  /tb_systolic_gemm/rd_c_data
 
 # 6. Execute full simulation
 run -all
+wave zoomfull
