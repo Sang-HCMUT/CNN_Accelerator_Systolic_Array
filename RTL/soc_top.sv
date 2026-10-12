@@ -13,8 +13,8 @@ module soc_top #(
     parameter ARRAY_SIZE    = 4,
     parameter DATA_WIDTH    = 8,
     parameter ACC_WIDTH     = 32,
-    parameter MEM_WORDS         = 8192,
-    parameter MEM_INIT_FILE     = "firmware.hex",
+    parameter MEM_WORDS     = 4096,
+    parameter MEM_INIT_FILE = "firmware.hex",
     parameter UART_CLKS_PER_BIT = 434
 )(
     input  logic clk,

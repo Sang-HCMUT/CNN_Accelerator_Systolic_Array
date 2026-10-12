@@ -1,0 +1,6 @@
+QUARTUS_VERSION = "13.0"
+DATE = "12:05:00  October 12, 2026"
+
+# Revisions
+
+PROJECT_REVISION = "soc_top"

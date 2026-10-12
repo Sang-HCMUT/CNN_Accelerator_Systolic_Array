@@ -47,8 +47,10 @@ module axi_ram #(
     input  logic                   s_axi_rready
 );
 
-    // Memory array (8192 words of 32 bits = 32 KB)
-    logic [31:0] mem [0:MEM_WORDS-1];
+    localparam ADDR_BITS = $clog2(MEM_WORDS);
+
+    // Memory array with Quartus Block RAM synthesis directive
+    (* ramstyle = "M4K, no_rw_check" *) logic [31:0] mem [0:MEM_WORDS-1];
 
     // Optional initialization from file
     initial begin
@@ -56,6 +58,30 @@ module axi_ram #(
             $readmemh(MEM_INIT_FILE, mem);
         end
     end
+
+    // Internal RAM signals for synchronous Block RAM inference
+    logic                 ram_we;
+    logic [ADDR_BITS-1:0] ram_waddr;
+    logic [31:0]          ram_wdata;
+    logic [3:0]           ram_wstrb;
+    logic [31:0]          ram_rdata;
+
+    // ------------------------------------------------------------------------
+    // Embedded Block RAM (M4K / M9K / M10K) Synchronous Array (NO RESET)
+    // ------------------------------------------------------------------------
+    wire [ADDR_BITS-1:0] rd_word_idx = s_axi_araddr[ADDR_BITS+1:2];
+
+    always_ff @(posedge clk) begin
+        if (ram_we) begin
+            if (ram_wstrb[0]) mem[ram_waddr][7:0]   <= ram_wdata[7:0];
+            if (ram_wstrb[1]) mem[ram_waddr][15:8]  <= ram_wdata[15:8];
+            if (ram_wstrb[2]) mem[ram_waddr][23:16] <= ram_wdata[23:16];
+            if (ram_wstrb[3]) mem[ram_waddr][31:24] <= ram_wdata[31:24];
+        end
+        ram_rdata <= mem[rd_word_idx];
+    end
+
+    assign s_axi_rdata = ram_rdata;
 
     // Internal handshakes & FSM
     typedef enum logic [1:0] {
@@ -70,18 +96,11 @@ module axi_ram #(
     logic [31:0] latched_wdata;
     logic [3:0]  latched_wstrb;
 
-    // Word address: addr[14:2] maps to 8192 words
-    wire [12:0] rd_word_idx = s_axi_araddr[14:2];
-
-    task automatic do_ram_write(input [31:0] addr, input [31:0] data, input [3:0] strb);
-        logic [12:0] target_word;
-        target_word = addr[14:2];
-        if (target_word < MEM_WORDS) begin
-            if (strb[0]) mem[target_word][7:0]   <= data[7:0];
-            if (strb[1]) mem[target_word][15:8]  <= data[15:8];
-            if (strb[2]) mem[target_word][23:16] <= data[23:16];
-            if (strb[3]) mem[target_word][31:24] <= data[31:24];
-        end
+    task automatic trigger_ram_write(input [31:0] addr, input [31:0] data, input [3:0] strb);
+        ram_we    <= 1'b1;
+        ram_waddr <= addr[ADDR_BITS+1:2];
+        ram_wdata <= data;
+        ram_wstrb <= strb;
     endtask
 
     // ------------------------------------------------------------------------
@@ -96,15 +115,21 @@ module axi_ram #(
             latched_awaddr <= '0;
             latched_wdata  <= '0;
             latched_wstrb  <= '0;
+            ram_we         <= 1'b0;
+            ram_waddr      <= '0;
+            ram_wdata      <= '0;
+            ram_wstrb      <= '0;
             wr_state       <= WR_IDLE;
         end else begin
+            ram_we <= 1'b0;
+
             case (wr_state)
                 WR_IDLE: begin
                     s_axi_bvalid <= 1'b0;
                     if (s_axi_awvalid && s_axi_wvalid) begin
                         s_axi_awready <= 1'b1;
                         s_axi_wready  <= 1'b1;
-                        do_ram_write(s_axi_awaddr, s_axi_wdata, s_axi_wstrb);
+                        trigger_ram_write(s_axi_awaddr, s_axi_wdata, s_axi_wstrb);
                         s_axi_bvalid  <= 1'b1;
                         s_axi_bresp   <= 2'b00;
                         wr_state      <= WR_RESP;
@@ -129,7 +154,7 @@ module axi_ram #(
                     s_axi_awready <= 1'b0;
                     if (s_axi_wvalid) begin
                         s_axi_wready <= 1'b1;
-                        do_ram_write(latched_awaddr, s_axi_wdata, s_axi_wstrb);
+                        trigger_ram_write(latched_awaddr, s_axi_wdata, s_axi_wstrb);
                         s_axi_bvalid <= 1'b1;
                         s_axi_bresp  <= 2'b00;
                         wr_state     <= WR_RESP;
@@ -142,7 +167,7 @@ module axi_ram #(
                     s_axi_wready <= 1'b0;
                     if (s_axi_awvalid) begin
                         s_axi_awready <= 1'b1;
-                        do_ram_write(s_axi_awaddr, latched_wdata, latched_wstrb);
+                        trigger_ram_write(s_axi_awaddr, latched_wdata, latched_wstrb);
                         s_axi_bvalid  <= 1'b1;
                         s_axi_bresp   <= 2'b00;
                         wr_state      <= WR_RESP;
@@ -171,7 +196,6 @@ module axi_ram #(
             s_axi_arready <= 1'b0;
             s_axi_rvalid  <= 1'b0;
             s_axi_rresp   <= 2'b00;
-            s_axi_rdata   <= '0;
         end else begin
             if (~s_axi_rvalid) begin
                 if (s_axi_arvalid && ~s_axi_arready) begin
@@ -180,10 +204,6 @@ module axi_ram #(
                     s_axi_arready <= 1'b0;
                     s_axi_rvalid  <= 1'b1;
                     s_axi_rresp   <= 2'b00;
-                    if (rd_word_idx < MEM_WORDS)
-                        s_axi_rdata <= mem[rd_word_idx];
-                    else
-                        s_axi_rdata <= 32'hDEAD_BEEF;
                 end else begin
                     s_axi_arready <= 1'b0;
                 end

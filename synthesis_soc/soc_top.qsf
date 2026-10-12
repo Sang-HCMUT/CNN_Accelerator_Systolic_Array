@@ -1,0 +1,29 @@
+set_global_assignment -name FAMILY "Cyclone II"
+set_global_assignment -name DEVICE EP2C20F484C7
+set_global_assignment -name TOP_LEVEL_ENTITY soc_top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"
+
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/pe_gemm.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/systolic_skew_unit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/systolic_array_core.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/quantize_relu_unit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/matrix_buffer_a.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/matrix_buffer_b.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/matrix_buffer_c.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/gemm_controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/systolic_accelerator_top.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/systolic_gemm_axi_lite.sv
+set_global_assignment -name VERILOG_FILE ../RTL/picorv32.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_interconnect.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_ram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_uart.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top.sv
+set_global_assignment -name SDC_FILE soc_top.sdc
+
+set_parameter -name MEM_WORDS 4096
+
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"

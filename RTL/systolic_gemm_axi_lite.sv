@@ -137,8 +137,9 @@ module systolic_gemm_axi_lite #(
             core_wr_a_en <= 1'b0;
             core_wr_b_en <= 1'b0;
 
+            status_reg[31:2] <= 30'd0;
+            status_reg[1]    <= core_busy;
             if (core_done) status_reg[0] <= 1'b1;
-            status_reg[1] <= core_busy;
 
             case (wr_state)
                 WR_IDLE: begin
