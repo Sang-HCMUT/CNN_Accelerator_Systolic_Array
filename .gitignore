@@ -31,9 +31,11 @@ software_ref/data/
 
 # Local engineering reports
 BaoCao_*.md
+scratch/
 
 # OS & Editor temp
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+
