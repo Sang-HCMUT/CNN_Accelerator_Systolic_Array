@@ -2684,6 +2684,12 @@ module picorv32_axi #(
 		.mem_ready(mem_ready),
 		.mem_rdata(mem_rdata),
 
+		.mem_la_read (),
+		.mem_la_write(),
+		.mem_la_addr (),
+		.mem_la_wdata(),
+		.mem_la_wstrb(),
+
 		.pcpi_valid(pcpi_valid),
 		.pcpi_insn (pcpi_insn ),
 		.pcpi_rs1  (pcpi_rs1  ),
@@ -2947,6 +2953,12 @@ module picorv32_wb #(
 		.mem_instr(mem_instr),
 		.mem_ready(mem_ready),
 		.mem_rdata(mem_rdata),
+
+		.mem_la_read (),
+		.mem_la_write(),
+		.mem_la_addr (),
+		.mem_la_wdata(),
+		.mem_la_wstrb(),
 
 		.pcpi_valid(pcpi_valid),
 		.pcpi_insn (pcpi_insn ),
