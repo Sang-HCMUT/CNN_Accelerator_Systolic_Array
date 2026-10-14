@@ -28,7 +28,7 @@ class gemm_base_test extends uvm_test;
 
     function void end_of_elaboration_phase(uvm_phase phase);
         super.end_of_elaboration_phase(phase);
-        `uvm_info("BASE_TEST", "Topology elaboration complete. Printing UVM Hierarchy:", UVM_LOW)
+        `uvm_info("BASE_TEST", "UVM testbench topology:", UVM_LOW)
         uvm_top.print_topology();
     endfunction
 
@@ -48,11 +48,11 @@ class gemm_directed_test extends gemm_base_test;
     task run_phase(uvm_phase phase);
         gemm_directed_seq seq;
         phase.raise_objection(this);
-        `uvm_info("DIRECTED_TEST", ">>> STARTING UVM DIRECTED SCENARIO TEST <<<", UVM_LOW)
+        `uvm_info("TEST", "Starting test: gemm_directed_test", UVM_LOW)
         seq = gemm_directed_seq::type_id::create("seq");
         seq.start(env.agt.sqr);
         #100;
-        `uvm_info("DIRECTED_TEST", ">>> COMPLETED UVM DIRECTED SCENARIO TEST <<<", UVM_LOW)
+        `uvm_info("TEST", "Completed test: gemm_directed_test", UVM_LOW)
         phase.drop_objection(this);
     endtask
 
@@ -72,12 +72,12 @@ class gemm_random_test extends gemm_base_test;
     task run_phase(uvm_phase phase);
         gemm_random_seq seq;
         phase.raise_objection(this);
-        `uvm_info("RANDOM_TEST", ">>> STARTING UVM CONSTRAINED-RANDOM TEST <<<", UVM_LOW)
+        `uvm_info("TEST", "Starting test: gemm_random_test", UVM_LOW)
         seq = gemm_random_seq::type_id::create("seq");
         seq.num_transactions = 25; // 25 full 4x4 matrix multiplications
         seq.start(env.agt.sqr);
         #100;
-        `uvm_info("RANDOM_TEST", ">>> COMPLETED UVM CONSTRAINED-RANDOM TEST <<<", UVM_LOW)
+        `uvm_info("TEST", "Completed test: gemm_random_test", UVM_LOW)
         phase.drop_objection(this);
     endtask
 
@@ -97,12 +97,12 @@ class gemm_stress_test extends gemm_base_test;
     task run_phase(uvm_phase phase);
         gemm_stress_seq seq;
         phase.raise_objection(this);
-        `uvm_info("STRESS_TEST", ">>> STARTING UVM HIGH-STRESS TEST <<<", UVM_LOW)
+        `uvm_info("TEST", "Starting test: gemm_stress_test", UVM_LOW)
         seq = gemm_stress_seq::type_id::create("seq");
         seq.num_transactions = 50;
         seq.start(env.agt.sqr);
         #100;
-        `uvm_info("STRESS_TEST", ">>> COMPLETED UVM HIGH-STRESS TEST <<<", UVM_LOW)
+        `uvm_info("TEST", "Completed test: gemm_stress_test", UVM_LOW)
         phase.drop_objection(this);
     endtask
 

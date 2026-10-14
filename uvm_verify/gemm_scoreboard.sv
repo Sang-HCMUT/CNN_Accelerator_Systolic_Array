@@ -71,8 +71,8 @@ class gemm_scoreboard extends uvm_scoreboard;
 
             if (is_match) begin
                 match_count++;
-                `uvm_info("SCOREBOARD_MATCH",
-                    $sformatf("[PASS] Tx #%0d (%s): All 16 elements (INT32 & INT8) matched bit-true!",
+                `uvm_info("SCB",
+                    $sformatf("Tx #%0d matched (%s)",
                               exp.trans_id, exp.scenario_name), UVM_LOW)
             end else begin
                 mismatch_count++;
@@ -82,24 +82,14 @@ class gemm_scoreboard extends uvm_scoreboard;
 
     function void report_phase(uvm_phase phase);
         super.report_phase(phase);
-        `uvm_info("SCOREBOARD_SUMMARY", "\n" , UVM_LOW)
-        `uvm_info("SCOREBOARD_SUMMARY", "===========================================================", UVM_LOW)
-        `uvm_info("SCOREBOARD_SUMMARY", "           UVM SYSTOLIC ACCELERATOR SCOREBOARD REPORT       ", UVM_LOW)
-        `uvm_info("SCOREBOARD_SUMMARY", "===========================================================", UVM_LOW)
-        `uvm_info("SCOREBOARD_SUMMARY", $sformatf("  Total GEMM Transactions Evaluated : %0d", total_evaluated), UVM_LOW)
-        `uvm_info("SCOREBOARD_SUMMARY", $sformatf("  Bit-True Matched Transactions     : %0d", match_count), UVM_LOW)
-        `uvm_info("SCOREBOARD_SUMMARY", $sformatf("  Mismatched Transactions           : %0d", mismatch_count), UVM_LOW)
-        if (total_evaluated > 0) begin
-            real pass_pct = (match_count * 100.0) / total_evaluated;
-            `uvm_info("SCOREBOARD_SUMMARY", $sformatf("  Verification Pass Rate            : %0.2f%%", pass_pct), UVM_LOW)
-        end
-        `uvm_info("SCOREBOARD_SUMMARY", "-----------------------------------------------------------", UVM_LOW)
+        `uvm_info("SCB", "--- Scoreboard Summary ---", UVM_LOW)
+        `uvm_info("SCB", $sformatf("Total: %0d | Passed: %0d | Failed: %0d",
+                                  total_evaluated, match_count, mismatch_count), UVM_LOW)
         if (mismatch_count == 0 && total_evaluated > 0) begin
-            `uvm_info("SCOREBOARD_SUMMARY", "  *** TEST PASSED: 100% BIT-TRUE MATCH WITH GOLDEN MODEL ***", UVM_LOW)
+            `uvm_info("SCB", "Status: PASSED", UVM_LOW)
         end else begin
-            `uvm_error("SCOREBOARD_SUMMARY", "  *** TEST FAILED: DETECTED MISMATCHES IN HARDWARE OUTPUT ***")
+            `uvm_error("SCB", "Status: FAILED")
         end
-        `uvm_info("SCOREBOARD_SUMMARY", "===========================================================\n", UVM_LOW)
     endfunction
 
 endclass : gemm_scoreboard

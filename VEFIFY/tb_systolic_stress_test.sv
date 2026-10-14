@@ -199,9 +199,7 @@ module tb_systolic_stress_test;
         rst_n = 1;
         #20;
 
-        $display("==================================================================");
-        $display("   STARTING HARDWARE STRESS & CORNER-CASE VERIFICATION SUITE       ");
-        $display("==================================================================");
+        $display("[TB] Starting stress and corner-case verification...");
 
         // --------------------------------------------------------------------
         // CORNER-CASE 1: Asymmetric Extreme Values (-128 and +127)
@@ -262,15 +260,12 @@ module tb_systolic_stress_test;
         run_test_scenario("Back-to-Back Run #2 (Check pipeline residual)", 1'b0, 5'd3);
 
         // Final Report
-        $display("\n==================================================================");
-        $display("   FINAL STRESS VERIFICATION SUMMARY: %0d / %0d PASSED            ", 
-                 passed_tests, total_tests);
+        $display("\n--- Verification Summary: %0d/%0d passed ---", passed_tests, total_tests);
         if (failed_tests == 0) begin
-            $display("   >>> ALL CORNER-CASES & STRESS TESTS PASSED 100%%! <<<          ");
+            $display("[TB] Status: PASSED");
         end else begin
-            $display("   >>> ATTENTION: %0d TESTS FAILED! NEED BUG FIX! <<<            ", failed_tests);
+            $display("[TB] Status: FAILED (%0d failed)", failed_tests);
         end
-        $display("==================================================================");
 
         #100;
         $finish;

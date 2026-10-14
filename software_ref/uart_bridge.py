@@ -108,16 +108,12 @@ class FPGAUartBridge:
         self.last_metrics = metrics
 
         if self.mock:
-            # Emulate software reference execution
+            # Emulate hardware execution
             time.sleep(0.015)
             mock_log = (
-                f"\n[FPGA MOCK] Image Received: 784 bytes.\n"
-                f"[FPGA MOCK] Triggering Systolic Array GEMM Pipeline...\n"
-                f"[FPGA MOCK] Layer 1 CONV: 49 tiles, cycles: 28,420\n"
-                f"[FPGA MOCK] Layer 2 DENSE: 64 tiles, cycles: 36,864\n"
-                f"Predicted Digit: {ref_pred} (Confidence: {conf_pct}%)\n"
-                f"Execution cycles: {metrics['hw_cycles']:,} (~{metrics['hw_cycles']/50e3:.2f} ms @ 50MHz)\n"
-                f"[FPGA MOCK] Output latched to HEX0 7-Segment Display: '{ref_pred}'\n"
+                f"\nImage received (784 B).\n"
+                f"Predicted Digit: {ref_pred} (Conf: {conf_pct}%)\n"
+                f"Cycles: {metrics['hw_cycles']:,} (~{metrics['hw_cycles']/50e3:.2f} ms @ 50MHz)\n"
                 f"Classification Complete\n"
             )
             return ref_pred, mock_log
@@ -157,8 +153,8 @@ class FPGAUartBridge:
         """Stream continuous UART output from FPGA."""
         print(f"[*] Entering UART Monitor mode on {self.port_name or 'MOCK'}. Press Ctrl+C to exit.\n")
         if self.mock:
-            print("[FPGA MOCK] === RISC-V PicoRV32 + CNN Accelerator SoC ===")
-            print("[FPGA MOCK] Hardware ready. Waiting for input stream...")
+            print("[MOCK] RISC-V PicoRV32 + GEMM Accelerator SoC")
+            print("[MOCK] Ready. Waiting for stream...")
             while True:
                 time.sleep(1)
         else:
@@ -178,9 +174,7 @@ class FPGAUartBridge:
 
 
 def run_cli_test_single(bridge, index=42):
-    print("=" * 65)
-    print("   TERASIC DE1 FPGA UART HARDWARE INFERENCE DEMO")
-    print("=" * 65)
+    print(f"--- Inference Test (Sample #{index}) ---")
 
     X_test, y_test = get_mnist(test_only=True)
     if index == "random":
@@ -192,30 +186,28 @@ def run_cli_test_single(bridge, index=42):
     img = X_test[index][0]
     true_label = int(y_test[index])
 
-    print(f"\n[*] Sample #{index} | Ground Truth Label: {true_label}\n")
-    print(render_ascii_digit(img, label=f"MNIST Test Image #{index}"))
+    print(f"Sample #{index} | Ground Truth: {true_label}\n")
+    print(render_ascii_digit(img, label=f"MNIST Sample #{index}"))
 
-    print("[*] Streaming 784 bytes over UART (115200 Baud, 8N1)...")
+    print("Transmitting 784 bytes over UART (115200 8N1)...")
     t0 = time.time()
     pred_digit, log_output = bridge.send_image(img)
     dt_ms = (time.time() - t0) * 1000
 
-    print("\n--- [FPGA UART CONSOLE OUTPUT] ---")
+    print("\n--- UART Log ---")
     print(log_output.strip())
-    print("----------------------------------\n")
+    print("----------------\n")
 
     if pred_digit is not None:
-        status = "CORRECT" if pred_digit == true_label else "MISMATCH"
-        print(f"[RESULT] Predicted Digit : '{pred_digit}' ({status})")
+        status = "PASS" if pred_digit == true_label else "FAIL"
+        print(f"Prediction : '{pred_digit}' [{status}]")
     else:
-        print(f"[RESULT] Prediction completed (Raw log captured).")
-    print(f"[BENCHMARK] Total Roundtrip Latency: {dt_ms:.1f} ms\n")
+        print("Prediction : None")
+    print(f"Latency    : {dt_ms:.1f} ms\n")
 
 
 def run_cli_batch(bridge, count=10):
-    print("=" * 65)
-    print(f"   TERASIC DE1 FPGA BATCH EVALUATION ({count} IMAGES)")
-    print("=" * 65)
+    print(f"--- Batch Evaluation ({count} images) ---")
 
     X_test, y_test = get_mnist(test_only=True)
     count = min(count, len(X_test))
@@ -240,11 +232,10 @@ def run_cli_batch(bridge, count=10):
 
     acc = (correct / count) * 100
     avg_lat = np.mean(latencies)
-    print("-" * 65)
-    print(f"Total Evaluated : {count}")
-    print(f"FPGA Accuracy   : {acc:.2f}% ({correct}/{count})")
-    print(f"Average Latency : {avg_lat:.2f} ms / image ({1000/avg_lat:.1f} FPS)")
-    print("=" * 65 + "\n")
+    print("-" * 50)
+    print(f"Evaluated   : {count}")
+    print(f"Accuracy    : {acc:.2f}% ({correct}/{count})")
+    print(f"Avg Latency : {avg_lat:.2f} ms / image ({1000/avg_lat:.1f} FPS)\n")
 
 
 def launch_gui_drawer(bridge):
@@ -257,7 +248,7 @@ def launch_gui_drawer(bridge):
         return
 
     root = tk.Tk()
-    root.title("RISC-V SoC Systolic Array - Real-Time Live AI Drawing Pad")
+    root.title("MNIST Inference - RISC-V Systolic Accelerator")
     root.configure(bg="#11111B")
     root.resizable(False, False)
 

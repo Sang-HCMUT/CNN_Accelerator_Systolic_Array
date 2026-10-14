@@ -104,10 +104,7 @@ module tb_systolic_gemm;
         $readmemh("golden_acc_int32.hex", gold_acc_c);
         $readmemh("golden_output_int8.hex", gold_quant_c);
 
-        $display("\n==================================================================");
-        $display("   TESTBENCH: PARAMETERIZED 2D SYSTOLIC ARRAY GEMM ACCELERATOR    ");
-        $display("   Configuration: ARRAY_SIZE = %0d, K_DIM = %0d, INT8 x INT8      ", ARRAY_SIZE, K_DIM);
-        $display("==================================================================");
+        $display("[TB] Starting systolic GEMM test: ARRAY_SIZE=%0d, K_DIM=%0d", ARRAY_SIZE, K_DIM);
 
         // Reset Sequence
         #40;
@@ -115,7 +112,7 @@ module tb_systolic_gemm;
         #20;
 
         // 2. Load Matrix A into Buffer A
-        $display("[*] Loading Matrix A (Weights) into Buffer A...");
+        $display("[TB] Loading Matrix A into Buffer A...");
         for (i = 0; i < ARRAY_SIZE * K_DIM; i = i + 1) begin
             @(posedge clk);
             wr_a_en   = 1'b1;
@@ -126,7 +123,7 @@ module tb_systolic_gemm;
         wr_a_en = 1'b0;
 
         // 3. Load Matrix B into Buffer B
-        $display("[*] Loading Matrix B (Activations) into Buffer B...");
+        $display("[TB] Loading Matrix B into Buffer B...");
         for (i = 0; i < K_DIM * ARRAY_SIZE; i = i + 1) begin
             @(posedge clk);
             wr_b_en   = 1'b1;
@@ -138,7 +135,7 @@ module tb_systolic_gemm;
 
         // 4. Start Systolic Matrix Multiplication
         #20;
-        $display("[*] Launching Systolic Array GEMM Execution (C = A x B)...");
+        $display("[TB] Starting systolic array computation...");
         @(posedge clk);
         start = 1'b1;
         @(posedge clk);
@@ -146,7 +143,7 @@ module tb_systolic_gemm;
 
         // 5. Wait for Computation & Quantized Readout to finish
         wait (done == 1'b1);
-        $display("[+] Hardware execution finished! Reading out results...\n");
+        $display("[TB] Computation finished. Checking results against golden model...\n");
 
         // 6. Scoreboard Comparison against Python Golden Model
         $display("--- SCOREBOARD COMPARISON TABLE ---");
@@ -174,14 +171,9 @@ module tb_systolic_gemm;
 
         $display("------------------------------------------------------------------");
         if (errors == 0) begin
-            $display("==================================================================");
-            $display("  VERIFICATION RESULT: ALL %0d ELEMENTS PASSED (0 ERRORS)!       ", TOTAL_C);
-            $display("  100%% BIT-FOR-BIT MATCH WITH PYTHON GOLDEN MODEL!                ");
-            $display("==================================================================");
+            $display("[TB] Test PASSED: %0d/%0d elements matched.", TOTAL_C, TOTAL_C);
         end else begin
-            $display("==================================================================");
-            $display("  VERIFICATION RESULT: FAILED WITH %0d ERRORS!                     ", errors);
-            $display("==================================================================");
+            $display("[TB] Test FAILED: %0d errors detected.", errors);
         end
 
         #100;

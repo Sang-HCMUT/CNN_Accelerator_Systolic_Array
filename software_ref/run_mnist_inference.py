@@ -86,39 +86,32 @@ def export_mnist_hardware_tile(model, img_int8, output_dir=CURRENT_DIR):
             for c in range(4):
                 f.write(f"{to_hex_8(C_quant[r, c])}\n")
                 
-    print(f"\n[+] Exported Real MNIST AI Verification Vectors to '{output_dir}':")
-    print(f"    - {path_a} (Weight Tile A: 4x4 Signed INT8)")
-    print(f"    - {path_b} (Image Patch Tile B: 4x4 Signed INT8)")
-    print(f"    - {path_gold_acc} (Hardware Acc Golden: 4x4 Signed INT32)")
-    print(f"    - {path_gold_out} (Hardware Out Golden: 4x4 Signed INT8)")
+    print(f"\nExported verification vectors to '{output_dir}':")
+    print(f"  - {path_a} (Weight Tile A: 4x4 INT8)")
+    print(f"  - {path_b} (Image Patch Tile B: 4x4 INT8)")
+    print(f"  - {path_gold_acc} (Golden Acc: 4x4 INT32)")
+    print(f"  - {path_gold_out} (Golden Out: 4x4 INT8)")
 
 
 def run_demonstration():
-    print("=" * 78)
-    print("  PHASE 2: MNIST DIGIT RECOGNITION ON 2D SYSTOLIC ARRAY ACCELERATOR")
-    print("  (Parameterized Architecture with im2col, Matrix Tiling & INT8 Quantization)")
-    print("=" * 78)
+    print("--- MNIST Inference & Evaluation (4x4 Systolic Array) ---")
     
     # 1. Load MNIST Dataset
-    print("\n[STEP 1] Loading official MNIST handwritten digits test set...")
+    print("\nLoading MNIST test set...")
     X_test, y_test = get_mnist(test_only=True)
-    print(f"[+] Loaded {len(X_test)} images. Image shape: {X_test[0].shape}, Data type: Signed INT8")
+    print(f"Loaded {len(X_test)} images ({X_test[0].shape}, INT8)")
     
     # 2. Initialize Quantized Model with 4x4 Systolic Array
-    print("\n[STEP 2] Initializing Quantized INT8 CNN Model (Hardware Tile: 4x4 PEs)...")
+    print("\nInitializing INT8 CNN model (4x4 PE array)...")
     model = QuantizedMNISTNet(array_size=4)
-    print(f"[+] Model Architecture:")
-    print(f"    - Conv1: 16 filters (3x3), stride=1, pad=1 -> Output: 16x28x28")
-    print(f"      * im2col Matrix A: [16 x 9] (Weights)")
-    print(f"      * im2col Matrix B: [9 x 784] (Image Patches)")
-    print(f"      * Shift Bits: {model.shift_conv}, ReLU: Enabled, Clamp: [0, 127]")
-    print(f"    - MaxPool 2x2: stride=2 -> Output: 16x14x14 = 3,136 features")
-    print(f"    - FC Dense: [10 x 3136] GEMM via Tiling Engine -> 10 Output Classes")
+    print("Architecture:")
+    print("  - Conv1: 16 filters (3x3), stride=1, pad=1 -> 16x28x28")
+    print(f"    Shift: {model.shift_conv}, ReLU: Enabled, Clamp: [0, 127]")
+    print("  - MaxPool: 2x2, stride=2 -> 16x14x14 (3,136 features)")
+    print("  - FC: [10 x 3136] GEMM via Tiling Engine -> 10 classes")
     
-    # 3. Individual Digits Live Demonstration
-    print("\n" + "=" * 78)
-    print("  [STEP 3] LIVE INFERENCE DEMONSTRATION ON REPRESENTATIVE SAMPLES (0 - 9)")
-    print("=" * 78)
+    # 3. Individual Digits Demonstration
+    print("\n--- Testing Sample Digits (0 - 9) ---")
     
     # Find one clean sample for each digit 0..9
     target_digits = list(range(10))
@@ -152,26 +145,23 @@ def run_demonstration():
             match_count += 1
         total_cycles_all += metrics['hw_cycles']
         
-        status_str = "[CORRECT]" if is_correct else "[MISCLASSIFIED]"
-        bit_true_str = "[100% BIT-TRUE]" if is_bit_true else "[DIFF!]"
+        status_str = "MATCH" if is_correct else "MISMATCH"
+        bit_true_str = "(Bit-True)" if is_bit_true else "(Diff)"
         
-        print(f"\nSample Index #{idx}:")
+        print(f"\nSample #{idx} | Ground Truth: {lbl}")
         print(render_ascii_digit(img[0], label=f"Ground Truth = {lbl}"))
-        print(f"  Prediction:          DIGIT '{pred_digit}'  {status_str}  {bit_true_str}")
-        print(f"  Confidence:          {confidences[pred_digit]*100:.2f}%")
-        print(f"  Hardware Tiles:      {metrics['total_tiles']} tiles processed")
-        print(f"  Emulated Latency:    {metrics['hw_cycles']:,} clock cycles (@ 50MHz: {metrics['hw_cycles']/50e3:.2f} ms)")
-        print(f"  Total MACs:          {metrics['mac_ops']:,} operations")
+        print(f"  Prediction   : {pred_digit} [{status_str}] {bit_true_str}")
+        print(f"  Confidence   : {confidences[pred_digit]*100:.1f}%")
+        print(f"  Tiles        : {metrics['total_tiles']} (4x4)")
+        print(f"  Cycles       : {metrics['hw_cycles']:,} (~{metrics['hw_cycles']/50e3:.2f} ms @ 50MHz)")
+        print(f"  MACs         : {metrics['mac_ops']:,}")
         
-    print("\n" + "=" * 78)
-    print(f"  Sample Demonstration Score: {match_count}/10 Correct ({match_count*10}%)")
-    print("=" * 78)
+    print(f"\nSample Score: {match_count}/10 ({match_count*10}%)")
     
     # 4. Large-scale Accuracy Evaluation
     EVAL_SAMPLES = 500
-    print(f"\n[STEP 4] Evaluating Accuracy on {EVAL_SAMPLES} MNIST Test Samples...")
+    print(f"\nEvaluating accuracy on {EVAL_SAMPLES} MNIST test samples...")
     eval_correct = 0
-    bit_true_perfect = True
     
     for i in range(EVAL_SAMPLES):
         img = X_test[i]
@@ -181,16 +171,12 @@ def run_demonstration():
             eval_correct += 1
             
     eval_acc = (eval_correct / EVAL_SAMPLES) * 100.0
-    print(f"\n>>> TEST ACCURACY ON {EVAL_SAMPLES} SAMPLES: {eval_acc:.2f}% ({eval_correct}/{EVAL_SAMPLES}) <<<")
-    print(f">>> FULL 10,000 TEST SET CALIBRATED ACCURACY: 97.06% (Meets target >= 97%) <<<")
+    print(f"Accuracy on {EVAL_SAMPLES} samples: {eval_acc:.2f}% ({eval_correct}/{EVAL_SAMPLES})")
     
-    # 5. Export Test Vectors for ModelSim Hardware Testbench
-    print("\n[STEP 5] Exporting Real MNIST Convolution Tile to .hex for Hardware Verification...")
+    # 5. Export Test Vectors for Hardware Testbench
+    print("\nExporting sample convolution tile to .hex for hardware testbench...")
     export_mnist_hardware_tile(model, X_test[sample_indices[0]])
-    
-    print("\n" + "=" * 78)
-    print("  PHASE 2 IMPLEMENTATION SUCCESSFULLY COMPLETED!")
-    print("=" * 78 + "\n")
+    print("Done.\n")
 
 
 if __name__ == "__main__":

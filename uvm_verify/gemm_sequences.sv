@@ -22,7 +22,7 @@ class gemm_directed_seq extends uvm_sequence #(gemm_seq_item);
     task body();
         gemm_seq_item req;
 
-        `uvm_info("SEQUENCE", "Executing Directed 6-Scenario GEMM Suite...", UVM_LOW)
+        `uvm_info("SEQ", "Executing directed sequence (6 transactions)...", UVM_LOW)
 
         for (int mode = 0; mode <= 5; mode++) begin
             req = gemm_seq_item::type_id::create($sformatf("dir_item_%0d", mode));
@@ -32,7 +32,7 @@ class gemm_directed_seq extends uvm_sequence #(gemm_seq_item);
             finish_item(req);
         end
 
-        `uvm_info("SEQUENCE", "Directed Scenario Suite Complete (6/6 Dispatched).", UVM_LOW)
+        `uvm_info("SEQ", "Directed sequence complete.", UVM_LOW)
     endtask
 
 endclass : gemm_directed_seq
@@ -53,7 +53,7 @@ class gemm_random_seq extends uvm_sequence #(gemm_seq_item);
     task body();
         gemm_seq_item req;
 
-        `uvm_info("SEQUENCE", $sformatf("Launching Constrained-Random GEMM Suite (%0d transactions)...", num_transactions), UVM_LOW)
+        `uvm_info("SEQ", $sformatf("Executing random sequence (%0d transactions)...", num_transactions), UVM_LOW)
 
         for (int i = 0; i < num_transactions; i++) begin
             int rnd_mode = $urandom_range(0, 5);
@@ -64,7 +64,7 @@ class gemm_random_seq extends uvm_sequence #(gemm_seq_item);
             finish_item(req);
         end
 
-        `uvm_info("SEQUENCE", $sformatf("Random GEMM Suite Complete (%0d transactions dispatched).", num_transactions), UVM_LOW)
+        `uvm_info("SEQ", "Random sequence complete.", UVM_LOW)
     endtask
 
 endclass : gemm_random_seq
@@ -85,7 +85,7 @@ class gemm_stress_seq extends uvm_sequence #(gemm_seq_item);
     task body();
         gemm_seq_item req;
 
-        `uvm_info("SEQUENCE", $sformatf("Launching High-Stress Back-to-Back Suite (%0d transactions)...", num_transactions), UVM_LOW)
+        `uvm_info("SEQ", $sformatf("Executing stress sequence (%0d transactions)...", num_transactions), UVM_LOW)
 
         for (int i = 0; i < num_transactions; i++) begin
             int rnd_mode = (i % 2 == 0) ? 1 : 2; // Alternate between extremes and saturation
@@ -96,7 +96,7 @@ class gemm_stress_seq extends uvm_sequence #(gemm_seq_item);
             finish_item(req);
         end
 
-        `uvm_info("SEQUENCE", $sformatf("Stress GEMM Suite Complete (%0d transactions dispatched).", num_transactions), UVM_LOW)
+        `uvm_info("SEQ", "Stress sequence complete.", UVM_LOW)
     endtask
 
 endclass : gemm_stress_seq

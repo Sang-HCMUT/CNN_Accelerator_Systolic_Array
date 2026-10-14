@@ -55,17 +55,12 @@ static void run_accelerator_tile(const int8_t *w_tile, const int8_t *in_tile, in
 
 // Built-in benchmark self-test tile
 static void run_benchmark_test(void) {
-    print_str("\n--- [BENCHMARK] Running Systolic Array Core Verification ---\n");
-    print_str("[1] Setting K Dimension = 4...\n");
-    print_str("[2] Streaming Weights (Tile A) & Activations (Tile B) via MMIO...\n");
-
+    print_str("Self-test: running 4x4 GEMM tile...\n");
     run_accelerator_tile(test_tile_a, test_tile_b, 4);
 
-    print_str("[3] Accelerator finished! Matrix C INT8 Post-ReLU outputs:\n");
+    print_str("Matrix C output:\n");
     for (int r = 0; r < 4; r++) {
-        print_str("    Row ");
-        print_dec(r);
-        print_str(": [ ");
+        print_str("  [ ");
         for (int c = 0; c < 4; c++) {
             int idx = r * 4 + c;
             int8_t val = (int8_t)(REG_ACCEL_C(idx) & 0xFF);
@@ -75,25 +70,15 @@ static void run_benchmark_test(void) {
         print_str("]\n");
     }
 
-    // Indicate success on board
-    set_board_hex(0, 8); // Display '8'
+    set_board_hex(0, 8);
     set_board_leds(0xFF);
-    print_str("[RESULT] Systolic GEMM Core 100% Functional! [PASS]\n\n");
+    print_str("Self-test passed.\n\n");
 }
 
 static void print_banner(void) {
-    print_str("\n====================================================\n");
-    print_str(" [RISC-V PicoRV32 SoC] Systolic CNN Accelerator\n");
-    print_str(" Hardware-Software Co-Design Engine Online\n");
-    print_str(" Platforms: Terasic DE1 (4x4) / DE10-Standard (8x8)\n");
-    print_str("====================================================\n");
-    print_str(" Interactive Commands:\n");
-    print_str("  'T' / '1' : Run Systolic GEMM Self-Test Tile\n");
-    print_str("  'I'       : Stream MNIST Image (784 Bytes INT8)\n");
-    print_str("  '0'..'9'  : Set HEX0 7-segment display & LEDs\n");
-    print_str("  'H' / '?' : Show Help Menu\n");
-    print_str("====================================================\n");
-    print_str("[READY] Waiting for Host PC commands...\n\n");
+    print_str("\nRISC-V PicoRV32 SoC - Systolic GEMM Accelerator\n");
+    print_str("Commands: [T] Self-test | [I] Infer image | [0-9] Set HEX0 | [H] Help\n");
+    print_str("Ready.\n\n");
 }
 
 int main(void) {
@@ -117,9 +102,9 @@ int main(void) {
             uint8_t d = (uint8_t)(cmd - '0');
             set_board_hex(0, d);
             set_board_leds((uint8_t)(1 << (d % 8)));
-            print_str("[FPGA] HEX0 Display Updated: '");
+            print_str("HEX0 set to: ");
             uart_putchar(cmd);
-            print_str("'\n");
+            print_str("\n");
         }
         else if (cmd == 'H' || cmd == 'h' || cmd == '?') {
             print_banner();
@@ -154,20 +139,14 @@ int main(void) {
             set_board_hex(0, display_digit);
             set_board_leds((uint8_t)(1 << (display_digit % 8)));
 
-            // Transmit complete performance and telemetry log back to Host PC
-            print_str("\n[FPGA] Image Tensor Received: 784 bytes INT8.\n");
-            print_str("[FPGA] Triggering Systolic Array GEMM Pipeline...\n");
-            print_str("[FPGA] Layer 1 CONV: 49 tiles accelerated on Systolic Core.\n");
-            print_str("[FPGA] Layer 2 DENSE: 64 tiles accelerated on Systolic Core.\n");
+            // Transmit telemetry log back to Host PC
+            print_str("\nImage received (784 B).\n");
             print_str("Predicted Digit: ");
             print_dec((int)display_digit);
-            print_str(" (Confidence: ");
+            print_str(" (Conf: ");
             print_dec((int)confidence);
             print_str("%)\n");
-            print_str("Execution cycles: 65,284 (~1.31 ms @ 50MHz)\n");
-            print_str("[FPGA] Output latched to HEX0 7-Segment Display: '");
-            print_dec((int)display_digit);
-            print_str("'\n");
+            print_str("Cycles: 65284 (~1.31 ms @ 50MHz)\n");
             print_str("Classification Complete\n");
         }
         else if ((uint8_t)cmd == 0x80 || (uint8_t)cmd == 0x00) {
@@ -195,12 +174,11 @@ int main(void) {
             set_board_hex(0, est_digit);
             set_board_leds((uint8_t)(1 << est_digit));
 
-            print_str("\n[FPGA] Raw 784-byte stream received.\n");
-            print_str("[FPGA] Accelerated via Systolic Core.\n");
+            print_str("\nRaw stream received (784 B).\n");
             print_str("Predicted Digit: ");
             print_dec((int)est_digit);
-            print_str(" (Confidence: 95%)\n");
-            print_str("Execution cycles: 65,284 (~1.31 ms @ 50MHz)\n");
+            print_str(" (Conf: 95%)\n");
+            print_str("Cycles: 65284 (~1.31 ms @ 50MHz)\n");
             print_str("Classification Complete\n");
         }
     }

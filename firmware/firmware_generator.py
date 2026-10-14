@@ -403,10 +403,7 @@ def build_soc_firmware():
     # Constant Strings and Data
     # -------------------------------------------------------------------------
     asm.label('str_banner')
-    asm.string("\n====================================================\n"
-               " [RISC-V PicoRV32 SoC] Systolic CNN Accelerator\n"
-               " Hardware-Software Co-Simulation Running...\n"
-               "====================================================\n")
+    asm.string("\nRISC-V PicoRV32 SoC - Systolic GEMM Accelerator Co-Simulation\n")
 
     asm.label('str_step1')
     asm.string("[1] Configured Matrix Dimension K = 4.\n")
@@ -433,10 +430,7 @@ def build_soc_firmware():
     asm.string(": [ ")
 
     asm.label('str_success')
-    asm.string("\n====================================================\n"
-               " [RESULT] Hardware-Software Co-Simulation SUCCESS!\n"
-               " All Systolic Array GEMM Tiles Verified by CPU!\n"
-               "====================================================\n\n")
+    asm.string("\nCo-Simulation Status: Hardware-Software Co-Simulation SUCCESS\n\n")
 
     # Sample INT8 Matrix A tile (16 words)
     asm.label('tile_a_data')

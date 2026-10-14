@@ -25,10 +25,6 @@ from mnist_dataset import get_mnist, render_ascii_digit
 from mnist_cnn_model import QuantizedMNISTNet
 
 def test_single_image(index=42):
-    print("=" * 65)
-    print("   TESTING SINGLE MNIST IMAGE ON 2D SYSTOLIC ARRAY ACCELERATOR")
-    print("=" * 65)
-
     X_test, y_test = get_mnist(test_only=True)
     total_samples = len(X_test)
 
@@ -47,8 +43,9 @@ def test_single_image(index=42):
     img = X_test[index]
     lbl = int(y_test[index])
 
-    print(f"\n[*] Selected Image Index: #{index} (out of {total_samples} test samples)\n")
-    print(render_ascii_digit(img[0], label=f"Ground Truth Label = {lbl}"))
+    print(f"--- Inference Test (Sample #{index}) ---")
+    print(f"Sample #{index} / {total_samples} | Ground Truth: {lbl}\n")
+    print(render_ascii_digit(img[0], label=f"MNIST Sample #{index}"))
 
     # Load Model with 4x4 Systolic Array
     model = QuantizedMNISTNet(array_size=4)
@@ -60,17 +57,17 @@ def test_single_image(index=42):
     is_correct = (pred_digit == lbl)
     is_bit_true = (pred_digit == ideal_pred)
 
-    status_str = "[CORRECT]" if is_correct else "[MISCLASSIFIED]"
-    bit_true_str = "[100% BIT-TRUE MATCH]" if is_bit_true else "[DIFF!]"
+    status_str = "MATCH" if is_correct else "MISMATCH"
+    bit_true_str = "(Bit-True)" if is_bit_true else "(Diff)"
 
-    print("\n" + "-" * 65)
-    print(f"  AI PREDICTION:       DIGIT '{pred_digit}'   {status_str}   {bit_true_str}")
-    print(f"  CONFIDENCE:          {confidences[pred_digit] * 100:.2f}%")
-    print(f"  GROUND TRUTH:        DIGIT '{lbl}'")
-    print(f"  HARDWARE TILES:      {metrics['total_tiles']} sub-tiles (4x4 PEs)")
-    print(f"  CLOCK CYCLES:        {metrics['hw_cycles']:,} cycles (@ 50MHz: {metrics['hw_cycles']/50e3:.2f} ms)")
-    print(f"  MAC OPERATIONS:      {metrics['mac_ops']:,} ops")
-    print("-" * 65 + "\n")
+    print("-" * 50)
+    print(f"Prediction   : {pred_digit} [{status_str}] {bit_true_str}")
+    print(f"Confidence   : {confidences[pred_digit] * 100:.1f}%")
+    print(f"Ground Truth : {lbl}")
+    print(f"Tiles        : {metrics['total_tiles']} (4x4)")
+    print(f"Cycles       : {metrics['hw_cycles']:,} (~{metrics['hw_cycles']/50e3:.2f} ms @ 50MHz)")
+    print(f"MACs         : {metrics['mac_ops']:,}")
+    print("-" * 50 + "\n")
 
 if __name__ == "__main__":
     idx_arg = 42
