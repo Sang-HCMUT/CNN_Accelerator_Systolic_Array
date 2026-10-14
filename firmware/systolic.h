@@ -42,14 +42,36 @@
 // UART / Console Registers
 #define REG_UART_DATA      (*(volatile uint32_t*)(UART_BASE + 0x000))
 #define REG_UART_STATUS    (*(volatile uint32_t*)(UART_BASE + 0x004))
+#define REG_UART_HEX       (*(volatile uint32_t*)(UART_BASE + 0x008))
+#define REG_UART_LEDS      (*(volatile uint32_t*)(UART_BASE + 0x00C))
+
+#define UART_STATUS_TX_READY (1 << 0)
+#define UART_STATUS_RX_VALID (1 << 1)
 
 // ============================================================================
 // Inline Helper Functions
 // ============================================================================
 
 static inline void uart_putchar(char c) {
-    while (!(REG_UART_STATUS & 0x01)); // Wait for TX ready
+    while (!(REG_UART_STATUS & UART_STATUS_TX_READY)); // Wait for TX ready
     REG_UART_DATA = (uint32_t)(uint8_t)c;
+}
+
+static inline int uart_has_data(void) {
+    return (REG_UART_STATUS & UART_STATUS_RX_VALID) ? 1 : 0;
+}
+
+static inline uint8_t uart_getchar(void) {
+    while (!(REG_UART_STATUS & UART_STATUS_RX_VALID)); // Wait for RX valid
+    return (uint8_t)(REG_UART_DATA & 0xFF);
+}
+
+static inline void set_board_hex(uint8_t hex1, uint8_t hex0) {
+    REG_UART_HEX = ((uint32_t)(hex1 & 0x0F) << 4) | (uint32_t)(hex0 & 0x0F);
+}
+
+static inline void set_board_leds(uint8_t leds) {
+    REG_UART_LEDS = (uint32_t)leds;
 }
 
 static inline void print_str(const char *s) {

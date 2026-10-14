@@ -50,13 +50,12 @@ module axi_ram #(
     localparam ADDR_BITS = $clog2(MEM_WORDS);
 
     // Memory array with Quartus Block RAM synthesis directive
-    (* ramstyle = "M4K, no_rw_check" *) logic [31:0] mem [0:MEM_WORDS-1];
+    // Multi-dimensional packed array [3:0][7:0] is mandatory for Quartus byte-enabled BRAM inference
+    (* ramstyle = "no_rw_check" *) logic [3:0][7:0] mem [0:MEM_WORDS-1];
 
-    // Optional initialization from file
+    // Initialization directly with $readmemh (avoid runtime string condition)
     initial begin
-        if (MEM_INIT_FILE != "") begin
-            $readmemh(MEM_INIT_FILE, mem);
-        end
+        $readmemh(MEM_INIT_FILE, mem);
     end
 
     // Internal RAM signals for synchronous Block RAM inference
@@ -73,10 +72,10 @@ module axi_ram #(
 
     always_ff @(posedge clk) begin
         if (ram_we) begin
-            if (ram_wstrb[0]) mem[ram_waddr][7:0]   <= ram_wdata[7:0];
-            if (ram_wstrb[1]) mem[ram_waddr][15:8]  <= ram_wdata[15:8];
-            if (ram_wstrb[2]) mem[ram_waddr][23:16] <= ram_wdata[23:16];
-            if (ram_wstrb[3]) mem[ram_waddr][31:24] <= ram_wdata[31:24];
+            if (ram_wstrb[0]) mem[ram_waddr][0] <= ram_wdata[7:0];
+            if (ram_wstrb[1]) mem[ram_waddr][1] <= ram_wdata[15:8];
+            if (ram_wstrb[2]) mem[ram_waddr][2] <= ram_wdata[23:16];
+            if (ram_wstrb[3]) mem[ram_waddr][3] <= ram_wdata[31:24];
         end
         ram_rdata <= mem[rd_word_idx];
     end

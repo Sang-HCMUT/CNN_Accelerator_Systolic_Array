@@ -1,12 +1,12 @@
 # Makefile for RISC-V PicoRV32 Firmware Compilation
 
-CROSS_COMPILE ?= riscv32-unknown-elf-
+CROSS_COMPILE ?= riscv-none-elf-
 CC      = $(CROSS_COMPILE)gcc
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 
 CFLAGS  = -march=rv32i -mabi=ilp32 -O2 -ffreestanding -nostdlib -Wall -Wextra
-LDFLAGS = -T link.ld -nostdlib
+LDFLAGS = -T link.ld -nostdlib -lgcc
 
 SRCS    = start.s main.c
 OBJS    = start.o main.o
@@ -20,7 +20,7 @@ main.o: main.c systolic.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 firmware.elf: $(OBJS) link.ld
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $@
 
 firmware.bin: firmware.elf
 	$(OBJCOPY) -O binary $< $@
@@ -28,12 +28,19 @@ firmware.bin: firmware.elf
 firmware.dis: firmware.elf
 	$(OBJDUMP) -d $< > $@
 
-PYTHON ?= python3
+PYTHON ?= python
 
 firmware.hex: firmware.bin
 	$(PYTHON) bin2hex.py $< $@
 
+ifeq ($(OS),Windows_NT)
+RM = del /Q /F
+else
+RM = rm -f
+endif
+
 clean:
-	rm -f *.o *.elf *.bin *.hex *.dis
+	-$(RM) *.o *.elf *.bin *.hex *.dis 2>nul || exit 0
 
 .PHONY: all clean
+
