@@ -146,8 +146,7 @@ Compiled with **Quartus II 64-Bit 13.0 SP1** and analyzed via **TimeQuest Timing
 ### 1. Python Golden Model Comparison
 - Scoreboard verifies both **INT32 Accumulator** and **INT8 Post-ReLU Quantized** values against Python NumPy:
 ```text
-VERIFICATION RESULT: ALL 16 ELEMENTS PASSED (0 ERRORS)!
-100% BIT-FOR-BIT MATCH WITH PYTHON GOLDEN MODEL!
+[TB] Test PASSED: 16/16 elements matched (0 errors).
 ```
 
 ### 2. Comprehensive Stress & Corner-Case Suite
