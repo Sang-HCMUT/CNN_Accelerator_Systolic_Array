@@ -1,10 +1,7 @@
-# ============================================================================
 # ModelSim Waveform Script: wave_de1_io.do
-# Description: Launch full GUI simulation focusing exclusively on
-#              Phase 4: Terasic DE1 Board Physical IO & Peripherals.
-# Usage:
-#   In ModelSim command prompt: do wave_de1_io.do
-# ============================================================================
+# Launch full GUI simulation focusing on Terasic DE1 Board Physical IO & Peripherals.
+# Usage: do wave_de1_io.do
+
 
 vlib work
 vmap work work

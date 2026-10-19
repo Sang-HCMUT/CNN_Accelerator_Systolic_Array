@@ -1,16 +1,15 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Testbench: tb_systolic_stress_test.sv
-// Description: Comprehensive Corner-Case & Stress Test Suite for Systolic GEMM.
-//              Verifies all potential failure points and bottlenecks:
-//              1. TEST 1: Happy Path (Standard Random Matrix)
-//              2. TEST 2: Extreme Values & Negative Asymmetry (-128, +127, -128 * -128)
-//              3. TEST 3: Saturation Clamping (Values exceeding 127 clamped strictly to 127)
-//              4. TEST 4: Bypass ReLU & Arithmetic Shift Negative Retention (Signed preserve)
-//              5. TEST 5: Back-to-Back Execution (Multiple inferences without system reset)
-//              6. TEST 6: Zero Matrix (All zeros input and weight)
-// ============================================================================
+// Comprehensive Corner-Case & Stress Test Suite for Systolic GEMM.
+// Verifies all potential failure points and bottlenecks:
+//   1. TEST 1: Happy Path (Standard Random Matrix)
+//   2. TEST 2: Extreme Values & Negative Asymmetry (-128, +127, -128 * -128)
+//   3. TEST 3: Saturation Clamping (Values exceeding 127 clamped strictly to 127)
+//   4. TEST 4: Bypass ReLU & Arithmetic Shift Negative Retention (Signed preserve)
+//   5. TEST 5: Back-to-Back Execution (Multiple inferences without system reset)
+//   6. TEST 6: Zero Matrix (All zeros input and weight)
+
 
 module tb_systolic_stress_test;
 
@@ -201,19 +200,15 @@ module tb_systolic_stress_test;
 
         $display("[TB] Starting stress and corner-case verification...");
 
-        // --------------------------------------------------------------------
-        // CORNER-CASE 1: Asymmetric Extreme Values (-128 and +127)
+        // Corner-Case 1: Asymmetric Extreme Values (-128 and +127)
         // Testing: (-128) * (-128) = +16384 (Critical 2's complement boundary)
-        // --------------------------------------------------------------------
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (j = 0; j < K_DIM; j++) mat_a[i][j] = -8'sd128;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = -8'sd128;
         end
         run_test_scenario("Extreme Min (-128 * -128 = +16384 test)", 1'b0, 5'd8);
 
-        // --------------------------------------------------------------------
-        // CORNER-CASE 2: Saturation Clamping Test (Large Overflow clamping to 127)
-        // --------------------------------------------------------------------
+        // Corner-Case 2: Saturation Clamping Test (Large Overflow clamping to 127)
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (j = 0; j < K_DIM; j++) mat_a[i][j] = 8'sd127;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = 8'sd127;
@@ -221,9 +216,7 @@ module tb_systolic_stress_test;
         // With shift_bits=0, sum = 4 * 127*127 = 64516 >> 0 = 64516 > 127 -> MUST CLAMP TO 127!
         run_test_scenario("Saturation Clamping Test (Must clamp to +127)", 1'b0, 5'd0);
 
-        // --------------------------------------------------------------------
-        // CORNER-CASE 3: Bypass ReLU & Negative Value Retention
-        // --------------------------------------------------------------------
+        // Corner-Case 3: Bypass ReLU & Negative Value Retention
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (j = 0; j < K_DIM; j++) mat_a[i][j] = 8'sd50;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = -8'sd2;
@@ -232,27 +225,21 @@ module tb_systolic_stress_test;
         // bypass_relu = 1 -> must output -100!
         run_test_scenario("Bypass ReLU Test (Negative values must be preserved)", 1'b1, 5'd2);
 
-        // --------------------------------------------------------------------
-        // CORNER-CASE 4: All-Zero Input & Weights Test
-        // --------------------------------------------------------------------
+        // Corner-Case 4: All-Zero Input & Weights Test
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (j = 0; j < K_DIM; j++) mat_a[i][j] = 8'sd0;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = 8'sd0;
         end
         run_test_scenario("Zero Matrix Test (All zeros)", 1'b0, 5'd4);
 
-        // --------------------------------------------------------------------
-        // STRESS TEST 5: Back-to-Back Run 1 (Consecutive run without HW reset)
-        // --------------------------------------------------------------------
+        // Stress Test 5: Back-to-Back Run 1 (Consecutive run without HW reset)
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (j = 0; j < K_DIM; j++) mat_a[i][j] = 8'sd10 + i;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = 8'sd5 - j;
         end
         run_test_scenario("Back-to-Back Run #1 (Check stale state clean)", 1'b0, 5'd2);
 
-        // --------------------------------------------------------------------
-        // STRESS TEST 6: Back-to-Back Run 2 (Immediately run after Run 1)
-        // --------------------------------------------------------------------
+        // Stress Test 6: Back-to-Back Run 2 (Immediately run after Run 1)
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (j = 0; j < K_DIM; j++) mat_a[i][j] = -8'sd15 + i*2;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = 8'sd8 + j;

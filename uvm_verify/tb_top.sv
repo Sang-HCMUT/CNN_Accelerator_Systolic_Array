@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Top-Level Testbench: tb_top.sv
-// Description: UVM Top Module instantiating DUT, Interface and starting UVM.
-// ============================================================================
+// UVM Top Module instantiating DUT, Interface, and starting UVM test.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

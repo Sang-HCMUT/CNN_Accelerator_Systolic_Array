@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Package: gemm_pkg.sv
-// Description: UVM Verification Package bundling all testbench classes.
-// ============================================================================
+// UVM Verification Package bundling all testbench classes.
+
 
 package gemm_pkg;
 

@@ -1,13 +1,10 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: quantize_relu_unit.sv
-// Description: Post-Processing Unit for Systolic GEMM.
-//              - ReLU Activation: max(0, x) (optional bypass).
-//              - Arithmetic Shift Right (Scale): configurable shift_bits.
-//              - Saturation / Clamping: clamps value into INT8 range [-128, 127]
-//                or [0, 127] after ReLU.
-// ============================================================================
+// Post-Processing Unit for Systolic GEMM.
+// ReLU Activation: max(0, x) (optional bypass).
+// Arithmetic Shift Right (Scale): configurable shift_bits.
+// Saturation / Clamping: clamps value into INT8 range [-128, 127] or [0, 127] after ReLU.
 
 module quantize_relu_unit #(
     parameter IN_WIDTH  = 32,

@@ -1,19 +1,15 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: systolic_accelerator_top.sv
-// Description: Pure Structural Top-Level INT8 Systolic GEMM Accelerator.
-//              - Clean modular design with dedicated sub-blocks connected by buses.
-//              - Pristine, textbook-style schematic in Quartus RTL Viewer.
-//              - Submodules:
-//                1. gemm_controller: Central FSM & Sequencer
-//                2. matrix_buffer_a: On-chip Storage for Weight Matrix A
-//                3. matrix_buffer_b: On-chip Storage for Activation Matrix B
-//                4. systolic_skew_unit: Input Skewing Pipeline Registers
-//                5. systolic_array_core: 2D Processing Element Mesh
-//                6. quantize_relu_unit: Post-Processing Datapath
-//                7. matrix_buffer_c: On-chip Output & Debug Storage
-// ============================================================================
+// Pure Structural Top-Level INT8 Systolic GEMM Accelerator.
+// Modular design with dedicated sub-blocks:
+//   1. gemm_controller: Central FSM & Sequencer
+//   2. matrix_buffer_a: On-chip Storage for Weight Matrix A
+//   3. matrix_buffer_b: On-chip Storage for Activation Matrix B
+//   4. systolic_skew_unit: Input Skewing Pipeline Registers
+//   5. systolic_array_core: 2D Processing Element Mesh
+//   6. quantize_relu_unit: Post-Processing Datapath
+//   7. matrix_buffer_c: On-chip Output & Debug Storage
 
 module systolic_accelerator_top #(
     parameter ARRAY_SIZE = 4,   // Size of 2D systolic array (e.g. 4x4, 8x8)
@@ -52,9 +48,7 @@ module systolic_accelerator_top #(
     localparam ADDR_B_WIDTH = $clog2(ARRAY_SIZE * MAX_K);
     localparam ADDR_C_WIDTH = $clog2(ARRAY_SIZE * ARRAY_SIZE);
 
-    // ========================================================================
     // Internal Structural Interconnect Wires
-    // ========================================================================
     
     // Controller control wires
     logic        sys_en;
@@ -89,9 +83,7 @@ module systolic_accelerator_top #(
     // Readout 2D accumulator selection
     assign quant_din_wire = c_matrix_core[ctrl_readout_r][ctrl_readout_c];
 
-    // ========================================================================
     // 1. Central FSM & Sequencer Controller
-    // ========================================================================
     gemm_controller #(
         .ARRAY_SIZE (ARRAY_SIZE)
     ) u_controller (
@@ -116,9 +108,7 @@ module systolic_accelerator_top #(
         .wr_int8_addr    (ctrl_wr_int8_addr)
     );
 
-    // ========================================================================
     // 2. Weight Buffer A
-    // ========================================================================
     matrix_buffer_a #(
         .ARRAY_SIZE (ARRAY_SIZE),
         .MAX_K      (MAX_K),
@@ -136,9 +126,7 @@ module systolic_accelerator_top #(
         .row_data_out (a_row_raw)
     );
 
-    // ========================================================================
     // 3. Activation Buffer B
-    // ========================================================================
     matrix_buffer_b #(
         .ARRAY_SIZE (ARRAY_SIZE),
         .MAX_K      (MAX_K),
@@ -156,9 +144,7 @@ module systolic_accelerator_top #(
         .col_data_out (b_col_raw)
     );
 
-    // ========================================================================
     // 4. Systolic Skewing Pipeline Unit
-    // ========================================================================
     systolic_skew_unit #(
         .ARRAY_SIZE (ARRAY_SIZE),
         .DATA_WIDTH (DATA_WIDTH)
@@ -173,9 +159,7 @@ module systolic_accelerator_top #(
         .b_col_skew (b_col_skewed)
     );
 
-    // ========================================================================
     // 5. 2D Systolic Processing Mesh Core
-    // ========================================================================
     systolic_array_core #(
         .ARRAY_SIZE (ARRAY_SIZE),
         .DATA_WIDTH (DATA_WIDTH),
@@ -190,9 +174,7 @@ module systolic_accelerator_top #(
         .c_matrix_out (c_matrix_core)
     );
 
-    // ========================================================================
     // 6. Quantization & ReLU Unit (Post-Processing)
-    // ========================================================================
     quantize_relu_unit #(
         .IN_WIDTH  (ACC_WIDTH),
         .OUT_WIDTH (DATA_WIDTH)
@@ -207,9 +189,7 @@ module systolic_accelerator_top #(
         .valid_out   (quant_valid_out_wire)
     );
 
-    // ========================================================================
     // 7. Output Matrix Buffer C
-    // ========================================================================
     matrix_buffer_c #(
         .ARRAY_SIZE (ARRAY_SIZE),
         .DATA_WIDTH (DATA_WIDTH),

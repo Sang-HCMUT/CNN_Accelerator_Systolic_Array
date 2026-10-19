@@ -1,11 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: matrix_buffer_a.sv
-// Description: Dedicated On-Chip Storage & Streaming Buffer for Weight Matrix A.
-//              - Supports Host random-access write port (row-major).
-//              - Supports parallel systolic streaming read port (feeds all rows).
-// ============================================================================
+// Dedicated On-Chip Storage & Streaming Buffer for Weight Matrix A.
+// Supports Host random-access write port (row-major).
+// Supports parallel systolic streaming read port (feeds all rows).
 
 module matrix_buffer_a #(
     parameter ARRAY_SIZE = 4,

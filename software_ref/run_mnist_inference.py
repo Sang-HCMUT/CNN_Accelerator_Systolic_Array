@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-===============================================================================
 Script: run_mnist_inference.py
-Description: Full End-to-End Handwritten Digit Recognition Demonstration
-             via 2D Systolic Array Hardware Acceleration (Phase 2).
-             - Pipeline:
-               MNIST Image (INT8)
-                 ──► im2col (Image to Column Patches)
-                 ──► Systolic Tiling Engine (4x4 or 8x8 Hardware Tiles)
-                 ──► ReLU Activation & Dynamic Bit Shift Clamping
-                 ──► Max Pooling 2x2
-                 ──► Fully Connected GEMM via Systolic Tiling
-                 ──► Prediction & Digit Confidence Score
-             - Verifies 100% Bit-True Match between Tiled Hardware and Ideal GEMM.
-             - Exports real MNIST convolution tile vectors (.hex) for ModelSim.
-===============================================================================
+Full End-to-End Handwritten Digit Recognition Demonstration
+via 2D Systolic Array Hardware Acceleration.
+Pipeline:
+  MNIST Image (INT8)
+    ──► im2col (Image to Column Patches)
+    ──► Systolic Tiling Engine (4x4 or 8x8 Hardware Tiles)
+    ──► ReLU Activation & Dynamic Bit Shift Clamping
+    ──► Max Pooling 2x2
+    ──► Fully Connected GEMM via Systolic Tiling
+    ──► Prediction & Digit Confidence Score
+Verifies 100% Bit-True Match between Tiled Hardware and Ideal GEMM.
+Exports real MNIST convolution tile vectors (.hex) for ModelSim.
 """
 
 import os

@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Monitor: gemm_monitor.sv
-// Description: UVM Monitor capturing output results from DUT Buffer C.
-// ============================================================================
+// UVM Monitor capturing output results from DUT Buffer C.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

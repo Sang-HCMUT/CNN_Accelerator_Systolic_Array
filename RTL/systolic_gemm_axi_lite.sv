@@ -1,11 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: systolic_gemm_axi_lite.sv
-// Description: AXI4-Lite Slave Interface Wrapper for the Parameterized
-//              INT8 Systolic Array GEMM Accelerator.
-//              Enables direct MMIO control from RISC-V or Nios II Host CPU.
-// ============================================================================
+// AXI4-Lite Slave Interface Wrapper for the Parameterized
+// INT8 Systolic Array GEMM Accelerator.
+// Enables direct MMIO control from RISC-V or Nios II Host CPU.
 
 module systolic_gemm_axi_lite #(
     parameter ARRAY_SIZE = 4,

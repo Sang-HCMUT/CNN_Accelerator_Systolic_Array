@@ -1,7 +1,6 @@
-# ============================================================================
 # ModelSim Script: run_gemm_sim.do
-# Description: Compiles and executes SystemVerilog Systolic Array GEMM verification.
-# ============================================================================
+# Compiles and executes SystemVerilog Systolic Array GEMM verification.
+
 
 # 1. Initialize work library
 vlib work

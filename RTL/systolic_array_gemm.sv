@@ -1,11 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: systolic_array_gemm.sv
-// Description: Fully Parameterized 2D Systolic Array (ARRAY_SIZE x ARRAY_SIZE)
-//              Wrapper combining systolic_skew_unit and systolic_array_core.
-//              Maintains 100% backwards compatibility with older interfaces.
-// ============================================================================
+// Fully Parameterized 2D Systolic Array (ARRAY_SIZE x ARRAY_SIZE)
+// Wrapper combining systolic_skew_unit and systolic_array_core.
+// Maintains compatibility with existing top-level interfaces.
 
 module systolic_array_gemm #(
     parameter ARRAY_SIZE = 4,  // Number of PEs per row/col

@@ -1,12 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: systolic_array_core.sv
-// Description: Core 2D Processing Mesh of Processing Elements (ARRAY_SIZE x ARRAY_SIZE).
-//              - Receives pre-skewed inputs from systolic_skew_unit.
-//              - Pure nearest-neighbor interconnections between adjacent PEs.
-//              - Displays as a pristine 2D grid in Quartus RTL Viewer.
-// ============================================================================
+// Core 2D Processing Mesh of Processing Elements (ARRAY_SIZE x ARRAY_SIZE).
+// Receives pre-skewed inputs from systolic_skew_unit.
+// Pure nearest-neighbor interconnections between adjacent PEs.
 
 module systolic_array_core #(
     parameter ARRAY_SIZE = 4,  // Number of PEs per row/col

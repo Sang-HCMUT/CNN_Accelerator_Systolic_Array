@@ -1,15 +1,13 @@
 """
-===============================================================================
 Module: tiling_engine.py
-Description: Hardware-Aware Matrix Tiling Engine for 2D Systolic Array Accelerator.
-             - Partitions arbitrarily large Matrix Multiplications [M x K] x [K x N]
-               into sub-tiles matching hardware ARRAY_SIZE (e.g., 4x4 or 8x8).
-             - Emulates the hardware execution of each tile on the Systolic Core.
-             - Accumulates partial sums across K-dimension.
-             - Applies Bias addition, Arithmetic Scaling (>> shift_bits),
-               ReLU, and Saturation Clamping to INT8 [-128, 127].
-             - Supports zero-padding for non-multiple matrix dimensions.
-===============================================================================
+Hardware-Aware Matrix Tiling Engine for 2D Systolic Array Accelerator.
+Partitions arbitrarily large Matrix Multiplications [M x K] x [K x N]
+into sub-tiles matching hardware ARRAY_SIZE (e.g., 4x4 or 8x8).
+Emulates the hardware execution of each tile on the Systolic Core.
+Accumulates partial sums across K-dimension.
+Applies Bias addition, Arithmetic Scaling (>> shift_bits),
+ReLU, and Saturation Clamping to INT8 [-128, 127].
+Supports zero-padding for non-multiple matrix dimensions.
 """
 
 import numpy as np

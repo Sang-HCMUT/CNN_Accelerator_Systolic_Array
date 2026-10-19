@@ -1,12 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: systolic_skew_unit.sv
-// Description: Dedicated Input Skewing Pipeline Registers for 2D Systolic Array.
-//              - Row i of Matrix A is delayed by i cycles (0T, 1T, 2T, ...).
-//              - Column j of Matrix B is delayed by j cycles (0T, 1T, 2T, ...).
-//              - Separates skewing buffers into a clean block visible in RTL Viewer.
-// ============================================================================
+// Dedicated Input Skewing Pipeline Registers for 2D Systolic Array.
+// Row i of Matrix A is delayed by i cycles (0T, 1T, 2T, ...).
+// Column j of Matrix B is delayed by j cycles (0T, 1T, 2T, ...).
 
 module systolic_skew_unit #(
     parameter ARRAY_SIZE = 4,

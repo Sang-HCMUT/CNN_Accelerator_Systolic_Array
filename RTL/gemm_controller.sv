@@ -1,12 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: gemm_controller.sv
-// Description: Central FSM and Sequence Controller for Systolic GEMM Accelerator.
-//              - Manages operation lifecycle: CLEAR -> STREAM -> DRAIN -> READOUT -> FLUSH -> DONE.
-//              - Perfectly aligned, cycle-accurate control signals for Buffers,
-//                Skew Unit, Systolic Core, and Quantizer.
-// ============================================================================
+// Central FSM and Sequence Controller for Systolic GEMM Accelerator.
+// Manages operation lifecycle: CLEAR -> STREAM -> DRAIN -> READOUT -> FLUSH -> DONE.
+// Generates cycle-accurate control signals for buffers, skew unit, systolic core, and quantizer.
 
 module gemm_controller #(
     parameter ARRAY_SIZE = 4

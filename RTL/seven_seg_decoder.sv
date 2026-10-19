@@ -1,12 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: seven_seg_decoder.sv
-// Description: Active-Low 7-Segment Display Decoder for Terasic DE1 (HEX displays).
-//              - Input:  4-bit binary digit (0 - 15 / 0x0 - 0xF)
-//              - Output: 7-bit active-low segments [6:0] -> [g, f, e, d, c, b, a]
-//              0 = Segment ON, 1 = Segment OFF.
-// ============================================================================
+// Active-Low 7-Segment Display Decoder for Terasic DE1/DE10 (HEX displays).
+// Input:  4-bit binary digit (0 - 15 / 0x0 - 0xF)
+// Output: 7-bit active-low segments [6:0] -> [g, f, e, d, c, b, a] (0 = ON, 1 = OFF).
 
 module seven_seg_decoder (
     input  logic [3:0] digit,

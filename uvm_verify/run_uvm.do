@@ -1,6 +1,4 @@
-# ==============================================================================
 # ModelSim DO Script: Run UVM Verification for Systolic GEMM Accelerator
-# ==============================================================================
 
 if [file exists work] {
     vdel -lib work -all

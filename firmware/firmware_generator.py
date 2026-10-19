@@ -201,9 +201,7 @@ class RV32Assembler:
 def build_soc_firmware():
     asm = RV32Assembler()
 
-    # -------------------------------------------------------------------------
     # Code Entry Point
-    # -------------------------------------------------------------------------
     asm.label('_start')
     asm.li('sp', 0x00007FF0) # Initialize Stack Pointer
 
@@ -305,9 +303,7 @@ def build_soc_firmware():
     asm.label('halt')
     asm.j('halt')
 
-    # -------------------------------------------------------------------------
     # Helper Functions
-    # -------------------------------------------------------------------------
     asm.label('uart_putchar')
     # a0 contains char
     asm.li('t5', 0x20000004) # UART_STATUS
@@ -399,9 +395,7 @@ def build_soc_firmware():
     asm.addi('sp', 'sp', 8)
     asm.ret()
 
-    # -------------------------------------------------------------------------
     # Constant Strings and Data
-    # -------------------------------------------------------------------------
     asm.label('str_banner')
     asm.string("\nRISC-V PicoRV32 SoC - Systolic GEMM Accelerator Co-Simulation\n")
 

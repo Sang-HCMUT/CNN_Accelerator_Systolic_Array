@@ -1,21 +1,17 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: axi_interconnect.sv
-// Description: 1-Master to 3-Slave AXI4-Lite Crossbar/Interconnect.
-//              - Master: PicoRV32 RISC-V CPU Core.
-//              - Slave 0: 0x0000_0000 - 0x0FFF_FFFF -> BRAM RAM (32 KB).
-//              - Slave 1: 0x1000_0000 - 0x1FFF_FFFF -> Systolic Accelerator.
-//              - Slave 2: 0x2000_0000 - 0x2FFF_FFFF -> UART / Console.
-// ============================================================================
+// 1-Master to 3-Slave AXI4-Lite Crossbar/Interconnect.
+//   Master: PicoRV32 RISC-V CPU Core.
+//   Slave 0: 0x0000_0000 - 0x0FFF_FFFF -> BRAM RAM (32 KB).
+//   Slave 1: 0x1000_0000 - 0x1FFF_FFFF -> Systolic Accelerator.
+//   Slave 2: 0x2000_0000 - 0x2FFF_FFFF -> UART / Console.
 
 module axi_interconnect (
     input  logic        clk,
     input  logic        rst_n,
 
-    // ========================================================================
     // Master Interface (PicoRV32 AXI Master)
-    // ========================================================================
     input  logic [31:0] s_axi_awaddr,
     input  logic [2:0]  s_axi_awprot,
     input  logic        s_axi_awvalid,
@@ -40,9 +36,7 @@ module axi_interconnect (
     output logic        s_axi_rvalid,
     input  logic        s_axi_rready,
 
-    // ========================================================================
     // Slave 0 Interface: BRAM RAM (0x0000_0000)
-    // ========================================================================
     output logic [31:0] m0_axi_awaddr,
     output logic [2:0]  m0_axi_awprot,
     output logic        m0_axi_awvalid,
@@ -67,9 +61,7 @@ module axi_interconnect (
     input  logic        m0_axi_rvalid,
     output logic        m0_axi_rready,
 
-    // ========================================================================
     // Slave 1 Interface: Systolic Accelerator (0x1000_0000)
-    // ========================================================================
     output logic [31:0] m1_axi_awaddr,
     output logic [2:0]  m1_axi_awprot,
     output logic        m1_axi_awvalid,
@@ -94,9 +86,7 @@ module axi_interconnect (
     input  logic        m1_axi_rvalid,
     output logic        m1_axi_rready,
 
-    // ========================================================================
     // Slave 2 Interface: UART / Console (0x2000_0000)
-    // ========================================================================
     output logic [31:0] m2_axi_awaddr,
     output logic [2:0]  m2_axi_awprot,
     output logic        m2_axi_awvalid,
@@ -122,9 +112,7 @@ module axi_interconnect (
     output logic        m2_axi_rready
 );
 
-    // ========================================================================
     // Write Channel Decoding & Routing
-    // ========================================================================
     logic [1:0] wr_sel_latched;
     logic       wr_active;
 
@@ -212,9 +200,7 @@ module axi_interconnect (
         endcase
     end
 
-    // ========================================================================
     // Read Channel Decoding & Routing
-    // ========================================================================
     logic [1:0] rd_sel_latched;
     logic       rd_active;
 

@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Interface: gemm_if.sv
-// Description: SystemVerilog Virtual Interface for Systolic GEMM Accelerator DUT.
-// ============================================================================
+// SystemVerilog Virtual Interface for Systolic GEMM Accelerator DUT.
+
 
 interface gemm_if #(
     parameter ARRAY_SIZE = 4,

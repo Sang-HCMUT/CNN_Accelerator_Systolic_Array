@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Sequencer: gemm_sequencer.sv
-// Description: UVM Sequencer routing sequence items to the driver.
-// ============================================================================
+// UVM Sequencer routing sequence items to the driver.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """
-===============================================================================
 Script: test_single_image.py
-Description: Fast single-image inference tool for MNIST on Systolic Accelerator.
-             Usage:
-                 python software_ref/test_single_image.py [image_index]
-             Example:
-                 python software_ref/test_single_image.py 42
-                 python software_ref/test_single_image.py random
-===============================================================================
+Fast single-image inference tool for MNIST on Systolic Accelerator.
+Usage:
+    python software_ref/test_single_image.py [image_index]
+Example:
+    python software_ref/test_single_image.py 42
+    python software_ref/test_single_image.py random
 """
 
 import os

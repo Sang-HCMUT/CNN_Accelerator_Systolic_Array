@@ -1,10 +1,7 @@
-# ============================================================================
 # ModelSim Waveform Script: wave_soc.do
-# Description: Launch full GUI simulation and configure grouped waveforms for
-#              Phase 3 & 4 RISC-V SoC + Systolic CNN Accelerator.
-# Usage:
-#   In ModelSim command prompt: do wave_soc.do
-# ============================================================================
+# Launch full GUI simulation and configure grouped waveforms for RISC-V SoC + Systolic CNN Accelerator.
+# Usage: do wave_soc.do
+
 
 vlib work
 vmap work work

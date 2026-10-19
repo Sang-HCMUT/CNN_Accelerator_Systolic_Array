@@ -84,7 +84,7 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   └── soc_top.sv               # Complete Integrated SoC Top Module
 ├── firmware/                    # RISC-V Embedded Firmware & Assembler
 │   ├── systolic.h               # Accelerator C MMIO driver & register definitions
-│   ├── main.c                   # C firmware application
+│   ├── main.c                   # Interactive C firmware with 7 demo scenarios
 │   ├── start.s                  # Assembly startup (SP init & reset handler)
 │   ├── link.ld                  # Linker script (32 KB BRAM mapping)
 │   ├── Makefile                 # GNU RISC-V GCC build script
@@ -208,7 +208,7 @@ vsim -c -do "run -all; quit -f" tb_systolic_stress_test
   cd VEFIFY
   vsim -c -do run_soc_sim.do
   ```
-  Observes CPU booting from BRAM (`0x0000_0000`), configuring the Systolic GEMM Accelerator via AXI4-Lite (`0x1000_0000`), executing GEMM tile calculations in 33 hardware cycles, and streaming verified results out via UART (`0x2000_0000`) with 100% Bit-True match.
+  Executes full hardware-software co-simulation running **7 interactive demonstration scenarios** (HW vs SW GEMM benchmark, 16x16 matrix tiling engine with 26.2x speedup, Conv2D im2col feature map extraction, 2-layer MLP neural inference, 5-test arithmetic edge-case diagnostics, MNIST digit ASCII telemetry, and MMIO diagnostics). Transmits **4,610 UART characters** across **1,633,743 simulation cycles** with 0 CPU traps and 100% Bit-True match.
 - **Run Full SoC Quartus II Synthesis (Cyclone II EP2C20)**:
   ```powershell
   cd synthesis_soc

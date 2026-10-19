@@ -1,15 +1,13 @@
 """
-===============================================================================
 Module: mnist_cnn_model.py
-Description: Quantized INT8 CNN Inference Engine for MNIST Digit Recognition.
-             - Architecture:
-               1. Conv1: 16 filters (3x3), padding=1 -> 16 x 28 x 28
-               2. ReLU Activation (INT8)
-               3. MaxPool 2x2 (stride 2) -> 16 x 14 x 14 = 3136 features
-               4. FC: 10 outputs (classes 0-9) via Systolic GEMM
-             - 100% Bit-True emulation of the 2D Systolic Array Accelerator.
-             - Achieves >97% test accuracy on MNIST with pure INT8 arithmetic.
-===============================================================================
+Quantized INT8 CNN Inference Engine for MNIST Digit Recognition.
+Architecture:
+  1. Conv1: 16 filters (3x3), padding=1 -> 16 x 28 x 28
+  2. ReLU Activation (INT8)
+  3. MaxPool 2x2 (stride 2) -> 16 x 14 x 14 = 3136 features
+  4. FC: 10 outputs (classes 0-9) via Systolic GEMM
+Bit-true emulation of the 2D Systolic Array Accelerator.
+Achieves >97% test accuracy on MNIST with pure INT8 arithmetic.
 """
 
 import os

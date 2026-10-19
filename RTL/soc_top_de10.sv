@@ -1,36 +1,34 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: soc_top_de10.sv
-// Description: DE10-Standard Board Wrapper for RISC-V SoC CNN Accelerator.
-//              Target: Terasic DE10-Standard (Intel Cyclone V 5CSXFC6D6F31C6)
+// DE10-Standard Board Wrapper for RISC-V SoC CNN Accelerator.
+// Target: Terasic DE10-Standard (Intel Cyclone V 5CSXFC6D6F31C6)
 //
-//              Key Differences from DE1 (soc_top.sv):
-//              - ARRAY_SIZE = 8  (8x8 Systolic Array, 64 PEs)
-//                DE10-Standard has 112 DSP blocks vs 52 on Cyclone II.
-//              - No LEDG (DE10-Standard only has 10x LEDR).
-//                ledg[7:0] from soc_top are mapped to the internal diagnostic
-//                signals and OR-combined with LEDR[7:2] for visibility.
-//              - UART: mapped to GPIO_0 header (GPIO_0[0]=TX, GPIO_0[1]=RX)
-//              - Clock: 50 MHz CLOCK_50 (same as DE1)
-//              - Reset: KEY[0] active-low push-button
+// Key Differences from DE1 (soc_top.sv):
+// - ARRAY_SIZE = 8 (8x8 Systolic Array, 64 PEs)
+//   DE10-Standard has 112 DSP blocks vs 52 on Cyclone II.
+// - No LEDG (DE10-Standard only has 10x LEDR).
+//   ledg[7:0] from soc_top are mapped to the internal diagnostic
+//   signals and OR-combined with LEDR[7:2] for visibility.
+// - UART: mapped to GPIO_0 header (GPIO_0[0]=TX, GPIO_0[1]=RX)
+// - Clock: 50 MHz CLOCK_50 (same as DE1)
+// - Reset: KEY[0] active-low push-button
 //
-//              Resource Estimate on Cyclone V 5CSXFC6D6F31C6:
-//              - ALMs:       ~22,000 / 41,910  (~52%)
-//              - DSP blocks: 64      / 112      (~57%)
-//              - BRAM:       ~600 Kbits / 5,662 Kbits (~11%)
-// ============================================================================
+// Resource Estimate on Cyclone V 5CSXFC6D6F31C6:
+// - ALMs:       ~22,000 / 41,910  (~52%)
+// - DSP blocks: 64      / 112      (~57%)
+// - BRAM:       ~600 Kbits / 5,662 Kbits (~11%)
 
 module soc_top_de10 (
-    // ---- Clock & Reset ----
+    // Clock & Reset
     input  logic       clk,        // CLOCK_50[0] — 50 MHz crystal oscillator
     input  logic       rst_n,      // KEY[0] — active-low push-button reset
 
-    // ---- UART (mapped to GPIO_0 header) ----
+    // UART (mapped to GPIO_0 header)
     input  logic       uart_rx,    // GPIO_0[1] — Receive from Host PC
     output logic       uart_tx,    // GPIO_0[0] — Transmit to Host PC
 
-    // ---- 7-Segment Displays (Active-Low, same polarity as DE1) ----
+    // 7-Segment Displays (Active-Low, same polarity as DE1)
     output logic [6:0] hex0,       // HEX0 — Units digit of AI prediction
     output logic [6:0] hex1,       // HEX1 — Tens digit of AI prediction
     output logic [6:0] hex2,       // HEX2 — Tied OFF (1111111) — reserved
@@ -38,7 +36,7 @@ module soc_top_de10 (
     output logic [6:0] hex4,       // HEX4 — Tied OFF — reserved
     output logic [6:0] hex5,       // HEX5 — Tied OFF — reserved
 
-    // ---- Red LEDs (DE10-Standard has only LEDR, 10 total) ----
+    // Red LEDs (DE10-Standard has only LEDR, 10 total)
     // Bit assignment:
     //   LEDR[0] = trap        (CPU Error — should stay OFF = 0)
     //   LEDR[1] = accel_busy  (Systolic Array computing)
@@ -53,11 +51,11 @@ module soc_top_de10 (
     output logic [9:0] ledr
 );
 
-    // ---- Internal wires for soc_top outputs ----
+    // Internal wires for soc_top outputs
     logic [9:0] soc_ledr;   // ledr[9:0] from soc_top (internal diagnostic)
     logic [7:0] soc_ledg;   // ledg[7:0] from soc_top — repurposed for LEDR[7:2]
 
-    // ---- Heartbeat counter (1 Hz blink at 50 MHz) ----
+    // Heartbeat counter (1 Hz blink at 50 MHz)
     logic [25:0] hb_cnt;
     logic        heartbeat;
 
@@ -75,7 +73,7 @@ module soc_top_de10 (
         end
     end
 
-    // ---- LED mapping (10 LEDR only, no LEDG on DE10-Standard) ----
+    // LED mapping (10 LEDR only, no LEDG on DE10-Standard)
     assign ledr[0] = soc_ledr[0];   // CPU Trap error
     assign ledr[1] = soc_ledr[1];   // Accelerator busy
     assign ledr[2] = soc_ledg[0];   // Tile done (was LEDG[0] on DE1)
@@ -87,13 +85,13 @@ module soc_top_de10 (
     assign ledr[8] = heartbeat;     // 1 Hz heartbeat — confirms chip alive
     assign ledr[9] = 1'b1;          // Always ON — indicates 8x8 ARRAY_SIZE mode
 
-    // ---- Unused HEX displays: blank (Active-Low: 7'b1111111 = all segments OFF) ----
+    // Unused HEX displays: blank (Active-Low: 7'b1111111 = all segments OFF)
     assign hex2 = 7'b111_1111;
     assign hex3 = 7'b111_1111;
     assign hex4 = 7'b111_1111;
     assign hex5 = 7'b111_1111;
 
-    // ---- SoC Core Instantiation (8x8 Systolic Array) ----
+    // SoC Core Instantiation (8x8 Systolic Array)
     soc_top #(
         .ARRAY_SIZE         (8),         // 8x8 = 64 PEs (vs 4x4 on DE1)
         .DATA_WIDTH         (8),

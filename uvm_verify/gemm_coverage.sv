@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Coverage Subscriber: gemm_coverage.sv
-// Description: UVM Functional Coverage collector tracking stimulus diversity.
-// ============================================================================
+// UVM Functional Coverage collector tracking stimulus diversity.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

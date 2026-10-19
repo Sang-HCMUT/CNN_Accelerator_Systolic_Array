@@ -30,9 +30,8 @@ set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
 
-# ============================================================================
 # Terasic DE1 Pin Assignments (from DE1_pin_assignments.csv)
-# ============================================================================
+
 
 # Clocks & Reset
 set_location_assignment PIN_L1 -to clk

@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Agent: gemm_agent.sv
-// Description: UVM Agent encapsulating Driver, Monitor and Sequencer.
-// ============================================================================
+// UVM Agent encapsulating Driver, Monitor, and Sequencer.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

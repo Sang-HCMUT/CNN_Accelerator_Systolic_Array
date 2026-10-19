@@ -1,13 +1,11 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: soc_top.sv
-// Description: Top-Level SoC integrating PicoRV32 RISC-V Soft CPU Core with:
-//              - Parameterized INT8 Systolic Array GEMM Accelerator (AXI Slave)
-//              - 32 KB Dual-Port / Single-Port Block RAM (Instruction + Data)
-//              - UART / Console Output Peripheral
-//              - AXI4-Lite Central Interconnect Crossbar
-// ============================================================================
+// Top-Level SoC integrating PicoRV32 RISC-V Soft CPU Core with:
+//   - Parameterized INT8 Systolic Array GEMM Accelerator (AXI Slave)
+//   - 32 KB Dual-Port / Single-Port Block RAM (Instruction + Data)
+//   - UART / Console Output Peripheral
+//   - AXI4-Lite Central Interconnect Crossbar
 
 module soc_top #(
     parameter ARRAY_SIZE    = 4,
@@ -27,7 +25,6 @@ module soc_top #(
     output logic [7:0] ledg
 );
 
-    // ========================================================================
     // Master Bus Signals (CPU -> Interconnect)
     logic        trap;
     logic [31:0] cpu_axi_awaddr;
@@ -54,9 +51,7 @@ module soc_top #(
     logic        cpu_axi_rvalid;
     logic        cpu_axi_rready;
 
-    // ========================================================================
     // Slave 0 Signals: BRAM RAM (0x0000_0000)
-    // ========================================================================
     logic [31:0] s0_awaddr;
     logic [2:0]  s0_awprot;
     logic        s0_awvalid;
@@ -81,9 +76,7 @@ module soc_top #(
     logic        s0_rvalid;
     logic        s0_rready;
 
-    // ========================================================================
     // Slave 1 Signals: Systolic Accelerator (0x1000_0000)
-    // ========================================================================
     logic [31:0] s1_awaddr;
     logic [2:0]  s1_awprot;
     logic        s1_awvalid;
@@ -108,9 +101,7 @@ module soc_top #(
     logic        s1_rvalid;
     logic        s1_rready;
 
-    // ========================================================================
     // Slave 2 Signals: UART Peripheral (0x2000_0000)
-    // ========================================================================
     logic [31:0] s2_awaddr;
     logic [2:0]  s2_awprot;
     logic        s2_awvalid;
@@ -135,9 +126,7 @@ module soc_top #(
     logic        s2_rvalid;
     logic        s2_rready;
 
-    // ========================================================================
     // 1. PicoRV32 RISC-V CPU Core (AXI4-Lite Master)
-    // ========================================================================
     picorv32_axi #(
         .ENABLE_COUNTERS     (1),
         .ENABLE_COUNTERS64   (1),
@@ -195,9 +184,7 @@ module soc_top #(
         .trace_data      ()
     );
 
-    // ========================================================================
     // 2. AXI4-Lite Central Interconnect Crossbar
-    // ========================================================================
     axi_interconnect u_interconnect (
         .clk            (clk),
         .rst_n          (rst_n),
@@ -287,9 +274,7 @@ module soc_top #(
         .m2_axi_rready  (s2_rready)
     );
 
-    // ========================================================================
     // 3. Slave 0: On-Chip Block RAM (32 KB)
-    // ========================================================================
     axi_ram #(
         .DATA_WIDTH     (32),
         .MEM_WORDS      (MEM_WORDS),
@@ -323,9 +308,7 @@ module soc_top #(
         .s_axi_rready (s0_rready)
     );
 
-    // ========================================================================
     // 4. Slave 1: Systolic Array GEMM Accelerator
-    // ========================================================================
     logic accel_busy;
     logic accel_done;
 
@@ -367,9 +350,7 @@ module soc_top #(
         .core_done_out (accel_done)
     );
 
-    // ========================================================================
     // 5. Slave 2: UART / Console & Board Peripheral Controller
-    // ========================================================================
     // Hardware board interfaces
     logic [3:0] hex_digit_0;
     logic [3:0] hex_digit_1;

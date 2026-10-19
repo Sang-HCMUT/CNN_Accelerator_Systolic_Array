@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Driver: gemm_driver.sv
-// Description: UVM Driver translating GEMM sequence items to pin-level interface.
-// ============================================================================
+// UVM Driver translating GEMM sequence items to pin-level interface.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

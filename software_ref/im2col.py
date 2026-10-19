@@ -1,14 +1,11 @@
 """
-===============================================================================
 Module: im2col.py
-Description: Mathematical im2col (Image to Column) & col2im Engine
-             for Systolic Array GEMM Accelerator.
-             - Converts high-dimensional 2D convolutions into GEMM (C = A x B).
-             - Matrix A (Weights): [C_out x (C_in * K_h * K_w)]
-             - Matrix B (Patches): [(C_in * K_h * K_w) x (H_out * W_out)]
-             - Output Matrix C:    [C_out x (H_out * W_out)]
-             - Pure NumPy (Zero-Dependency), fully vectorized and bit-accurate.
-===============================================================================
+Mathematical im2col (Image to Column) & col2im Engine for Systolic Array GEMM Accelerator.
+Converts high-dimensional 2D convolutions into GEMM (C = A x B).
+Matrix A (Weights): [C_out x (C_in * K_h * K_w)]
+Matrix B (Patches): [(C_in * K_h * K_w) x (H_out * W_out)]
+Output Matrix C:    [C_out x (H_out * W_out)]
+Pure NumPy (Zero-Dependency), fully vectorized and bit-accurate.
 """
 
 import numpy as np

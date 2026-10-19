@@ -1,14 +1,12 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: pe_gemm.sv
-// Description: Processing Element (PE) for INT8 Output-Stationary Systolic GEMM.
-//              - Multiplies signed 8-bit A and signed 8-bit B (INT8 x INT8 -> INT16).
-//              - Accumulates result in a 32-bit register (no overflow risk).
-//              - Systolic propagation:
-//                * a_out registers a_in and passes to East neighbor.
-//                * b_out registers b_in and passes to South neighbor.
-// ============================================================================
+// Processing Element (PE) for INT8 Output-Stationary Systolic GEMM.
+// Multiplies signed 8-bit A and signed 8-bit B (INT8 x INT8 -> INT16).
+// Accumulates result in a 32-bit register (no overflow risk).
+// Systolic propagation:
+//   a_out registers a_in and passes to East neighbor.
+//   b_out registers b_in and passes to South neighbor.
 
 module pe_gemm #(
     parameter DATA_WIDTH = 8,

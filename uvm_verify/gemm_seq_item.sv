@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Sequence Item: gemm_seq_item.sv
-// Description: UVM Sequence Item representing one GEMM Matrix Operation.
-// ============================================================================
+// UVM Sequence Item representing one GEMM Matrix Operation.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

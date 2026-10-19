@@ -1,16 +1,12 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Sequences: gemm_sequences.sv
-// Description: UVM Sequences generating directed, random and stress workloads.
-// ============================================================================
+// UVM Sequences generating directed, random, and stress workloads.
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 
-// ----------------------------------------------------------------------------
 // 1. Directed Scenario Sequence
-// ----------------------------------------------------------------------------
 class gemm_directed_seq extends uvm_sequence #(gemm_seq_item);
 
     `uvm_object_utils(gemm_directed_seq)
@@ -37,9 +33,7 @@ class gemm_directed_seq extends uvm_sequence #(gemm_seq_item);
 
 endclass : gemm_directed_seq
 
-// ----------------------------------------------------------------------------
 // 2. Constrained-Random Workload Sequence
-// ----------------------------------------------------------------------------
 class gemm_random_seq extends uvm_sequence #(gemm_seq_item);
 
     `uvm_object_utils(gemm_random_seq)
@@ -69,9 +63,7 @@ class gemm_random_seq extends uvm_sequence #(gemm_seq_item);
 
 endclass : gemm_random_seq
 
-// ----------------------------------------------------------------------------
 // 3. High-Stress Back-to-Back Workload Sequence
-// ----------------------------------------------------------------------------
 class gemm_stress_seq extends uvm_sequence #(gemm_seq_item);
 
     `uvm_object_utils(gemm_stress_seq)

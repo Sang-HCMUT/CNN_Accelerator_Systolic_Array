@@ -1,10 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: systolic_accelerator_8x8.sv
-// Description: Fixed 8x8 Systolic Accelerator Top-Level Wrapper for 
-//              Synthesis and Benchmarking on Altera Cyclone II FPGA.
-// ============================================================================
+// Fixed 8x8 Systolic Accelerator Top-Level Wrapper for 
+// Synthesis and Benchmarking on Altera Cyclone II / Cyclone V FPGA.
 
 module systolic_accelerator_8x8 (
     input  logic                                          clk,

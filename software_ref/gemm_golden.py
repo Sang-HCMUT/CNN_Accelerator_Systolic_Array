@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 """
-===============================================================================
 Script: gemm_golden.py
-Description: Pure-Python (Zero-Dependency) Golden Reference Model
-             for INT8 Systolic Array GEMM Accelerator.
-             - Generates parameterized matrix multiplications: C = A x B.
-             - Matrix A: [M x K] in signed INT8 (-128 to 127)
-             - Matrix B: [K x N] in signed INT8 (-128 to 127)
-             - Computes C = A x B with INT32 accumulation.
-             - Applies ReLU: max(0, x).
-             - Applies Quantization: arithmetic shift right (>> shift_bits) + clamp to [0, 127].
-             - Exports matrix_a.hex, matrix_b.hex, golden_acc_int32.hex, golden_output_int8.hex.
-===============================================================================
+Pure-Python (Zero-Dependency) Golden Reference Model for INT8 Systolic Array GEMM Accelerator.
+Generates parameterized matrix multiplications: C = A x B.
+Matrix A: [M x K] in signed INT8 (-128 to 127)
+Matrix B: [K x N] in signed INT8 (-128 to 127)
+Computes C = A x B with INT32 accumulation.
+Applies ReLU: max(0, x).
+Applies Quantization: arithmetic shift right (>> shift_bits) + clamp to [0, 127].
+Exports matrix_a.hex, matrix_b.hex, golden_acc_int32.hex, golden_output_int8.hex.
 """
 
 import os

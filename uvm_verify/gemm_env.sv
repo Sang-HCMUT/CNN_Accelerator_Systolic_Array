@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Environment: gemm_env.sv
-// Description: UVM Environment instantiating Agent, Scoreboard and Coverage.
-// ============================================================================
+// UVM Environment instantiating Agent, Scoreboard, and Coverage.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

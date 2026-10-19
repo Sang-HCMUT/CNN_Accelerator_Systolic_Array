@@ -1,12 +1,10 @@
 """
-===============================================================================
 Module: mnist_dataset.py
-Description: Fast & Zero-Dependency MNIST Dataset Loader and Visualizer.
-             - Downloads official MNIST dataset from reliable mirrors.
-             - Caches locally in software_ref/data/mnist/.
-             - Parses binary IDX format into NumPy arrays.
-             - Provides terminal ASCII-art visualization for handwritten digits.
-===============================================================================
+Fast & Zero-Dependency MNIST Dataset Loader and Visualizer.
+Downloads official MNIST dataset from reliable mirrors.
+Caches locally in software_ref/data/mnist/.
+Parses binary IDX format into NumPy arrays.
+Provides terminal ASCII-art visualization for handwritten digits.
 """
 
 import os

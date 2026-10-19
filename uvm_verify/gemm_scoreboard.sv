@@ -1,9 +1,8 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Scoreboard: gemm_scoreboard.sv
-// Description: UVM Scoreboard comparing DUT outputs against Bit-True Golden Model.
-// ============================================================================
+// UVM Scoreboard comparing DUT outputs against Bit-True Golden Model.
+
 
 import uvm_pkg::*;
 `include "uvm_macros.svh"

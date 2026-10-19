@@ -1,7 +1,6 @@
-# ============================================================================
 # ModelSim Waveform Script: run_stress_sim.do
-# Description: Compiles and runs Stress & Corner-Case testbench with Waveform GUI
-# ============================================================================
+# Compiles and runs Stress & Corner-Case testbench with Waveform GUI
+
 
 vlib work
 vmap work work

@@ -1,11 +1,9 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: matrix_buffer_b.sv
-// Description: Dedicated On-Chip Storage & Streaming Buffer for Input Matrix B.
-//              - Supports Host random-access write port (row-major).
-//              - Supports parallel systolic streaming read port (feeds all columns).
-// ============================================================================
+// Dedicated On-Chip Storage & Streaming Buffer for Input Matrix B.
+// Supports Host random-access write port (row-major).
+// Supports parallel systolic streaming read port (feeds all columns).
 
 module matrix_buffer_b #(
     parameter ARRAY_SIZE = 4,

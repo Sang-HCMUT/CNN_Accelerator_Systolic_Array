@@ -1,15 +1,12 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: matrix_buffer_c.sv
-// Description: Dedicated On-Chip Storage for Output Matrix C.
-//              - Stores INT8 Quantized/ReLU activations.
-//              - Stores INT32 raw high-precision accumulators.
-//              - Dual write channels:
-//                1. Synchronous INT32 accumulator channel (from core during readout).
-//                2. Synchronous INT8 activation channel (from quantizer when valid).
-//              - Host read port for downstream layers / CPU bus.
-// ============================================================================
+// Dedicated On-Chip Storage for Output Matrix C.
+// Stores INT8 Quantized/ReLU activations and INT32 raw high-precision accumulators.
+// Dual write channels:
+//   1. Synchronous INT32 accumulator channel (from core during readout).
+//   2. Synchronous INT8 activation channel (from quantizer when valid).
+// Host read port for downstream layers / CPU bus.
 
 module matrix_buffer_c #(
     parameter ARRAY_SIZE = 4,

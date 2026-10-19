@@ -1,12 +1,10 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: axi_ram.sv
-// Description: AXI4-Lite On-Chip Block RAM (32 KB) for RISC-V SoC.
-//              - Inferred Block RAM on Intel/Altera Cyclone IV/V FPGAs (M9K/M10K).
-//              - Supports 32-bit word and byte-enable (wstrb[3:0]) operations.
-//              - Initializes memory via MEM_INIT_FILE ($readmemh).
-// ============================================================================
+// AXI4-Lite On-Chip Block RAM (32 KB) for RISC-V SoC.
+// Inferred Block RAM on Intel/Altera Cyclone IV/V FPGAs (M9K/M10K).
+// Supports 32-bit word and byte-enable (wstrb[3:0]) operations.
+// Initializes memory via MEM_INIT_FILE ($readmemh).
 
 module axi_ram #(
     parameter DATA_WIDTH     = 32,
@@ -65,9 +63,7 @@ module axi_ram #(
     logic [3:0]           ram_wstrb;
     logic [31:0]          ram_rdata;
 
-    // ------------------------------------------------------------------------
     // Embedded Block RAM (M4K / M9K / M10K) Synchronous Array (NO RESET)
-    // ------------------------------------------------------------------------
     wire [ADDR_BITS-1:0] rd_word_idx = s_axi_araddr[ADDR_BITS+1:2];
 
     always_ff @(posedge clk) begin
@@ -102,9 +98,7 @@ module axi_ram #(
         ram_wstrb <= strb;
     endtask
 
-    // ------------------------------------------------------------------------
     // Write State Machine
-    // ------------------------------------------------------------------------
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             s_axi_awready  <= 1'b0;
@@ -187,9 +181,7 @@ module axi_ram #(
         end
     end
 
-    // ------------------------------------------------------------------------
     // Read State Machine
-    // ------------------------------------------------------------------------
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             s_axi_arready <= 1'b0;

@@ -1,17 +1,15 @@
 `timescale 1ns / 1ps
 
-// ============================================================================
 // Module: axi_uart.sv
-// Description: Enhanced AXI4-Lite UART & Peripheral Controller for Terasic DE1.
-//              - Transmits 8N1 serial stream on uart_tx pin.
-//              - Receives 8N1 serial stream on uart_rx pin with 2-stage sync.
-//              - Controls 7-segment hex digit display and status LEDs.
-//              - Base Address: 0x2000_0000.
-//                - 0x00: Data Register (Write char -> TX / Read -> RX byte)
-//                - 0x04: Status Register (Bit 0: TX Ready, Bit 1: RX Valid)
-//                - 0x08: HEX Display Register (Bits [3:0] digit for HEX0)
-//                - 0x0C: LED Register (Bits [7:0] general purpose LEDs)
-// ============================================================================
+// Enhanced AXI4-Lite UART & Peripheral Controller for Terasic DE1/DE10.
+// Transmits 8N1 serial stream on uart_tx pin.
+// Receives 8N1 serial stream on uart_rx pin with 2-stage sync.
+// Controls 7-segment hex digit display and status LEDs.
+// Base Address: 0x2000_0000.
+//   0x00: Data Register (Write char -> TX / Read -> RX byte)
+//   0x04: Status Register (Bit 0: TX Ready, Bit 1: RX Valid)
+//   0x08: HEX Display Register (Bits [3:0] digit for HEX0)
+//   0x0C: LED Register (Bits [7:0] general purpose LEDs)
 
 module axi_uart #(
     parameter CLK_FREQ_HZ  = 50_000_000,
@@ -61,9 +59,7 @@ module axi_uart #(
     input  logic        s_axi_rready
 );
 
-    // ========================================================================
     // 1. Hardware UART Transmitter (TX)
-    // ========================================================================
     logic [9:0]  tx_shift_reg;
     logic [3:0]  tx_bit_cnt;
     logic [15:0] tx_clk_cnt;
@@ -104,9 +100,7 @@ module axi_uart #(
         end
     end
 
-    // ========================================================================
     // 2. Hardware UART Receiver (RX)
-    // ========================================================================
     logic rx_sync_1, rx_sync_2;
 
     always_ff @(posedge clk or negedge rst_n) begin
@@ -201,9 +195,7 @@ module axi_uart #(
         end
     end
 
-    // ========================================================================
     // 3. AXI4-Lite Write Logic & GPIO Registers
-    // ========================================================================
     typedef enum logic [1:0] {
         WR_IDLE,
         WR_WAIT_DATA,
@@ -344,9 +336,7 @@ module axi_uart #(
         end
     end
 
-    // ========================================================================
     // 4. AXI4-Lite Read Logic
-    // ========================================================================
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             s_axi_arready <= 1'b0;

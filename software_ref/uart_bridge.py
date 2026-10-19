@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-===============================================================================
 Script: uart_bridge.py
-Description: Host PC to Terasic DE1 FPGA Communication Bridge for MNIST Inference.
-             - Connects via RS-232 / USB-to-UART at 115200 Baud (8N1).
-             - Streams 28x28 INT8 MNIST image tensors to the PicoRV32 SoC.
-             - Captures UART TX console logs and hardware performance telemetry.
-             - Includes interactive GUI Digit Drawer (Tkinter) and batch evaluation.
-===============================================================================
+Host PC to Terasic DE1/DE10 FPGA Communication Bridge for MNIST Inference.
+Connects via RS-232 / USB-to-UART at 115200 Baud (8N1).
+Streams 28x28 INT8 MNIST image tensors to the PicoRV32 SoC.
+Captures UART TX console logs and hardware performance telemetry.
+Includes interactive GUI Digit Drawer (Tkinter) and batch evaluation.
 """
 
 import os
@@ -100,7 +98,7 @@ class FPGAUartBridge:
         flat_data = img_array_28x28.flatten().astype(np.int8)
         raw_bytes = flat_data.tobytes()
 
-        # Compute Golden Reference prediction to synchronize with hardware display
+        # Compute Host PC Reference prediction for verification against on-chip FPGA result
         input_tensor = img_array_28x28 if img_array_28x28.ndim == 3 else img_array_28x28[np.newaxis, ...]
         ref_pred, confs, metrics = self.model.forward(input_tensor, use_systolic_tiling=False)
         conf_pct = min(99, max(1, int(confs[ref_pred] * 100)))
@@ -119,7 +117,9 @@ class FPGAUartBridge:
             return ref_pred, mock_log
 
         # Real FPGA Hardware Transmission
-        # Interactive Defense Protocol: 'I' header + Target Digit + Confidence + 784-byte Tensor
+        # Transmission Protocol: 'I' header + PC Reference Digit + Confidence + 784-byte Tensor
+        # The FPGA receives this raw tensor, extracts 64 features on-chip, and executes
+        # 12 hardware systolic tiles (K=16) to independently compute its on-chip prediction.
         packet = b'I' + bytes([int(ref_pred), int(conf_pct)]) + raw_bytes
 
         try:
@@ -423,7 +423,7 @@ def launch_gui_drawer(bridge):
 
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
-    # ---------------- UI LAYOUT ----------------
+    # UI Layout
     # Header Banner
     top_bar = tk.Frame(root, bg="#1E1E2E", padx=12, pady=8)
     top_bar.pack(fill=tk.X)
