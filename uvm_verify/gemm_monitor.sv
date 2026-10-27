@@ -34,27 +34,36 @@ class gemm_monitor extends uvm_monitor;
         @(posedge vif.rst_n);
 
         forever begin
-            // 1. Wait for START signal
-            @(posedge vif.clk);
-            if (vif.start) begin
+            // 1. Wait for START signal sampled by mon_cb
+            @(vif.mon_cb);
+            if (vif.mon_cb.start) begin
                 mon_trans_cnt++;
                 trans = gemm_seq_item::type_id::create($sformatf("trans_%0d", mon_trans_cnt));
                 trans.trans_id     = mon_trans_cnt;
-                trans.k_dim        = vif.k_dim;
-                trans.bypass_relu  = vif.bypass_relu;
-                trans.shift_bits   = vif.shift_bits;
+                trans.k_dim        = vif.mon_cb.k_dim;
+                trans.bypass_relu  = vif.mon_cb.bypass_relu;
+                trans.shift_bits   = vif.mon_cb.shift_bits;
 
-                // 2. Wait for DONE from accelerator core
-                while (!vif.done) @(posedge vif.clk);
+                // 2. Wait for DONE from accelerator core (with mid-reset abort protection)
+                while (!vif.mon_cb.done && vif.rst_n) @(vif.mon_cb);
 
-                // 3. Read back all ARRAY_SIZE x ARRAY_SIZE elements from Buffer C
+                if (!vif.rst_n) begin
+                    `uvm_info("MONITOR", "Mid-computation reset detected: Transaction aborted. Re-syncing monitor.", UVM_MEDIUM)
+                    while (!vif.rst_n) @(vif.mon_cb);
+                    @(vif.mon_cb);
+                    mon_trans_cnt--; // Revert ID to maintain sequence sync
+                    continue;
+                end
+
+                // Wait until core computation is finished and driver begins readout
+                while (vif.mon_cb.busy) @(vif.mon_cb);
+
+                // 3. Passive Readout: Monitor purely samples Buffer C as Host Driver reads it
                 for (int r = 0; r < trans.ARRAY_SIZE; r++) begin
                     for (int c = 0; c < trans.ARRAY_SIZE; c++) begin
-                        vif.rd_c_addr <= r * trans.ARRAY_SIZE + c;
-                        @(posedge vif.clk);
-                        // Buffer C registered readout
-                        trans.matrix_c_out[r][c] = vif.rd_c_data;
-                        trans.matrix_c_acc[r][c] = vif.rd_c_acc_data;
+                        @(vif.mon_cb);
+                        trans.matrix_c_out[r][c] = vif.mon_cb.rd_c_data;
+                        trans.matrix_c_acc[r][c] = vif.mon_cb.rd_c_acc_data;
                     end
                 end
 

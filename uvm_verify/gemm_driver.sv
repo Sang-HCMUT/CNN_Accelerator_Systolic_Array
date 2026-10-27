@@ -28,68 +28,87 @@ class gemm_driver extends uvm_driver #(gemm_seq_item);
 
     task run_phase(uvm_phase phase);
         // Initial signal states
-        vif.start       <= 0;
-        vif.wr_a_en     <= 0;
-        vif.wr_b_en     <= 0;
-        vif.rd_c_addr   <= 0;
-        vif.k_dim       <= 4;
-        vif.bypass_relu <= 0;
-        vif.shift_bits  <= 0;
+        vif.drv_cb.start       <= 1'b0;
+        vif.drv_cb.wr_a_en     <= 1'b0;
+        vif.drv_cb.wr_b_en     <= 1'b0;
+        vif.drv_cb.rd_c_addr   <= '0;
+        vif.drv_cb.k_dim       <= 4;
+        vif.drv_cb.bypass_relu <= 1'b0;
+        vif.drv_cb.shift_bits  <= '0;
 
         // Wait for reset deassertion
         @(posedge vif.rst_n);
-        @(posedge vif.clk);
+        @(vif.drv_cb);
 
         forever begin
             seq_item_port.get_next_item(req);
 
             // Wait until DUT is ready (not busy)
-            while (vif.busy) @(posedge vif.clk);
+            while (vif.drv_cb.busy) @(vif.drv_cb);
 
             // 1. Write Matrix A into on-chip Buffer A (Row-major)
             for (int r = 0; r < req.ARRAY_SIZE; r++) begin
                 for (int k = 0; k < req.k_dim; k++) begin
-                    @(posedge vif.clk);
-                    vif.wr_a_en   <= 1'b1;
-                    vif.wr_a_addr <= r * req.k_dim + k;
-                    vif.wr_a_data <= req.matrix_a[r][k];
+                    vif.drv_cb.wr_a_en   <= 1'b1;
+                    vif.drv_cb.wr_a_addr <= r * req.k_dim + k;
+                    vif.drv_cb.wr_a_data <= req.matrix_a[r][k];
+                    @(vif.drv_cb);
                 end
             end
-            @(posedge vif.clk);
-            vif.wr_a_en <= 1'b0;
+            vif.drv_cb.wr_a_en <= 1'b0;
+            @(vif.drv_cb);
 
             // 2. Write Matrix B into on-chip Buffer B (Row-major)
             for (int k = 0; k < req.k_dim; k++) begin
                 for (int c = 0; c < req.ARRAY_SIZE; c++) begin
-                    @(posedge vif.clk);
-                    vif.wr_b_en   <= 1'b1;
-                    vif.wr_b_addr <= k * req.ARRAY_SIZE + c;
-                    vif.wr_b_data <= req.matrix_b[k][c];
+                    vif.drv_cb.wr_b_en   <= 1'b1;
+                    vif.drv_cb.wr_b_addr <= k * req.ARRAY_SIZE + c;
+                    vif.drv_cb.wr_b_data <= req.matrix_b[k][c];
+                    @(vif.drv_cb);
                 end
             end
-            @(posedge vif.clk);
-            vif.wr_b_en <= 1'b0;
+            vif.drv_cb.wr_b_en <= 1'b0;
+            @(vif.drv_cb);
 
             // 3. Configure GEMM Parameters
-            vif.k_dim       <= req.k_dim;
-            vif.bypass_relu <= req.bypass_relu;
-            vif.shift_bits  <= req.shift_bits;
+            vif.drv_cb.k_dim       <= req.k_dim;
+            vif.drv_cb.bypass_relu <= req.bypass_relu;
+            vif.drv_cb.shift_bits  <= req.shift_bits;
 
             // 4. Pulse START
-            @(posedge vif.clk);
-            vif.start <= 1'b1;
-            @(posedge vif.clk);
-            vif.start <= 1'b0;
+            vif.drv_cb.start <= 1'b1;
+            @(vif.drv_cb);
+            vif.drv_cb.start <= 1'b0;
 
             `uvm_info("DRIVER", $sformatf("Dispatched GEMM Tx #%0d (%s)", req.trans_id, req.scenario_name), UVM_HIGH)
+
+            // Mid-computation Fault Injection: Asynchronous Reset Test
+            if (req.inject_mid_reset) begin
+                `uvm_info("DRIVER", $sformatf("Injecting mid-flight reset after %0d cycles during computation...", req.reset_after_cycles), UVM_LOW)
+                repeat (req.reset_after_cycles) @(vif.drv_cb);
+                vif.rst_n <= 1'b0;
+                repeat (3) @(vif.drv_cb);
+                vif.rst_n <= 1'b1;
+                @(vif.drv_cb);
+                `uvm_info("DRIVER", "Mid-flight reset deasserted. Accelerator core restored to IDLE.", UVM_LOW)
+                seq_item_port.item_done();
+                continue;
+            end
+
             drv_ap.write(req);
 
             // 5. Wait for accelerator core computation to complete
-            @(posedge vif.clk);
-            while (vif.busy) @(posedge vif.clk);
+            @(vif.drv_cb);
+            while (vif.drv_cb.busy) @(vif.drv_cb);
 
-            // 6. Wait for monitor to finish reading Buffer C
-            repeat (req.ARRAY_SIZE * req.ARRAY_SIZE + 2) @(posedge vif.clk);
+            // 6. Host Readback: Driver drives rd_c_addr sequentially for all elements
+            for (int r = 0; r < req.ARRAY_SIZE; r++) begin
+                for (int c = 0; c < req.ARRAY_SIZE; c++) begin
+                    vif.drv_cb.rd_c_addr <= r * req.ARRAY_SIZE + c;
+                    @(vif.drv_cb);
+                end
+            end
+            @(vif.drv_cb);
 
             seq_item_port.item_done();
         end

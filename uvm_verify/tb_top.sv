@@ -8,12 +8,19 @@ import uvm_pkg::*;
 `include "uvm_macros.svh"
 import gemm_pkg::*;
 
+`ifndef ARRAY_SIZE
+    `define ARRAY_SIZE 4
+`endif
+`ifndef MAX_K
+    `define MAX_K 16
+`endif
+
 module tb_top;
 
-    parameter ARRAY_SIZE = 4;
+    parameter ARRAY_SIZE = `ARRAY_SIZE;
     parameter DATA_WIDTH = 8;
     parameter ACC_WIDTH  = 32;
-    parameter MAX_K      = 16;
+    parameter MAX_K      = `MAX_K;
 
     // Clock generation: 50 MHz (Period = 20 ns)
     logic clk;

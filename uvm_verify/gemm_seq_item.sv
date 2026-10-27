@@ -7,10 +7,17 @@
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 
+`ifndef ARRAY_SIZE
+    `define ARRAY_SIZE 4
+`endif
+`ifndef MAX_K
+    `define MAX_K 16
+`endif
+
 class gemm_seq_item extends uvm_sequence_item;
 
-    parameter ARRAY_SIZE = 4;
-    parameter MAX_K      = 16;
+    parameter ARRAY_SIZE = `ARRAY_SIZE;
+    parameter MAX_K      = `MAX_K;
 
     // Stimulus fields
     bit signed [7:0]  matrix_a[ARRAY_SIZE][MAX_K];
@@ -27,9 +34,11 @@ class gemm_seq_item extends uvm_sequence_item;
     bit signed [31:0] golden_acc[ARRAY_SIZE][ARRAY_SIZE];
     bit signed [7:0]  golden_out[ARRAY_SIZE][ARRAY_SIZE];
 
-    // Transaction metadata
+    // Transaction metadata & Fault injection
     string            scenario_name;
     int               trans_id;
+    bit               inject_mid_reset = 0;
+    int               reset_after_cycles = 10;
 
     `uvm_object_utils_begin(gemm_seq_item)
         `uvm_field_int(k_dim, UVM_ALL_ON)
@@ -37,6 +46,8 @@ class gemm_seq_item extends uvm_sequence_item;
         `uvm_field_int(shift_bits, UVM_ALL_ON)
         `uvm_field_int(trans_id, UVM_ALL_ON)
         `uvm_field_string(scenario_name, UVM_ALL_ON)
+        `uvm_field_int(inject_mid_reset, UVM_ALL_ON)
+        `uvm_field_int(reset_after_cycles, UVM_ALL_ON)
     `uvm_object_utils_end
 
     function new(string name = "gemm_seq_item");
@@ -49,11 +60,10 @@ class gemm_seq_item extends uvm_sequence_item;
 
     // Custom Constrained-Random Generator (Compatible with all ModelSim/Questa engines)
     function void generate_stimulus(int mode = 0);
-        k_dim = ARRAY_SIZE;
-
         case (mode)
-            0: begin // Uniform Random
+            0: begin // Uniform Random with dynamic K dimension in [1..MAX_K]
                 scenario_name = "UNIFORM_RANDOM";
+                k_dim         = $urandom_range(1, MAX_K);
                 bypass_relu   = $urandom_range(0, 1);
                 shift_bits    = $urandom_range(0, 8);
                 for (int r = 0; r < ARRAY_SIZE; r++) begin
@@ -64,8 +74,9 @@ class gemm_seq_item extends uvm_sequence_item;
                 end
             end
 
-            1: begin // Extreme Extrema (-128, +127)
+            1: begin // Extreme Corners: Alternating K=1 and K=16
                 scenario_name = "EXTREME_CORNER_CASE";
+                k_dim         = ($urandom_range(0, 1)) ? 1 : MAX_K;
                 bypass_relu   = $urandom_range(0, 1);
                 shift_bits    = 8;
                 for (int r = 0; r < ARRAY_SIZE; r++) begin
@@ -76,8 +87,9 @@ class gemm_seq_item extends uvm_sequence_item;
                 end
             end
 
-            2: begin // Saturation Clamping (+127 clamping test)
+            2: begin // Saturation Clamping (K in [4..MAX_K])
                 scenario_name = "SATURATION_CLAMPING";
+                k_dim         = $urandom_range(4, MAX_K);
                 bypass_relu   = 0;
                 shift_bits    = 0; // No shift -> maximum accumulator overflow into +127
                 for (int r = 0; r < ARRAY_SIZE; r++) begin
@@ -90,6 +102,7 @@ class gemm_seq_item extends uvm_sequence_item;
 
             3: begin // Bypass ReLU Negative Preservation
                 scenario_name = "BYPASS_RELU_NEGATIVE";
+                k_dim         = $urandom_range(1, MAX_K);
                 bypass_relu   = 1;
                 shift_bits    = 2;
                 for (int r = 0; r < ARRAY_SIZE; r++) begin
@@ -102,6 +115,7 @@ class gemm_seq_item extends uvm_sequence_item;
 
             4: begin // Zero Matrix (Static Quiescence)
                 scenario_name = "ZERO_MATRIX";
+                k_dim         = $urandom_range(1, MAX_K);
                 bypass_relu   = 0;
                 shift_bits    = 4;
                 for (int r = 0; r < ARRAY_SIZE; r++) begin
@@ -112,8 +126,9 @@ class gemm_seq_item extends uvm_sequence_item;
                 end
             end
 
-            default: begin // Identity Matrix A
+            default: begin // Identity Matrix A (Square ARRAY_SIZE x ARRAY_SIZE)
                 scenario_name = "IDENTITY_MATRIX";
+                k_dim         = ARRAY_SIZE;
                 bypass_relu   = 0;
                 shift_bits    = 0;
                 for (int r = 0; r < ARRAY_SIZE; r++) begin

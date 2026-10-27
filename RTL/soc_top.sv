@@ -25,6 +25,19 @@ module soc_top #(
     output logic [7:0] ledg
 );
 
+    // Reset Synchronization: Asynchronous Assert, Synchronous Deassert (AASD)
+    // Eliminates metastability & recovery/removal timing hazards on physical FPGA pushbutton
+    logic rst_n_sync_1, rst_n_sync;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rst_n_sync_1 <= 1'b0;
+            rst_n_sync   <= 1'b0;
+        end else begin
+            rst_n_sync_1 <= 1'b1;
+            rst_n_sync   <= rst_n_sync_1;
+        end
+    end
+
     // Master Bus Signals (CPU -> Interconnect)
     logic        trap;
     logic [31:0] cpu_axi_awaddr;
@@ -143,7 +156,7 @@ module soc_top #(
         .STACKADDR           (32'h0000_7FF0)
     ) u_cpu (
         .clk             (clk),
-        .resetn          (rst_n),
+        .resetn          (rst_n_sync),
         .trap            (trap),
 
         // AXI4-Lite Master Interface
@@ -187,7 +200,7 @@ module soc_top #(
     // 2. AXI4-Lite Central Interconnect Crossbar
     axi_interconnect u_interconnect (
         .clk            (clk),
-        .rst_n          (rst_n),
+        .rst_n          (rst_n_sync),
 
         // Master
         .s_axi_awaddr   (cpu_axi_awaddr),
@@ -281,7 +294,7 @@ module soc_top #(
         .MEM_INIT_FILE  (MEM_INIT_FILE)
     ) u_bram (
         .clk          (clk),
-        .rst_n        (rst_n),
+        .rst_n        (rst_n_sync),
 
         .s_axi_awaddr (s0_awaddr),
         .s_axi_awprot (s0_awprot),
@@ -320,7 +333,7 @@ module soc_top #(
         .C_S_AXI_ADDR_WIDTH (12)
     ) u_accelerator (
         .s_axi_aclk    (clk),
-        .s_axi_aresetn (rst_n),
+        .s_axi_aresetn (rst_n_sync),
 
         .s_axi_awaddr  (s1_awaddr[11:0]),
         .s_axi_awprot  (s1_awprot),
@@ -383,7 +396,7 @@ module soc_top #(
         .CLKS_PER_BIT (UART_CLKS_PER_BIT)
     ) u_uart (
         .clk          (clk),
-        .rst_n        (rst_n),
+        .rst_n        (rst_n_sync),
         .uart_rx      (uart_rx),
         .uart_tx      (uart_tx),
         .hex_digit_0  (hex_digit_0),

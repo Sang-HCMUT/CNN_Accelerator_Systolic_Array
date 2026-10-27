@@ -23,9 +23,13 @@ vlog -sv ../RTL/gemm_controller.sv
 vlog -sv ../RTL/systolic_accelerator_top.sv
 
 # 3. Compile UVM Testbench Environment
+if {![info exists ARRAY_SIZE]} {
+    set ARRAY_SIZE 4
+}
 vlog -sv +incdir+C:/13.0sp1/modelsim_ase/verilog_src/uvm-1.1c/src \
      +incdir+. \
      +define+UVM_NO_DPI \
+     +define+ARRAY_SIZE=$ARRAY_SIZE \
      gemm_if.sv \
      gemm_pkg.sv \
      tb_top.sv
@@ -34,6 +38,10 @@ vlog -sv +incdir+C:/13.0sp1/modelsim_ase/verilog_src/uvm-1.1c/src \
 if {![info exists UVM_TEST]} {
     set UVM_TEST "gemm_directed_test"
 }
-vsim tb_top +UVM_TESTNAME=$UVM_TEST +UVM_VERBOSITY=UVM_LOW
+if {[info exists SEED_VAL]} {
+    vsim tb_top -sv_seed $SEED_VAL +UVM_TESTNAME=$UVM_TEST +UVM_VERBOSITY=UVM_LOW
+} else {
+    vsim tb_top +UVM_TESTNAME=$UVM_TEST +UVM_VERBOSITY=UVM_LOW
+}
 run -all
 quit -f

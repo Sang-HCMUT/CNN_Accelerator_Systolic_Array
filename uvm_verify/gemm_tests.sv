@@ -97,3 +97,25 @@ class gemm_stress_test extends gemm_base_test;
     endtask
 
 endclass : gemm_stress_test
+
+// 4. Mid-Computation Asynchronous Reset Resilience Test
+class gemm_reset_test extends gemm_base_test;
+
+    `uvm_component_utils(gemm_reset_test)
+
+    function new(string name = "gemm_reset_test", uvm_component parent = null);
+        super.new(name, parent);
+    endfunction
+
+    task run_phase(uvm_phase phase);
+        gemm_reset_seq seq;
+        phase.raise_objection(this);
+        `uvm_info("TEST", "Starting test: gemm_reset_test", UVM_LOW)
+        seq = gemm_reset_seq::type_id::create("seq");
+        seq.start(env.agt.sqr);
+        #100;
+        `uvm_info("TEST", "Completed test: gemm_reset_test", UVM_LOW)
+        phase.drop_objection(this);
+    endtask
+
+endclass : gemm_reset_test

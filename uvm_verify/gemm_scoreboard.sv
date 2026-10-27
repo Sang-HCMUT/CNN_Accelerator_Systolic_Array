@@ -48,6 +48,14 @@ class gemm_scoreboard extends uvm_scoreboard;
 
             total_evaluated++;
 
+            // Tagging Check: Strict Transaction ID Enforcement
+            if (exp.trans_id !== act.trans_id) begin
+                is_match = 0;
+                `uvm_error("SCOREBOARD_ID_MISMATCH",
+                    $sformatf("Protocol Violation: Transaction ID mismatch! Expected Tx #%0d but received actual Tx #%0d!",
+                              exp.trans_id, act.trans_id))
+            end
+
             // Ensure golden result is computed
             exp.compute_golden();
 

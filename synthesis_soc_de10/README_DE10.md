@@ -24,19 +24,19 @@ Sử dụng **cùng một RTL source**, chỉ thay tham số `ARRAY_SIZE = 8` v�
 | `MEM_WORDS` | 8192 | 32 KB BRAM firmware |
 | `UART_CLKS_PER_BIT` | 434 | 50 MHz / 115200 baud — giống DE1 |
 | Clock | 50 MHz | CLOCK_50[0] — Pin AF14 |
-| Reset | KEY[0] | Active-low — Pin AH17 |
+| Reset | KEY[0] | Active-low — Pin AJ4 (Lưu ý: Pin AH17 là HEX0[4]) |
 
-## Sơ Đồ Kết Nối UART (GPIO_0 Header)
+## Sơ Đồ Kết Nối UART (GPIO_0 Header J1 — Khớp với soc_top_de10.qsf)
 
 ```
-Host PC (USB-to-UART Adapter)         DE10-Standard GPIO_0
-┌─────────────────────┐               ┌───────────────────┐
-│  CP2102 / CH340G    │               │   J1 Header       │
-│                     │               │                   │
-│  TXD ──────────────────────────────► GPIO_0[1] = Pin AF17│  uart_rx
-│  RXD ◄──────────────────────────────  GPIO_0[0] = Pin AF15│  uart_tx
-│  GND ──────────────────────────────── GND                │
-└─────────────────────┘               └───────────────────┘
+Host PC (USB-to-UART Adapter)         DE10-Standard GPIO_0 (Header J1)
+┌─────────────────────┐               ┌───────────────────────────────┐
+│  CP2102 / CH340G    │               │   J1 Header (40-pin)          │
+│                     │               │                               │
+│  TXD ──────────────────────────────► GPIO_0[1] = Pin AK2 (Header P2)│  uart_rx
+│  RXD ◄──────────────────────────────  GPIO_0[0] = Pin W15 (Header P1)│  uart_tx
+│  GND ──────────────────────────────── GND         (Header P12/P30)  │
+└─────────────────────┘               └───────────────────────────────┘
 ```
 
 ## Mapping LED (DE10 chỉ có LEDR, không có LEDG)
