@@ -34,6 +34,7 @@ interface gemm_if #(
     logic [4:0] shift_bits;
     logic done;
     logic busy;
+    logic error;
 
     // Host Write Buffer A
     logic wr_a_en;
@@ -60,7 +61,7 @@ interface gemm_if #(
         output wr_a_en, wr_a_addr, wr_a_data;
         output wr_b_en, wr_b_addr, wr_b_data;
         output rd_c_addr;
-        input  done, busy;
+        input  done, busy, error;
         input  rd_c_data, rd_c_acc_data;
     endclocking
 
@@ -72,7 +73,7 @@ interface gemm_if #(
         input k_dim;
         input bypass_relu;
         input shift_bits;
-        input done, busy;
+        input done, busy, error;
         input wr_a_en, wr_a_addr, wr_a_data;
         input wr_b_en, wr_b_addr, wr_b_data;
         input rd_c_addr;

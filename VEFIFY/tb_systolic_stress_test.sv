@@ -28,6 +28,7 @@ module tb_systolic_stress_test;
     logic [4:0] shift_bits;
     logic       done;
     logic       busy;
+    logic       error;
 
     logic                                     wr_a_en;
     logic [$clog2(ARRAY_SIZE*16)-1:0]         wr_a_addr;
@@ -55,6 +56,7 @@ module tb_systolic_stress_test;
         .shift_bits    (shift_bits),
         .done          (done),
         .busy          (busy),
+        .error         (error),
         .wr_a_en       (wr_a_en),
         .wr_a_addr     (wr_a_addr),
         .wr_a_data     (wr_a_data),
@@ -255,6 +257,42 @@ module tb_systolic_stress_test;
             for (j = 0; j < ARRAY_SIZE; j++) mat_b[i][j] = 8'sd8 + j;
         end
         run_test_scenario("Back-to-Back Run #2 (Check pipeline residual)", 1'b0, 5'd3);
+
+        // Stress Test 7: Invalid K=0 Guardband Test (Must reject, assert error & done, busy=0)
+        total_tests++;
+        $display("------------------------------------------------------------------");
+        $display("[SCENARIO %0d] Invalid K=0 Guardband Rejection Test", total_tests);
+        @(negedge clk);
+        k_dim <= 8'd0;
+        start <= 1'b1;
+        @(negedge clk);
+        start <= 1'b0;
+        @(posedge clk);
+        if (done === 1'b1 && error === 1'b1 && busy === 1'b0) begin
+            $display("  --> RESULT: [PASSED] Rejected K=0! done=1, error=1, busy=0 asserted immediately (No deadlock).");
+            passed_tests++;
+        end else begin
+            $display("  --> RESULT: [FAILED] K=0 rejection failed: done=%0b, error=%0b, busy=%0b", done, error, busy);
+            failed_tests++;
+        end
+
+        // Stress Test 8: Invalid K=17 (K > MAX_K) Guardband Test (Must reject, assert error & done)
+        total_tests++;
+        $display("------------------------------------------------------------------");
+        $display("[SCENARIO %0d] Invalid K=17 (K > MAX_K) Guardband Rejection Test", total_tests);
+        @(negedge clk);
+        k_dim <= 8'd17;
+        start <= 1'b1;
+        @(negedge clk);
+        start <= 1'b0;
+        @(posedge clk);
+        if (done === 1'b1 && error === 1'b1 && busy === 1'b0) begin
+            $display("  --> RESULT: [PASSED] Rejected K=17! done=1, error=1, busy=0 asserted immediately (No deadlock).");
+            passed_tests++;
+        end else begin
+            $display("  --> RESULT: [FAILED] K=17 rejection failed: done=%0b, error=%0b, busy=%0b", done, error, busy);
+            failed_tests++;
+        end
 
         // Final Report
         $display("\n--- Verification Summary: %0d/%0d passed ---", passed_tests, total_tests);

@@ -84,6 +84,7 @@ module systolic_gemm_axi_lite #(
     logic [$clog2(ARRAY_SIZE*ARRAY_SIZE)-1:0] core_rd_c_addr;
     logic signed [DATA_WIDTH-1:0]             core_rd_c_data;
     logic signed [ACC_WIDTH-1:0]              core_rd_c_acc;
+    logic                                     core_error;
 
     // Hardware Performance Profiler & Version ID Registers
     logic [31:0] perf_cycle_cnt;
@@ -171,7 +172,8 @@ module systolic_gemm_axi_lite #(
             core_wr_a_en <= 1'b0;
             core_wr_b_en <= 1'b0;
 
-            status_reg[31:2] <= 30'd0;
+            status_reg[31:3] <= 29'd0;
+            status_reg[2]    <= core_error;
             status_reg[1]    <= core_busy;
             if (core_done) status_reg[0] <= 1'b1;
 
@@ -307,6 +309,7 @@ module systolic_gemm_axi_lite #(
         .shift_bits    (control_reg[6:2]),
         .done          (core_done),
         .busy          (core_busy),
+        .error         (core_error),
         .wr_a_en       (core_wr_a_en),
         .wr_a_addr     (core_wr_a_addr),
         .wr_a_data     (core_wr_a_data),

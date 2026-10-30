@@ -27,6 +27,7 @@ module systolic_accelerator_top #(
     input  logic [4:0]                                    shift_bits,   // Quantization shift
     output logic                                          done,
     output logic                                          busy,
+    output logic                                          error,
     
     // Host Write Interface for Matrix A (Row-major, ARRAY_SIZE x MAX_K)
     input  logic                                          wr_a_en,
@@ -85,7 +86,8 @@ module systolic_accelerator_top #(
 
     // 1. Central FSM & Sequencer Controller
     gemm_controller #(
-        .ARRAY_SIZE (ARRAY_SIZE)
+        .ARRAY_SIZE (ARRAY_SIZE),
+        .MAX_K      (MAX_K)
     ) u_controller (
         .clk             (clk),
         .rst_n           (rst_n),
@@ -93,6 +95,7 @@ module systolic_accelerator_top #(
         .k_dim           (k_dim),
         .busy            (busy),
         .done            (done),
+        .error           (error),
         .sys_en          (sys_en),
         .sys_clear_acc   (sys_clear_acc),
         .stream_en       (stream_en),

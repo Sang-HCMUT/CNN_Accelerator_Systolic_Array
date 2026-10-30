@@ -52,6 +52,7 @@ module tb_top;
         .shift_bits     (vif.shift_bits),
         .done           (vif.done),
         .busy           (vif.busy),
+        .error          (vif.error),
         .wr_a_en        (vif.wr_a_en),
         .wr_a_addr      (vif.wr_a_addr),
         .wr_a_data      (vif.wr_a_data),

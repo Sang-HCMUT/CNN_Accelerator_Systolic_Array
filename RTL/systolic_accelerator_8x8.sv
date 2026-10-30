@@ -15,6 +15,7 @@ module systolic_accelerator_8x8 (
     input  logic [4:0]                                    shift_bits,
     output logic                                          done,
     output logic                                          busy,
+    output logic                                          error,
     
     // Host Write Interface for Matrix A (Row-major, 8 x 16 max = 128 elements)
     input  logic                                          wr_a_en,
@@ -45,6 +46,7 @@ module systolic_accelerator_8x8 (
         .shift_bits    (shift_bits),
         .done          (done),
         .busy          (busy),
+        .error         (error),
         .wr_a_en       (wr_a_en),
         .wr_a_addr     (wr_a_addr),
         .wr_a_data     (wr_a_data),

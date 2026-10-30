@@ -39,6 +39,7 @@
 // Status Register Bit Masks
 #define STATUS_DONE        (1 << 0)
 #define STATUS_BUSY        (1 << 1)
+#define STATUS_ERROR       (1 << 2)
 
 // UART / Console Registers
 #define REG_UART_DATA      (*(volatile uint32_t*)(UART_BASE + 0x000))

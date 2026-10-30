@@ -28,6 +28,7 @@ module tb_systolic_gemm;
     logic [4:0] shift_bits;
     logic       done;
     logic       busy;
+    logic       error;
 
     // Host Interfaces
     logic                                     wr_a_en;
@@ -62,6 +63,7 @@ module tb_systolic_gemm;
         .shift_bits    (shift_bits),
         .done          (done),
         .busy          (busy),
+        .error         (error),
         .wr_a_en       (wr_a_en),
         .wr_a_addr     (wr_a_addr),
         .wr_a_data     (wr_a_data),

@@ -6,7 +6,8 @@
 // Generates cycle-accurate control signals for buffers, skew unit, systolic core, and quantizer.
 
 module gemm_controller #(
-    parameter ARRAY_SIZE = 4
+    parameter ARRAY_SIZE = 4,
+    parameter MAX_K      = 16
 )(
     input  logic                                          clk,
     input  logic                                          rst_n,
@@ -18,6 +19,7 @@ module gemm_controller #(
     // Status Flags
     output logic                                          busy,
     output logic                                          done,
+    output logic                                          error,
     
     // Datapath Controls: Systolic Core & Skew Unit
     output logic                                          sys_en,
@@ -42,9 +44,8 @@ module gemm_controller #(
     localparam TOTAL_C       = ARRAY_SIZE * ARRAY_SIZE;
     localparam ADDR_C_WIDTH  = $clog2(TOTAL_C);
     localparam ADDR_RC_WIDTH = $clog2(ARRAY_SIZE);
-    localparam MAX_K         = 16;
 
-    // Hardware Guardband: Validate K dimension is strictly within valid supported range [1, MAX_K]
+    // Hardware Guardband: Validate K dimension is strictly within valid parameterized range [1, MAX_K]
     logic is_k_valid;
     assign is_k_valid = (k_dim >= 8'd1) && (k_dim <= 8'(MAX_K));
 
@@ -85,6 +86,7 @@ module gemm_controller #(
             state         <= ST_IDLE;
             busy          <= 1'b0;
             done          <= 1'b0;
+            error         <= 1'b0;
             sys_en        <= 1'b0;
             sys_clear_acc <= 1'b0;
             stream_en     <= 1'b0;
@@ -105,11 +107,15 @@ module gemm_controller #(
                     if (start) begin
                         if (is_k_valid) begin
                             busy          <= 1'b1;
+                            error         <= 1'b0;
                             state         <= ST_CLEAR;
                             sys_clear_acc <= 1'b1;
                         end else begin
-                            // Guardband: Reject invalid k_dim outside [1, MAX_K] to prevent underflow / buffer overflow
+                            // Guardband: Reject invalid k_dim outside [1, MAX_K]
+                            // Pulse done and assert error flag so software polling is released without deadlock!
                             busy          <= 1'b0;
+                            done          <= 1'b1;
+                            error         <= 1'b1;
                             state         <= ST_IDLE;
                         end
                     end
@@ -164,6 +170,7 @@ module gemm_controller #(
                 ST_DONE: begin
                     done  <= 1'b1;
                     busy  <= 1'b0;
+                    error <= 1'b0;
                     state <= ST_IDLE;
                 end
             endcase
