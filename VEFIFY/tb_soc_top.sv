@@ -12,7 +12,7 @@
 module tb_soc_top;
 
     localparam CLK_PERIOD = 20; // 50 MHz -> 20 ns period
-    localparam MAX_CYCLES = 2500000;
+    localparam MAX_CYCLES = 3500000;
     localparam UART_CLKS  = 16;
 
     logic clk;

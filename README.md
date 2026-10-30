@@ -1,11 +1,16 @@
 # Parameterized 2D Systolic Array CNN Accelerator on FPGA
 
-[![FPGA](https://img.shields.io/badge/FPGA-Altera%20Cyclone%20II%20EP2C20-blue.svg)](https://www.intel.com/)
+[![FPGA](https://img.shields.io/badge/FPGA-Cyclone%20II%20(DE1%2FDE2)%20%7C%20Cyclone%20V%20(DE10)-blue.svg)](https://www.intel.com/)
 [![HDL](https://img.shields.io/badge/HDL-SystemVerilog%20(IEEE%201800--2012)-orange.svg)](https://en.wikipedia.org/wiki/SystemVerilog)
 [![Tool](https://img.shields.io/badge/EDA-Quartus%20II%20%26%20ModelSim-green.svg)](https://www.intel.com/)
 [![Verification](https://img.shields.io/badge/Verification-100%25%20Bit--True%20(16%2F16%20%26%206%2F6%20Stress%20Passed)-brightgreen.svg)](#verification--test-results)
 
-An open-source, modular, and parameterized hardware accelerator designed for Convolutional Neural Networks (CNNs) based on an **Output-Stationary 2D Systolic Array**. Optimized for low-cost FPGA platforms (such as the Altera Cyclone II on Terasic DE1), featuring quantized **Signed INT8** inputs/weights, **Signed INT32** accumulation, on-the-fly **ReLU / Arithmetic Scaling / Saturation Clamping**, and an **AMBA AXI4-Lite** interface.
+An open-source, modular, and parameterized hardware accelerator designed for Convolutional Neural Networks (CNNs) based on an **Output-Stationary 2D Systolic Array**. Evaluated and verified across three target FPGA development boards:
+- **Terasic DE1** (Altera Cyclone II `EP2C20F484C7`, 4x4 array)
+- **Terasic DE2** (Altera Cyclone II `EP2C35F672C6`, 8x8 array with 64 PEs, 8x 7-segments & 18 LEDs)
+- **Terasic DE10-Standard** (Intel Cyclone V `5CSXFC6D6F31C6N`, 8x8 array with 64 PEs)
+
+Features quantized **Signed INT8** inputs/weights, **Signed INT32** accumulation, on-the-fly **ReLU / Arithmetic Scaling / Saturation Clamping**, and an **AMBA AXI4-Lite** interface.
 
 ---
 
@@ -81,14 +86,16 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   ├── axi_interconnect.sv      # 1-Master to 3-Slave AXI4-Lite Crossbar
 │   ├── axi_ram.sv               # 32 KB On-Chip BRAM (wstrb & $readmemh)
 │   ├── axi_uart.sv              # AXI4-Lite UART Serial Console
-│   └── soc_top.sv               # Complete Integrated SoC Top Module
+│   ├── soc_top.sv               # Complete Integrated SoC Top Module (DE1 default)
+│   ├── soc_top_de2.sv           # DE2 Board Wrapper (8x HEX, 18x LEDR, 9x LEDG, RS-232)
+│   └── soc_top_de10.sv          # DE10-Standard Board Wrapper (8x8 Array, 64 PEs)
 ├── firmware/                    # RISC-V Embedded Firmware & Assembler
 │   ├── systolic.h               # Accelerator C MMIO driver & register definitions
 │   ├── main.c                   # Interactive C firmware with 7 demo scenarios
+│   ├── mnist_conv1_weights.h    # Extracted real Conv1 INT8 weights & biases
 │   ├── start.s                  # Assembly startup (SP init & reset handler)
 │   ├── link.ld                  # Linker script (32 KB BRAM mapping)
 │   ├── Makefile                 # GNU RISC-V GCC build script
-│   ├── firmware_generator.py    # Standalone pure Python RV32I assembler
 │   ├── firmware.hex             # Verilog hex machine code loaded by axi_ram
 │   └── firmware.dis             # Instruction disassembly listing
 ├── VEFIFY/                      # ModelSim testbenches and simulation assets
@@ -107,33 +114,46 @@ An open-source, modular, and parameterized hardware accelerator designed for Con
 │   ├── run_phase2_demo.bat      # One-click execution script for Phase 2 demo
 │   ├── gemm_golden.py           # Bit-accurate matrix generation script
 │   └── run_golden.bat           # One-click execution script
-├── synthesis_gemm/              # Quartus II project for 4x4 configuration (16 PEs)
+├── synthesis_gemm/              # Quartus II project for standalone 4x4 array (16 PEs)
 │   └── compile_4x4.bat          # Automated command-line build script
-├── synthesis_gemm_8x8/          # Quartus II project for 8x8 configuration (64 PEs)
+├── synthesis_gemm_8x8/          # Quartus II project for standalone 8x8 array (64 PEs)
 │   └── compile_8x8.bat          # Automated command-line build script
-├── synthesis_soc/               # Quartus II project for complete RISC-V SoC system
-│   └── compile_soc.bat          # Automated command-line build script for SoC
+├── synthesis_soc/               # Quartus II project for Terasic DE1 (EP2C20F484C7)
+│   ├── compile_soc.bat          # Automated build script
+│   └── program_de1.bat          # USB-Blaster programming script
+├── synthesis_soc_de2/           # Quartus II project for Terasic DE2 (EP2C35F672C6)
+│   ├── compile_soc_de2.bat      # Automated build script
+│   ├── program_de2.bat          # USB-Blaster programming script
+│   └── README_DE2.md            # DE2 pinout, bring-up, and architecture guide
+├── synthesis_soc_de10/          # Quartus Prime project for Terasic DE10-Standard (Cyclone V)
+│   ├── compile_soc_de10.bat     # Automated build script
+│   ├── program_de10.bat         # USB-Blaster programming script
+│   └── README_DE10.md           # DE10 pinout, bring-up, and architecture guide
 └── PROJECT_SPECIFICATION.md     # Comprehensive system specification & engineering report
 ```
 
 ---
 
-## Hardware Benchmark (Altera Cyclone II EP2C20F484C7)
+## Hardware Benchmark & Multi-Board Synthesis Portfolio
 
-Compiled with **Quartus II 64-Bit 13.0 SP1** and analyzed via **TimeQuest Timing Analyzer**:
+The design is verified across three physical FPGA development platforms:
 
-| Metric | $4 \times 4$ Standalone Array | $8 \times 8$ Standalone Array | Full RISC-V SoC (`soc_top`) |
+| Metric | Terasic DE1 (`soc_top`) | Terasic DE2 (`soc_top_de2`) | Terasic DE10-Standard (`soc_top_de10`) |
 | :--- | :---: | :---: | :---: |
-| **Logic Elements (LEs)** | **4,323 / 18,752 (23.1%)** | **15,567 / 18,752 (83.0%)** | **6,219 / 18,752 (33.1%)** |
-| - *Combinational Functions* | 3,412 (18.2%) | 13,211 (70.5%) | 5,539 (29.5%) |
-| - *Dedicated Logic Registers* | 2,473 (13.2%) | 8,012 (42.7%) | 3,337 (17.8%) |
-| **Embedded Multipliers (9-bit)** | **16 / 52 (30.8%)** | **52 / 52 (100.0% - Saturated)** | **16 / 52 (30.8%)** |
-| **Memory Bits (Block RAM)** | **512 / 239,616 (< 1%)** | **1,024 / 239,616 (< 1%)** | **133,632 / 239,616 (55.8%)** |
-| **Total I/O Pins** | 93 / 315 (29.5%) | 97 / 315 (30.8%) | **4 / 315 (1.3%)** |
-| **Max Frequency $F_{max}$ (Slow 85°C)** | **70.00 MHz** ($T_{clk} = 14.29 \text{ ns}$) | **67.60 MHz** ($T_{clk} = 14.79 \text{ ns}$) | **60.00 MHz** ($T_{clk} = 16.67 \text{ ns}$) |
-| **Max Frequency $F_{max}$ (Fast 0°C)** | **186.04 MHz** ($T_{clk} = 5.37 \text{ ns}$) | **184.74 MHz** ($T_{clk} = 5.41 \text{ ns}$) | **162.33 MHz** ($T_{clk} = 6.16 \text{ ns}$) |
-| **Worst-Case Slack @ 50 MHz** | **+5.714 ns** | **+5.207 ns** | **+3.331 ns (Zero Violation)** |
-| **Compilation Status** | **0 Errors (Passed)** | **0 Errors (Passed)** | **0 Errors (Passed)** |
+| **FPGA Family / Device** | **Cyclone II EP2C20F484C7** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** |
+| **Array Architecture** | $4 \times 4$ (16 PEs) | **$8 \times 8$ (64 PEs)** | $8 \times 8$ (64 PEs) |
+| **Logic Utilization** | 6,219 / 18,752 LEs (33.1%) | **16,356 / 33,216 LEs (49.2%)** | 13,293 / 41,910 ALMs (31.7%) |
+| **Registers** | 3,337 | **8,961** | 12,852 |
+| **Embedded Multipliers / DSP** | 16 / 52 9-bit (30.8%) | **64 / 70 9-bit (91.4%)** | 64 / 112 Variable DSPs (57.1%) |
+| **Memory Bits (Block RAM)** | 133,632 / 239,616 (55.8%) | **265,216 / 483,840 (54.8%)** | 357,696 / 5,662,720 (6.3%) |
+| **Total I/O Pins Utilized** | 27 / 315 (8.6%) | **87 / 475 (18.3%)** | 55 / 499 (11.0%) |
+| **Target Clock Frequency** | 50.00 MHz | 50.00 MHz | 50.00 MHz |
+| **Worst-Case Setup Slack** | **+3.968 ns** | **+3.395 ns** | **+3.882 ns** |
+| **Worst-Case Hold Slack** | **+0.445 ns** | **+0.391 ns** | **+0.160 ns** |
+| **Max Clock Freq ($F_{max}$)** | **62.37 MHz** | **60.22 MHz** | **61.93 MHz** |
+| **Peak Throughput (@ 50MHz)** | **1.60 GOPS** | **6.40 GOPS ($4.0\times$)** | **6.40 GOPS ($4.0\times$)** |
+| **Compilation Status** | **0 Errors, 0 Violations** | **0 Errors, 0 Violations** | **0 Errors, 0 Violations** |
+| **Bitstream File** | `synthesis_soc/soc_top.sof` | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` |
 
 ### Key Academic Takeaways:
 1. **$F_{max}$ Frequency Preservation**: By eliminating global broadcast routes and inserting pipelined registers between adjacent PEs, increasing the compute density by $4\times$ ($16 \to 64$ PEs) causes only a negligible $3.4\%$ frequency drop.
@@ -192,17 +212,13 @@ vsim -c -do "run -all; quit -f" tb_systolic_stress_test
 - **Test a Random Image**: `python software_ref/test_single_image.py random`
 
 ### 5. Run Phase 3: RISC-V SoC Hardware-Software Co-Simulation & Synthesis
-- **Build Firmware Option A (Standalone Python RV32I Assembler - Zero Dependency)**:
-  ```powershell
-  python firmware/firmware_generator.py
-  ```
-- **Build Firmware Option B (GNU RISC-V C Toolchain)**:
+- **Build Firmware (GNU RISC-V C Toolchain & Makefile)**:
   ```powershell
   cd firmware
-  riscv32-unknown-elf-gcc -march=rv32i -mabi=ilp32 -O2 -nostdlib -T link.ld start.s main.c -o firmware.elf
-  riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
-  python bin2hex.py firmware.bin ../VEFIFY/firmware.hex
+  make clean
+  make
   ```
+  *(Compiles `start.s` and `main.c` with `riscv-none-elf-gcc`, links via `link.ld`, and generates `firmware.hex` & `firmware.dis`)*
 - **Run Full SoC Co-Simulation on ModelSim**:
   ```powershell
   cd VEFIFY

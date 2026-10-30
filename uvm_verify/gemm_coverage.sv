@@ -45,15 +45,44 @@ class gemm_coverage extends uvm_component;
     int cnt_k_max  = 0; // K = 16
     int k_bins[17];     // Per-K counters
 
+    // =========================================================================
+    // INDUSTRIAL CROSS-COVERAGE METRICS (Systematic Mode & Corner Exploration)
+    // =========================================================================
+    // Cross 1: [ReLU Mode (2)] x [Shift Scale (9)] = 18 Bins
+    int cross_relu_shift[2][9];
+
+    // Cross 2: [K-Dimension Range (3)] x [Shift Scale (9)] = 27 Bins
+    int cross_k_shift[3][9];
+
+    // Cross 3: [Matrix A Extremes (2)] x [Matrix B Sign Diversity (2)] = 4 Bins
+    int cross_a_b_extremes[2][2];
+
     function new(string name = "gemm_coverage", uvm_component parent = null);
         super.new(name, parent);
         drv_export = new("drv_export", this);
         mon_export = new("mon_export", this);
         for (int i = 0; i <= 8; i++) shift_bins[i] = 0;
         for (int i = 0; i <= 16; i++) k_bins[i] = 0;
+
+        for (int r = 0; r < 2; r++) begin
+            for (int s = 0; s <= 8; s++) cross_relu_shift[r][s] = 0;
+        end
+        for (int k = 0; k < 3; k++) begin
+            for (int s = 0; s <= 8; s++) cross_k_shift[k][s] = 0;
+        end
+        for (int a = 0; a < 2; a++) begin
+            for (int b = 0; b < 2; b++) cross_a_b_extremes[a][b] = 0;
+        end
     endfunction
 
     function void write_drv(gemm_seq_item t);
+        int relu_idx;
+        int k_cat;
+        bit has_ext_min_a;
+        bit has_ext_max_a;
+        bit has_neg_b;
+        bit has_pos_b;
+
         // Track K dimension distribution
         if (t.k_dim >= 1 && t.k_dim <= 16) k_bins[t.k_dim]++;
         if (t.k_dim == 1)       cnt_k_min++;
@@ -67,11 +96,31 @@ class gemm_coverage extends uvm_component;
         // Track shift bits
         if (t.shift_bits <= 8) shift_bins[t.shift_bits]++;
 
+        // Cross 1: ReLU mode (0: ON, 1: BYPASS) x Shift (0..8)
+        relu_idx = t.bypass_relu ? 1 : 0;
+        if (t.shift_bits <= 8) begin
+            cross_relu_shift[relu_idx][t.shift_bits]++;
+        end
+
+        // Cross 2: K-Range (0: MIN=1, 1: MID=2..15, 2: MAX=16) x Shift (0..8)
+        k_cat = (t.k_dim == 1) ? 0 : ((t.k_dim == 16) ? 2 : 1);
+        if (t.shift_bits <= 8) begin
+            cross_k_shift[k_cat][t.shift_bits]++;
+        end
+
         // Track Matrix A operand distribution
+        has_ext_min_a = 0;
+        has_ext_max_a = 0;
         for (int r = 0; r < t.ARRAY_SIZE; r++) begin
             for (int k = 0; k < t.k_dim; k++) begin
-                if (t.matrix_a[r][k] == -8'sd128) cnt_ext_min_a++;
-                if (t.matrix_a[r][k] == 8'sd127)  cnt_ext_max_a++;
+                if (t.matrix_a[r][k] == -8'sd128) begin
+                    cnt_ext_min_a++;
+                    has_ext_min_a = 1;
+                end
+                if (t.matrix_a[r][k] == 8'sd127) begin
+                    cnt_ext_max_a++;
+                    has_ext_max_a = 1;
+                end
                 if (t.matrix_a[r][k] == 8'sd0)    cnt_zero_a++;
                 else if (t.matrix_a[r][k] > 0)    cnt_positive_a++;
                 else                              cnt_negative_a++;
@@ -79,13 +128,26 @@ class gemm_coverage extends uvm_component;
         end
 
         // Track Matrix B operand distribution
+        has_neg_b = 0;
+        has_pos_b = 0;
         for (int k = 0; k < t.k_dim; k++) begin
             for (int c = 0; c < t.ARRAY_SIZE; c++) begin
                 if (t.matrix_b[k][c] == 8'sd0)    cnt_zero_b++;
-                else if (t.matrix_b[k][c] > 0)    cnt_positive_b++;
-                else                              cnt_negative_b++;
+                else if (t.matrix_b[k][c] > 0) begin
+                    cnt_positive_b++;
+                    has_pos_b = 1;
+                end else begin
+                    cnt_negative_b++;
+                    has_neg_b = 1;
+                end
             end
         end
+
+        // Cross 3: Matrix A Extremes x Matrix B Sign
+        if (has_ext_min_a && has_neg_b) cross_a_b_extremes[0][0]++;
+        if (has_ext_min_a && has_pos_b) cross_a_b_extremes[0][1]++;
+        if (has_ext_max_a && has_neg_b) cross_a_b_extremes[1][0]++;
+        if (has_ext_max_a && has_pos_b) cross_a_b_extremes[1][1]++;
     endfunction
 
     function void write_mon(gemm_seq_item t);
@@ -123,6 +185,12 @@ class gemm_coverage extends uvm_component;
     function void report_phase(uvm_phase phase);
         int hit_bins = 0;
         real cov_pct = 0.0;
+        int hit_cross_relu_shift = 0;
+        int hit_cross_k_shift = 0;
+        int hit_cross_extremes = 0;
+        int hit_cross_total = 0;
+        real cross_cov_pct = 0.0;
+        real total_cov_pct = 0.0;
         super.report_phase(phase);
 
         // 1. Matrix A operands (5 bins)
@@ -159,6 +227,29 @@ class gemm_coverage extends uvm_component;
 
         cov_pct = (real'(hit_bins) / 39.0) * 100.0;
 
+        // Cross Coverage Metrics
+        for (int r = 0; r < 2; r++) begin
+            for (int s = 0; s <= 8; s++) begin
+                if (cross_relu_shift[r][s] > 0) hit_cross_relu_shift++;
+            end
+        end
+
+        for (int k = 0; k < 3; k++) begin
+            for (int s = 0; s <= 8; s++) begin
+                if (cross_k_shift[k][s] > 0) hit_cross_k_shift++;
+            end
+        end
+
+        for (int a = 0; a < 2; a++) begin
+            for (int b = 0; b < 2; b++) begin
+                if (cross_a_b_extremes[a][b] > 0) hit_cross_extremes++;
+            end
+        end
+
+        hit_cross_total = hit_cross_relu_shift + hit_cross_k_shift + hit_cross_extremes;
+        cross_cov_pct   = (real'(hit_cross_total) / 49.0) * 100.0;
+        total_cov_pct   = (real'(hit_bins + hit_cross_total) / 88.0) * 100.0;
+
         `uvm_info("COV", "==================================================================", UVM_LOW)
         `uvm_info("COV", "                 FUNCTIONAL COVERAGE CLOSURE REPORT               ", UVM_LOW)
         `uvm_info("COV", "==================================================================", UVM_LOW)
@@ -176,12 +267,41 @@ class gemm_coverage extends uvm_component;
         `uvm_info("COV", $sformatf("K-Dim [1..16] [16 b] : min(K=1)=%0d max(K=16)=%0d mid(2..15)=%0d",
                                   cnt_k_min, cnt_k_max, cnt_k_mid), UVM_LOW)
         `uvm_info("COV", "------------------------------------------------------------------", UVM_LOW)
-        `uvm_info("COV", $sformatf("TOTAL COVERAGE SCORE : %0d / 39 Target Bins Covered ( %0.2f%% )",
-                                  hit_bins, cov_pct), UVM_LOW)
-        if (hit_bins == 39) begin
-            `uvm_info("COV", "COVERAGE VERDICT     : [COVERAGE CLOSURE ACHIEVED (100.00%)]", UVM_LOW)
+        `uvm_info("COV", "                 CROSS-COVERAGE CLOSURE MATRIX                    ", UVM_LOW)
+        `uvm_info("COV", "------------------------------------------------------------------", UVM_LOW)
+        `uvm_info("COV", $sformatf("Cross 1: [ReLU x Shift]      : %0d / 18 Bins Covered", hit_cross_relu_shift), UVM_LOW)
+        `uvm_info("COV", $sformatf("  ReLU_ON     x Shift[0..8]  : [%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d]",
+            cross_relu_shift[0][0], cross_relu_shift[0][1], cross_relu_shift[0][2],
+            cross_relu_shift[0][3], cross_relu_shift[0][4], cross_relu_shift[0][5],
+            cross_relu_shift[0][6], cross_relu_shift[0][7], cross_relu_shift[0][8]), UVM_LOW)
+        `uvm_info("COV", $sformatf("  ReLU_BYPASS x Shift[0..8]  : [%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d]",
+            cross_relu_shift[1][0], cross_relu_shift[1][1], cross_relu_shift[1][2],
+            cross_relu_shift[1][3], cross_relu_shift[1][4], cross_relu_shift[1][5],
+            cross_relu_shift[1][6], cross_relu_shift[1][7], cross_relu_shift[1][8]), UVM_LOW)
+        `uvm_info("COV", $sformatf("Cross 2: [K-Range x Shift]   : %0d / 27 Bins Covered", hit_cross_k_shift), UVM_LOW)
+        `uvm_info("COV", $sformatf("  K_MIN (K=1)  x Shift[0..8] : [%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d]",
+            cross_k_shift[0][0], cross_k_shift[0][1], cross_k_shift[0][2],
+            cross_k_shift[0][3], cross_k_shift[0][4], cross_k_shift[0][5],
+            cross_k_shift[0][6], cross_k_shift[0][7], cross_k_shift[0][8]), UVM_LOW)
+        `uvm_info("COV", $sformatf("  K_MID (2..15)x Shift[0..8] : [%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d]",
+            cross_k_shift[1][0], cross_k_shift[1][1], cross_k_shift[1][2],
+            cross_k_shift[1][3], cross_k_shift[1][4], cross_k_shift[1][5],
+            cross_k_shift[1][6], cross_k_shift[1][7], cross_k_shift[1][8]), UVM_LOW)
+        `uvm_info("COV", $sformatf("  K_MAX (K=16) x Shift[0..8] : [%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d]",
+            cross_k_shift[2][0], cross_k_shift[2][1], cross_k_shift[2][2],
+            cross_k_shift[2][3], cross_k_shift[2][4], cross_k_shift[2][5],
+            cross_k_shift[2][6], cross_k_shift[2][7], cross_k_shift[2][8]), UVM_LOW)
+        `uvm_info("COV", $sformatf("Cross 3: [Extremes A x B Sign]: %0d / 4 Bins Covered", hit_cross_extremes), UVM_LOW)
+        `uvm_info("COV", $sformatf("  A(-128) x B(Neg): %0d | A(-128) x B(Pos): %0d | A(+127) x B(Neg): %0d | A(+127) x B(Pos): %0d",
+            cross_a_b_extremes[0][0], cross_a_b_extremes[0][1], cross_a_b_extremes[1][0], cross_a_b_extremes[1][1]), UVM_LOW)
+        `uvm_info("COV", "------------------------------------------------------------------", UVM_LOW)
+        `uvm_info("COV", $sformatf("POINT COVERAGE SCORE : %0d / 39 Target Bins Covered ( %0.2f%% )", hit_bins, cov_pct), UVM_LOW)
+        `uvm_info("COV", $sformatf("CROSS COVERAGE SCORE : %0d / 49 Target Bins Covered ( %0.2f%% )", hit_cross_total, cross_cov_pct), UVM_LOW)
+        `uvm_info("COV", $sformatf("COMBINED SCORE       : %0d / 88 Total Bins Covered ( %0.2f%% )", hit_bins + hit_cross_total, total_cov_pct), UVM_LOW)
+        if ((hit_bins + hit_cross_total) == 88) begin
+            `uvm_info("COV", "COVERAGE VERDICT     : [100.00% FULL INDUSTRIAL CLOSURE ACHIEVED]", UVM_LOW)
         end else begin
-            `uvm_info("COV", $sformatf("COVERAGE VERDICT     : [IN PROGRESS - %0d bins remaining]", 39 - hit_bins), UVM_LOW)
+            `uvm_info("COV", $sformatf("COVERAGE VERDICT     : [IN PROGRESS - %0d bins remaining]", 88 - (hit_bins + hit_cross_total)), UVM_LOW)
         end
         `uvm_info("COV", "==================================================================", UVM_LOW)
 

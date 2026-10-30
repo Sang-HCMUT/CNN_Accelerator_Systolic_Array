@@ -85,6 +85,28 @@ module systolic_gemm_axi_lite #(
     logic signed [DATA_WIDTH-1:0]             core_rd_c_data;
     logic signed [ACC_WIDTH-1:0]              core_rd_c_acc;
 
+    // Hardware Performance Profiler & Version ID Registers
+    logic [31:0] perf_cycle_cnt;
+    logic [31:0] perf_cycles_reg;
+    localparam [31:0] IP_VERSION_REG = {8'h01, 8'(ARRAY_SIZE), 8'h08, 8'h20}; // v1.0, N, INT8, INT32
+
+    always_ff @(posedge s_axi_aclk or negedge rst_n) begin
+        if (!rst_n) begin
+            perf_cycle_cnt  <= 32'd0;
+            perf_cycles_reg <= 32'd0;
+        end else begin
+            if (core_start) begin
+                perf_cycle_cnt <= 32'd0;
+            end else if (core_busy) begin
+                perf_cycle_cnt <= perf_cycle_cnt + 32'd1;
+            end
+
+            if (core_done) begin
+                perf_cycles_reg <= perf_cycle_cnt + 32'd1;
+            end
+        end
+    end
+
     // AXI Write Channel Signals
     typedef enum logic [1:0] {
         WR_IDLE,
@@ -243,6 +265,10 @@ module systolic_gemm_axi_lite #(
                         s_axi_rdata <= status_reg;
                     end else if (s_axi_araddr == 12'h008) begin
                         s_axi_rdata <= {24'd0, k_dim_reg};
+                    end else if (s_axi_araddr == 12'h00C) begin
+                        s_axi_rdata <= perf_cycles_reg; // Hardware cycle counter
+                    end else if (s_axi_araddr == 12'h010) begin
+                        s_axi_rdata <= IP_VERSION_REG;  // Hardware IP Version ID
                     end else if (s_axi_araddr >= 12'h300 && s_axi_araddr < 12'h400) begin
                         s_axi_rdata <= {24'd0, core_rd_c_data};
                     end else if (s_axi_araddr >= 12'h400 && s_axi_araddr < 12'h500) begin

@@ -39,8 +39,9 @@ module gemm_controller #(
     output logic [$clog2(ARRAY_SIZE*ARRAY_SIZE)-1:0]      wr_int8_addr
 );
 
-    localparam TOTAL_C      = ARRAY_SIZE * ARRAY_SIZE;
-    localparam ADDR_C_WIDTH = $clog2(TOTAL_C);
+    localparam TOTAL_C       = ARRAY_SIZE * ARRAY_SIZE;
+    localparam ADDR_C_WIDTH  = $clog2(TOTAL_C);
+    localparam ADDR_RC_WIDTH = $clog2(ARRAY_SIZE);
 
     typedef enum logic [2:0] {
         ST_IDLE,
@@ -62,9 +63,13 @@ module gemm_controller #(
     assign k_step      = k_cnt;
     assign readout_idx = read_cnt[ADDR_C_WIDTH-1:0];
 
-    // Combinational coordinates during ST_READOUT
-    assign readout_r   = read_cnt / ARRAY_SIZE;
-    assign readout_c   = read_cnt % ARRAY_SIZE;
+    // Combinational coordinates during ST_READOUT (with explicit slicing to eliminate lint truncation warnings)
+    logic [31:0] readout_r_full;
+    logic [31:0] readout_c_full;
+    assign readout_r_full = read_cnt / ARRAY_SIZE;
+    assign readout_c_full = read_cnt % ARRAY_SIZE;
+    assign readout_r      = readout_r_full[ADDR_RC_WIDTH-1:0];
+    assign readout_c      = readout_c_full[ADDR_RC_WIDTH-1:0];
     assign quant_in_en = (state == ST_READOUT);
     assign wr_acc_en   = (state == ST_READOUT);
     assign wr_acc_addr = read_cnt[ADDR_C_WIDTH-1:0];

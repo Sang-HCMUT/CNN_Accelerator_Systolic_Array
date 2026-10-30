@@ -28,7 +28,7 @@ class gemm_scoreboard extends uvm_scoreboard;
         super.new(name, parent);
         exp_export = new("exp_export", this);
         act_export = new("act_export", this);
-    endfunction
+    endfunction : new
 
     function void write_exp(gemm_seq_item item);
         exp_queue.push_back(item);

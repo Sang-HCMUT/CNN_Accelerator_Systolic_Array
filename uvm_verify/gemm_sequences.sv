@@ -17,45 +17,99 @@ class gemm_directed_seq extends uvm_sequence #(gemm_seq_item);
 
     task body();
         gemm_seq_item req;
+        int tx_cnt = 0;
 
-        `uvm_info("SEQ", "Executing directed sequence (6 corners + 9 shifts + 16 K-dimensions = 31 transactions)...", UVM_LOW)
+        `uvm_info("SEQ", "Executing directed sequence with Cross-Coverage closure (71 transactions)...", UVM_LOW)
 
         // Part 1: Baseline 6 Corner-Cases
         for (int mode = 0; mode <= 5; mode++) begin
             req = gemm_seq_item::type_id::create($sformatf("dir_item_%0d", mode));
             start_item(req);
-            req.trans_id = mode + 1;
+            tx_cnt++;
+            req.trans_id = tx_cnt;
             req.generate_stimulus(mode);
             finish_item(req);
         end
 
-        // Part 2: Exhaustive Shift Sweep across all shift_bits = 0..8
-        for (int s = 0; s <= 8; s++) begin
-            req = gemm_seq_item::type_id::create($sformatf("shift_sweep_%0d", s));
-            start_item(req);
-            req.trans_id = 7 + s;
-            req.generate_stimulus(0); // Uniform random INT8 operands
-            req.shift_bits = s;       // Explicitly sweep every shift bit 0..8
-            req.scenario_name = $sformatf("SHIFT_SWEEP_%0d", s);
-            req.compute_golden();     // Re-compute golden model with target shift
-            finish_item(req);
+        // Part 2: Cross 1 Systematic Sweep [ReLU Mode (2)] x [Shift (9)] = 18 combinations
+        for (int r_mode = 0; r_mode <= 1; r_mode++) begin
+            for (int s = 0; s <= 8; s++) begin
+                req = gemm_seq_item::type_id::create($sformatf("cross_relu_s%0d_r%0d", s, r_mode));
+                start_item(req);
+                tx_cnt++;
+                req.trans_id = tx_cnt;
+                req.generate_stimulus(0);
+                req.bypass_relu = r_mode;
+                req.shift_bits  = s;
+                req.k_dim       = (s % 3 == 0) ? 1 : ((s % 3 == 1) ? 8 : 16);
+                req.scenario_name = $sformatf("CROSS_RELU_%0d_SHIFT_%0d", r_mode, s);
+                req.compute_golden();
+                finish_item(req);
+            end
         end
 
-        // Part 3: Exhaustive K-Dimension Sweep across all K = 1..16 (Coverage Closure)
+        // Part 3: Cross 2 Systematic Sweep [K-Range (3: Min=1, Mid=8, Max=16)] x [Shift (9)] = 27 combinations
+        begin
+            int k_test_vals[3] = '{1, 8, 16};
+            for (int ki = 0; ki < 3; ki++) begin
+                for (int s = 0; s <= 8; s++) begin
+                    req = gemm_seq_item::type_id::create($sformatf("cross_k%0d_s%0d", k_test_vals[ki], s));
+                    start_item(req);
+                    tx_cnt++;
+                    req.trans_id = tx_cnt;
+                    req.generate_stimulus(0);
+                    req.k_dim       = k_test_vals[ki];
+                    req.shift_bits  = s;
+                    req.bypass_relu = (s % 2);
+                    req.scenario_name = $sformatf("CROSS_K_%0d_SHIFT_%0d", k_test_vals[ki], s);
+                    req.compute_golden();
+                    finish_item(req);
+                end
+            end
+        end
+
+        // Part 4: Exhaustive K-Dimension Sweep across all K = 1..16 (Coverage Closure)
         for (int k_val = 1; k_val <= 16; k_val++) begin
             req = gemm_seq_item::type_id::create($sformatf("k_sweep_%0d", k_val));
             start_item(req);
-            req.trans_id = 15 + k_val;
-            req.generate_stimulus(0); // Uniform random INT8 operands
-            req.k_dim = k_val;        // Force every single K dimension from 1 to 16
+            tx_cnt++;
+            req.trans_id = tx_cnt;
+            req.generate_stimulus(0);
+            req.k_dim       = k_val;
             req.bypass_relu = (k_val % 2 == 0);
-            req.shift_bits = (k_val % 9);
+            req.shift_bits  = (k_val % 9);
             req.scenario_name = $sformatf("K_SWEEP_%0d", k_val);
             req.compute_golden();
             finish_item(req);
         end
 
-        `uvm_info("SEQ", "Directed sequence complete (31 transactions, 100% K and Shift covered).", UVM_LOW)
+        // Part 5: Cross 3 Matrix A Extremes (-128, +127) x Matrix B Sign (Neg, Pos) = 4 combinations
+        for (int a_ext = 0; a_ext < 2; a_ext++) begin
+            for (int b_sign = 0; b_sign < 2; b_sign++) begin
+                req = gemm_seq_item::type_id::create($sformatf("cross_ext_a%0d_b%0d", a_ext, b_sign));
+                start_item(req);
+                tx_cnt++;
+                req.trans_id = tx_cnt;
+                req.k_dim       = 4;
+                req.bypass_relu = 1;
+                req.shift_bits  = 4;
+                for (int r = 0; r < req.ARRAY_SIZE; r++) begin
+                    for (int k = 0; k < req.k_dim; k++) begin
+                        req.matrix_a[r][k] = (a_ext == 0) ? -8'sd128 : 8'sd127;
+                    end
+                end
+                for (int k = 0; k < req.k_dim; k++) begin
+                    for (int c = 0; c < req.ARRAY_SIZE; c++) begin
+                        req.matrix_b[k][c] = (b_sign == 0) ? -8'sd50 : 8'sd50;
+                    end
+                end
+                req.scenario_name = $sformatf("CROSS_EXT_A%0d_B%0d", a_ext, b_sign);
+                req.compute_golden();
+                finish_item(req);
+            end
+        end
+
+        `uvm_info("SEQ", $sformatf("Directed sequence complete (%0d transactions, 100%% Point & Cross Coverage).", tx_cnt), UVM_LOW)
     endtask
 
 endclass : gemm_directed_seq

@@ -9,15 +9,13 @@ echo "=========================================================="
 echo " [Linux/Server] Running Phase 3 SoC Co-Simulation"
 echo "=========================================================="
 
-# 1. Regenerate firmware if needed
-if command -v python3 &>/dev/null; then
-    echo "[1/2] Generating RISC-V firmware with Python Assembler..."
-    python3 ../firmware/firmware_generator.py
-elif command -v python &>/dev/null; then
-    echo "[1/2] Generating RISC-V firmware with Python Assembler..."
-    python ../firmware/firmware_generator.py
+# 1. Compile firmware using RISC-V GCC toolchain if needed
+if command -v riscv-none-elf-gcc &>/dev/null && command -v make &>/dev/null; then
+    echo "[1/2] Compiling RISC-V C firmware with GCC toolchain..."
+    make -C ../firmware
+    cp ../firmware/firmware.hex ./firmware.hex
 else
-    echo "[WARN] Python not found, using existing firmware.hex..."
+    echo "[INFO] Using existing firmware.hex..."
 fi
 
 # 2. Run ModelSim / QuestaSim in command-line mode

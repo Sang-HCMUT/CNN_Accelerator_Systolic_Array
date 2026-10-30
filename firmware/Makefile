@@ -6,7 +6,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 
 CFLAGS  = -march=rv32i -mabi=ilp32 -Os -ffreestanding -nostdlib -Wall -Wextra
-LDFLAGS = -T link.ld -nostdlib -lgcc
+LDFLAGS = -T link.ld -nostdlib -lgcc -Wl,--no-warn-rwx-segments
 
 SRCS    = start.s main.c
 OBJS    = start.o main.o
@@ -16,7 +16,7 @@ all: firmware.hex firmware.dis
 start.o: start.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-main.o: main.c systolic.h
+main.o: main.c systolic.h mnist_conv1_weights.h mnist_weights.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 firmware.elf: $(OBJS) link.ld
@@ -28,10 +28,8 @@ firmware.bin: firmware.elf
 firmware.dis: firmware.elf
 	$(OBJDUMP) -d $< > $@
 
-PYTHON ?= python
-
-firmware.hex: firmware.bin
-	$(PYTHON) bin2hex.py $< $@
+firmware.hex: firmware.elf
+	$(OBJCOPY) -O verilog --verilog-data-width=4 $< $@
 
 ifeq ($(OS),Windows_NT)
 RM = del /Q /F

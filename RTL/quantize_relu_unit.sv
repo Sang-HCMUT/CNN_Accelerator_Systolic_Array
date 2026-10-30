@@ -41,9 +41,9 @@ module quantize_relu_unit #(
     logic signed [OUT_WIDTH-1:0] clamped_data;
     always_comb begin
         if (scaled_data > 32'sd127) begin
-            clamped_data = 8'sd127;
+            clamped_data = 8'sh7F; // +127 (positive saturation)
         end else if (scaled_data < -32'sd128) begin
-            clamped_data = -8'sd128;
+            clamped_data = 8'sh80; // -128 (negative saturation, two's complement 8'b1000_0000)
         end else begin
             clamped_data = scaled_data[OUT_WIDTH-1:0];
         end

@@ -15,6 +15,8 @@
 #define REG_ACCEL_CTRL     (*(volatile uint32_t*)(ACCEL_BASE + 0x000))
 #define REG_ACCEL_STATUS   (*(volatile uint32_t*)(ACCEL_BASE + 0x004))
 #define REG_ACCEL_KDIM     (*(volatile uint32_t*)(ACCEL_BASE + 0x008))
+#define REG_ACCEL_CYCLES   (*(volatile uint32_t*)(ACCEL_BASE + 0x00C))
+#define REG_ACCEL_VERSION  (*(volatile uint32_t*)(ACCEL_BASE + 0x010))
 
 // Memory-Mapped Tile Buffers
 // Matrix A (Weights): 16 words (word-aligned, 0x100 to 0x13C)
