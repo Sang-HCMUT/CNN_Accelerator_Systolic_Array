@@ -551,12 +551,12 @@ static __attribute__((noinline)) void demo_stress_diagnostics(void) {
     print_str(test5e_pass ? "PASS (s=4: 64, s=6: 16, s=8: 4)\n" : "FAIL\n");
     if (test5e_pass) pass_count++;
 
-    // Test 5F: Guardband Dimension Error Check (Must reject K=0 and K=17 without MMIO overrun)
+    // Test 5F: Guardband Dimension Error Check (Must reject K=0 and K=17 with hardware STATUS_ERROR)
     int err_k0  = run_accelerator_gemm(mat_a, mat_b, 0, 7, 0);
     int err_k17 = run_accelerator_gemm(mat_a, mat_b, 17, 7, 0);
     int test5f_pass = (err_k0 == -1 && err_k17 == -1);
     print_str("  [5F] Guardband Dimension Error (K=0, 17) : ");
-    print_str(test5f_pass ? "PASS (Both rejected with STATUS_ERROR)\n" : "FAIL\n");
+    print_str(test5f_pass ? "PASS (Verified STATUS_ERROR on AXI bus)\n" : "FAIL (STATUS_ERROR missing)\n");
     if (test5f_pass) pass_count++;
 
     print_str("\nDiagnostics Summary: ");

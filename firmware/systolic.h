@@ -171,7 +171,10 @@ static __attribute__((noinline)) int run_accelerator_gemm(const int8_t *A, const
         REG_ACCEL_KDIM = (uint32_t)k_dim;
         REG_ACCEL_CTRL = CTRL_START; // Trigger hardware guardband rejection
         while (!(REG_ACCEL_STATUS & STATUS_DONE));
-        return -1; // Guardband violation (STATUS_ERROR)
+        if (REG_ACCEL_STATUS & STATUS_ERROR) {
+            return -1; // Hardware guardband violation confirmed via AXI STATUS_ERROR (bit 2)
+        }
+        return -2; // Anomaly: Core finished without asserting STATUS_ERROR
     }
 
     REG_ACCEL_KDIM = (uint32_t)k_dim;
