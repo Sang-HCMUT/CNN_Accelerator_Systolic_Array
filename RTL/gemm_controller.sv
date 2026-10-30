@@ -42,6 +42,11 @@ module gemm_controller #(
     localparam TOTAL_C       = ARRAY_SIZE * ARRAY_SIZE;
     localparam ADDR_C_WIDTH  = $clog2(TOTAL_C);
     localparam ADDR_RC_WIDTH = $clog2(ARRAY_SIZE);
+    localparam MAX_K         = 16;
+
+    // Hardware Guardband: Validate K dimension is strictly within valid supported range [1, MAX_K]
+    logic is_k_valid;
+    assign is_k_valid = (k_dim >= 8'd1) && (k_dim <= 8'(MAX_K));
 
     typedef enum logic [2:0] {
         ST_IDLE,
@@ -98,9 +103,15 @@ module gemm_controller #(
                     stream_en <= 1'b0;
                     read_cnt  <= '0;
                     if (start) begin
-                        busy          <= 1'b1;
-                        state         <= ST_CLEAR;
-                        sys_clear_acc <= 1'b1;
+                        if (is_k_valid) begin
+                            busy          <= 1'b1;
+                            state         <= ST_CLEAR;
+                            sys_clear_acc <= 1'b1;
+                        end else begin
+                            // Guardband: Reject invalid k_dim outside [1, MAX_K] to prevent underflow / buffer overflow
+                            busy          <= 1'b0;
+                            state         <= ST_IDLE;
+                        end
                     end
                 end
 

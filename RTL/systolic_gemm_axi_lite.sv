@@ -127,7 +127,14 @@ module systolic_gemm_axi_lite #(
                 status_reg[0] <= 1'b0; // Clear done bit on start
             end
         end else if (write_addr == 12'h008) begin
-            k_dim_reg <= write_data[7:0];
+            // Hardware Guardband: Clamp k_dim to valid hardware range [1, 16]
+            if (write_data[7:0] == 8'd0) begin
+                k_dim_reg <= 8'd1;
+            end else if (write_data[7:0] > 8'd16) begin
+                k_dim_reg <= 8'd16;
+            end else begin
+                k_dim_reg <= write_data[7:0];
+            end
         end else if (write_addr >= 12'h100 && write_addr < 12'h200) begin
             core_wr_a_en   <= 1'b1;
             core_wr_a_addr <= (write_addr - 12'h100) >> 2;

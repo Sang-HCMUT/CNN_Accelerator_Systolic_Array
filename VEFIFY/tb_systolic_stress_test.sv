@@ -119,41 +119,51 @@ module tb_systolic_stress_test;
             end
         end
 
-        // 2. Load into Hardware Buffers
+        // 2. Load into Hardware Buffers (Driven at negedge to eliminate race conditions)
         bypass_relu = t_bypass_relu;
         shift_bits  = t_shift_bits;
         k_dim       = K_DIM;
 
         for (i = 0; i < ARRAY_SIZE; i++) begin
             for (k = 0; k < K_DIM; k++) begin
-                @(posedge clk);
-                wr_a_en   = 1'b1;
-                wr_a_addr = i * K_DIM + k;
-                wr_a_data = mat_a[i][k];
+                @(negedge clk);
+                wr_a_en   <= 1'b1;
+                wr_a_addr <= i * K_DIM + k;
+                wr_a_data <= mat_a[i][k];
             end
         end
-        @(posedge clk);
-        wr_a_en = 1'b0;
+        @(negedge clk);
+        wr_a_en <= 1'b0;
 
         for (k = 0; k < K_DIM; k++) begin
             for (j = 0; j < ARRAY_SIZE; j++) begin
-                @(posedge clk);
-                wr_b_en   = 1'b1;
-                wr_b_addr = k * ARRAY_SIZE + j;
-                wr_b_data = mat_b[k][j];
+                @(negedge clk);
+                wr_b_en   <= 1'b1;
+                wr_b_addr <= k * ARRAY_SIZE + j;
+                wr_b_data <= mat_b[k][j];
             end
         end
-        @(posedge clk);
-        wr_b_en = 1'b0;
+        @(negedge clk);
+        wr_b_en <= 1'b0;
 
-        // 3. Launch Accelerator
-        @(posedge clk);
-        start = 1'b1;
-        @(posedge clk);
-        start = 1'b0;
+        // 3. Launch Accelerator (Driven at negedge)
+        @(negedge clk);
+        start <= 1'b1;
+        @(negedge clk);
+        start <= 1'b0;
 
-        // 4. Wait for Done
-        wait (done == 1'b1);
+        // 4. Wait for Done with Watchdog Protection
+        fork
+            begin
+                wait (done == 1'b1);
+            end
+            begin
+                repeat (2000) @(posedge clk);
+                $display("\n[FATAL ERROR] Watchdog Timeout! DUT failed to assert 'done' within 2000 cycles in %s.", desc);
+                $finish;
+            end
+        join_any
+        disable fork;
         @(posedge clk);
 
         // 5. Verify all 16 results

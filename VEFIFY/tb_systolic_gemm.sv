@@ -110,39 +110,49 @@ module tb_systolic_gemm;
         rst_n = 1'b1;
         #20;
 
-        // 2. Load Matrix A into Buffer A
+        // 2. Load Matrix A into Buffer A (Driven at negedge to eliminate race conditions)
         $display("[TB] Loading Matrix A into Buffer A...");
         for (i = 0; i < ARRAY_SIZE * K_DIM; i = i + 1) begin
-            @(posedge clk);
-            wr_a_en   = 1'b1;
-            wr_a_addr = i;
-            wr_a_data = gold_matrix_a[i];
+            @(negedge clk);
+            wr_a_en   <= 1'b1;
+            wr_a_addr <= i;
+            wr_a_data <= gold_matrix_a[i];
         end
-        @(posedge clk);
-        wr_a_en = 1'b0;
+        @(negedge clk);
+        wr_a_en <= 1'b0;
 
-        // 3. Load Matrix B into Buffer B
+        // 3. Load Matrix B into Buffer B (Driven at negedge to eliminate race conditions)
         $display("[TB] Loading Matrix B into Buffer B...");
         for (i = 0; i < K_DIM * ARRAY_SIZE; i = i + 1) begin
-            @(posedge clk);
-            wr_b_en   = 1'b1;
-            wr_b_addr = i;
-            wr_b_data = gold_matrix_b[i];
+            @(negedge clk);
+            wr_b_en   <= 1'b1;
+            wr_b_addr <= i;
+            wr_b_data <= gold_matrix_b[i];
         end
-        @(posedge clk);
-        wr_b_en = 1'b0;
+        @(negedge clk);
+        wr_b_en <= 1'b0;
 
         // 4. Start Systolic Matrix Multiplication
         #20;
         $display("[TB] Starting systolic array computation...");
-        @(posedge clk);
-        start = 1'b1;
-        @(posedge clk);
-        start = 1'b0;
+        @(negedge clk);
+        start <= 1'b1;
+        @(negedge clk);
+        start <= 1'b0;
 
-        // 5. Wait for Computation & Quantized Readout to finish
-        wait (done == 1'b1);
-        $display("[TB] Computation finished. Checking results against golden model...\n");
+        // 5. Wait for Computation & Quantized Readout to finish with Watchdog Protection
+        fork
+            begin
+                wait (done == 1'b1);
+                $display("[TB] Computation finished. Checking results against golden model...\n");
+            end
+            begin
+                repeat (2000) @(posedge clk);
+                $display("\n[FATAL ERROR] Watchdog Timeout! DUT failed to assert 'done' within 2000 cycles.");
+                $finish;
+            end
+        join_any
+        disable fork;
 
         // 6. Scoreboard Comparison against Python Golden Model
         $display("--- SCOREBOARD COMPARISON TABLE ---");

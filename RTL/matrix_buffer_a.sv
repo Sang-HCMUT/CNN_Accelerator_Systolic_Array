@@ -36,11 +36,13 @@ module matrix_buffer_a #(
         end
     end
 
-    // Parallel streaming readout to systolic array rows
+    // Parallel streaming readout to systolic array rows (with hardware bounds protection)
     always_comb begin
         for (int r = 0; r < ARRAY_SIZE; r = r + 1) begin
-            if (stream_en && (k_step < k_dim)) begin
-                row_data_out[r] = ram[r * k_dim + k_step];
+            int read_idx;
+            read_idx = r * k_dim + k_step;
+            if (stream_en && (k_step < k_dim) && (k_dim <= MAX_K) && (read_idx < TOTAL_ENTRIES)) begin
+                row_data_out[r] = ram[read_idx];
             end else begin
                 row_data_out[r] = '0;
             end
