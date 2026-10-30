@@ -56,7 +56,7 @@ static __attribute__((noinline)) void demo_gemm_benchmark(void) {
     // 2. Hardware accelerator execution
     t0 = get_cycles();
     i0 = get_instrs();
-    run_accelerator_gemm(test_tile_a, test_tile_b, 4, 7, 0);
+    int gemm_status = run_accelerator_gemm(test_tile_a, test_tile_b, 4, 7, 0);
     read_accelerator_c_int8(c_hw);
     uint32_t cyc_hw = get_cycles() - t0;
     uint32_t ins_hw = get_instrs() - i0;
@@ -64,7 +64,7 @@ static __attribute__((noinline)) void demo_gemm_benchmark(void) {
     read_accelerator_c_int32(c_acc);
 
     // 3. Bit-true verification
-    int errors = 0;
+    int errors = (gemm_status != 0) ? 1 : 0;
     for (int i = 0; i < 16; i++) {
         if (c_sw[i] != c_hw[i]) errors++;
     }
@@ -148,7 +148,9 @@ static __attribute__((noinline)) void demo_large_matrix_tiling(void) {
             }
 
             // Hardware execution with K=16, shift=8, ReLU=enabled
-            run_accelerator_gemm(tile_a, tile_b, 16, 8, 0);
+            if (run_accelerator_gemm(tile_a, tile_b, 16, 8, 0) != 0) {
+                print_str("[ERROR] Tile GEMM execution failed!\n");
+            }
             read_accelerator_c_int8(tile_c);
 
             if (ti == 0 && tj == 0) {
@@ -286,7 +288,9 @@ static __attribute__((noinline)) void demo_conv2d_im2col(void) {
             }
 
             // Run Systolic GEMM Core: K=9, shift=8, bypass_relu=1 (raw accumulator output)
-            run_accelerator_gemm(tile_a, tile_b, 9, 8, 1);
+            if (run_accelerator_gemm(tile_a, tile_b, 9, 8, 1) != 0) {
+                print_str("[ERROR] Conv2D tile GEMM rejected!\n");
+            }
             read_accelerator_c_int32(c_tile_acc);
 
             // Accumulate & Post-process activations
@@ -403,7 +407,9 @@ static __attribute__((noinline)) void demo_mlp_inference(void) {
                 tile_w1[k * 4 + c] = (int8_t)(((k * 13 + col * 7) % 31) - 15);
             }
         }
-        run_accelerator_gemm(tile_x, tile_w1, 16, 7, 0);
+        if (run_accelerator_gemm(tile_x, tile_w1, 16, 7, 0) != 0) {
+            print_str("[ERROR] MLP Layer 1 GEMM rejected!\n");
+        }
         read_accelerator_c_int8(tile_out);
         for (int c = 0; c < 4; c++) {
             hidden_acts[blk * 4 + c] = tile_out[0 * 4 + c];
@@ -423,7 +429,9 @@ static __attribute__((noinline)) void demo_mlp_inference(void) {
         }
     }
     // ReLU bypass mode to preserve negative logits
-    run_accelerator_gemm(tile_x, tile_w2, 16, 7, 1);
+    if (run_accelerator_gemm(tile_x, tile_w2, 16, 7, 1) != 0) {
+        print_str("[ERROR] MLP Layer 2 GEMM rejected!\n");
+    }
     read_accelerator_c_int8(tile_out);
 
     uint32_t cyc_mlp = get_cycles() - t0;
@@ -526,29 +534,37 @@ static __attribute__((noinline)) void demo_stress_diagnostics(void) {
         mat_a[i] = 16;
         mat_b[i] = 16;
     }
-    run_accelerator_gemm(mat_a, mat_b, 4, 4, 0);
+    int s4 = run_accelerator_gemm(mat_a, mat_b, 4, 4, 0);
     read_accelerator_c_int8(mat_c);
     int8_t val_shift4 = mat_c[0];
 
-    run_accelerator_gemm(mat_a, mat_b, 4, 6, 0);
+    int s6 = run_accelerator_gemm(mat_a, mat_b, 4, 6, 0);
     read_accelerator_c_int8(mat_c);
     int8_t val_shift6 = mat_c[0];
 
-    run_accelerator_gemm(mat_a, mat_b, 4, 8, 0);
+    int s8 = run_accelerator_gemm(mat_a, mat_b, 4, 8, 0);
     read_accelerator_c_int8(mat_c);
     int8_t val_shift8 = mat_c[0];
 
-    int test5e_pass = (val_shift4 == 64 && val_shift6 == 16 && val_shift8 == 4);
+    int test5e_pass = (s4 == 0 && s6 == 0 && s8 == 0 && val_shift4 == 64 && val_shift6 == 16 && val_shift8 == 4);
     print_str("  [5E] Multi-Scale Arithmetic Right Shift  : ");
     print_str(test5e_pass ? "PASS (s=4: 64, s=6: 16, s=8: 4)\n" : "FAIL\n");
     if (test5e_pass) pass_count++;
 
+    // Test 5F: Guardband Dimension Error Check (Must reject K=0 and K=17 without MMIO overrun)
+    int err_k0  = run_accelerator_gemm(mat_a, mat_b, 0, 7, 0);
+    int err_k17 = run_accelerator_gemm(mat_a, mat_b, 17, 7, 0);
+    int test5f_pass = (err_k0 == -1 && err_k17 == -1);
+    print_str("  [5F] Guardband Dimension Error (K=0, 17) : ");
+    print_str(test5f_pass ? "PASS (Both rejected with STATUS_ERROR)\n" : "FAIL\n");
+    if (test5f_pass) pass_count++;
+
     print_str("\nDiagnostics Summary: ");
     print_dec(pass_count);
-    print_str("/5 Tests Passed (100% Robustness Verified).\n\n");
+    print_str("/6 Tests Passed (100% Robustness Verified).\n\n");
 
     set_board_hex(0, 5);
-    set_board_leds(pass_count == 5 ? 0xFF : 0x0F);
+    set_board_leds(pass_count == 6 ? 0xFF : 0x0F);
 }
 
 static __attribute__((noinline)) void extract_features(const int8_t *img784, int8_t *feats64) {
@@ -599,7 +615,9 @@ static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats
                 tile_b[k * 4 + 3] = 0;
             }
 
-            run_accelerator_gemm(tile_a, tile_b, 16, 0, 1);
+            if (run_accelerator_gemm(tile_a, tile_b, 16, 0, 1) != 0) {
+                print_str("[ERROR] MNIST inference GEMM rejected!\n");
+            }
             read_accelerator_c_int32(c_acc);
 
             for (int r = 0; r < 4; r++) {

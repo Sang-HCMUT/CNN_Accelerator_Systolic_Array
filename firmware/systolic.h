@@ -164,6 +164,16 @@ static __attribute__((noinline)) void print_signed(int val, int width) {
 // Low-level hardware accelerator invocation
 // Run Systolic GEMM Accelerator: returns 0 on success, -1 on dimension error (STATUS_ERROR)
 static __attribute__((noinline)) int run_accelerator_gemm(const int8_t *A, const int8_t *B, int k_dim, int shift, int bypass_relu) {
+    // Hardware Guardband Pre-validation:
+    // If K is out of valid range [1, 16], trigger hardware rejection directly
+    // WITHOUT writing into tile buffers A/B to prevent MMIO buffer overflow into adjacent peripheral regions!
+    if (k_dim < 1 || k_dim > 16) {
+        REG_ACCEL_KDIM = (uint32_t)k_dim;
+        REG_ACCEL_CTRL = CTRL_START; // Trigger hardware guardband rejection
+        while (!(REG_ACCEL_STATUS & STATUS_DONE));
+        return -1; // Guardband violation (STATUS_ERROR)
+    }
+
     REG_ACCEL_KDIM = (uint32_t)k_dim;
 
     int total_elements = 4 * k_dim;

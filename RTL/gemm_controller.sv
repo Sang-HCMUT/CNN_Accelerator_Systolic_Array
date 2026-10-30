@@ -101,6 +101,7 @@ module gemm_controller #(
                 ST_IDLE: begin
                     done      <= 1'b0;
                     busy      <= 1'b0;
+                    error     <= 1'b0;
                     sys_en    <= 1'b0;
                     stream_en <= 1'b0;
                     read_cnt  <= '0;
