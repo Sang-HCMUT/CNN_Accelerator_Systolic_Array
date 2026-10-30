@@ -162,7 +162,8 @@ static __attribute__((noinline)) void print_signed(int val, int width) {
 }
 
 // Low-level hardware accelerator invocation
-static __attribute__((noinline)) void run_accelerator_gemm(const int8_t *A, const int8_t *B, int k_dim, int shift, int bypass_relu) {
+// Run Systolic GEMM Accelerator: returns 0 on success, -1 on dimension error (STATUS_ERROR)
+static __attribute__((noinline)) int run_accelerator_gemm(const int8_t *A, const int8_t *B, int k_dim, int shift, int bypass_relu) {
     REG_ACCEL_KDIM = (uint32_t)k_dim;
 
     int total_elements = 4 * k_dim;
@@ -178,6 +179,11 @@ static __attribute__((noinline)) void run_accelerator_gemm(const int8_t *A, cons
     REG_ACCEL_CTRL = ctrl;
 
     while (!(REG_ACCEL_STATUS & STATUS_DONE));
+
+    if (REG_ACCEL_STATUS & STATUS_ERROR) {
+        return -1; // Hardware guardband violation (e.g., invalid K)
+    }
+    return 0; // Success
 }
 
 // Read back quantized INT8 results (16 elements)

@@ -137,7 +137,7 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 | Offset | Register Name | Access | Bitfields & Descriptions |
 | :--- | :--- | :---: | :--- |
 | `0x000` | `REG_ACCEL_CTRL` | R/W | `[0]`: `START` (Pulse 1 to launch computation)<br/>`[1]`: `BYPASS_RELU` (1 = Linear bypass, 0 = Active ReLU)<br/>`[6:2]`: `SHIFT_BITS` (Arithmetic right-shift: $0 \dots 8$) |
-| `0x004` | `REG_ACCEL_STATUS` | RO | `[0]`: `DONE` (1 = Computation finished & buffers ready)<br/>`[1]`: `BUSY` (1 = Core computation in progress) |
+| `0x004` | `REG_ACCEL_STATUS` | RO | `[0]`: `DONE` (1 = Computation finished or rejected by guardband)<br/>`[1]`: `BUSY` (1 = Core computation in progress)<br/>`[2]`: `ERROR` (1 = Invalid matrix dimensions rejected: $K=0$ or $K > \text{MAX\_K}$) |
 | `0x008` | `REG_ACCEL_KDIM` | R/W | `[7:0]`: Inner dot-product dimension $K$ ($1 \le K \le 16$) |
 | `0x00C` | `REG_ACCEL_CYCLES` | RO | `[31:0]`: **Hardware Execution Cycle Counter** (counts exact clock cycles from `core_start` to `core_done`) |
 | `0x010` | `REG_ACCEL_VERSION` | RO | `[31:24]`: Major/Minor Version (`0x01`)<br/>`[23:16]`: Array Size $N$ (`0x04` for $4\times4$, `0x08` for $8\times8$)<br/>`[15:8]`: Input Data Width (`0x08` = INT8)<br/>`[7:0]`: Accumulator Width (`0x20` = INT32) |
