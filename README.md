@@ -13,7 +13,7 @@ An industrial-grade, modular, and fully parameterized hardware accelerator Syste
 Validated, timing-closed, and deployable across three Altera/Intel FPGA development platforms:
 1. **Terasic DE1** (`EP2C20F484C7`, $4 \times 4$ array, 16 PEs)
 2. **Terasic DE2** (`EP2C35F672C6`, $8 \times 8$ array with 64 PEs, 8x 7-segments & 18 LEDs)
-3. **Terasic DE10-Standard** (`5CSXFC6D6F31C6N`, $8 \times 8$ array with 64 PEs)
+3. **Terasic DE10-Standard** (`5CSXFC6D6F31C6N`, $4 \times 4$ array with 16 PEs default, parameterizable to $8 \times 8$)
 
 ---
 
@@ -152,15 +152,15 @@ The design is synthesized, fully placed-and-routed, and timing-closed across thr
 | :--- | :---: | :---: | :---: |
 | **FPGA Family / Device** | **Cyclone II EP2C20F484C7** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** |
 | **Technology Node** | 90 nm TSMC | 90 nm TSMC | 28 nm TSMC Low-Power |
-| **Array Architecture** | $4 \times 4$ (16 PEs) | **$8 \times 8$ (64 PEs)** | $8 \times 8$ (64 PEs) |
-| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | **16,356 / 33,216 LEs (49.2%)** | 13,293 / 41,910 ALMs (31.7%) |
-| **Dedicated Logic Registers** | 3,365 registers | **8,987 registers** | 12,852 registers |
-| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | **64 / 70 9-bit (91.4%)** | 64 / 112 Variable DSPs (57.1%) |
-| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | **265,216 / 483,840 (54.8%)** | 357,696 / 5,662,720 (6.3%) |
+| **Array Architecture** | $4 \times 4$ (16 PEs) | **$8 \times 8$ (64 PEs)** | $4 \times 4$ (16 PEs default) / $8 \times 8$ |
+| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | **16,356 / 33,216 LEs (49.2%)** | 2,605 / 41,910 ALMs (6.2%) [4×4] |
+| **Dedicated Logic Registers** | 3,365 registers | **8,987 registers** | 3,253 registers [4×4] |
+| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | **64 / 70 9-bit (91.4%)** | 16 / 112 Variable DSPs (14.3%) [4×4] |
+| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | **265,216 / 483,840 (54.8%)** | 264,832 / 5,662,720 (4.7%) |
 | **Target Clock Frequency** | 50.00 MHz (20.0 ns) | 50.00 MHz (20.0 ns) | 50.00 MHz (20.0 ns) |
-| **Setup Slack (Slow Model)** | **+4.144 ns** | **+4.858 ns** | **+3.882 ns** |
-| **Hold Slack (Slow Model)** | **+0.445 ns** | **+0.391 ns** | **+0.160 ns** |
-| **Max Frequency ($F_{max}$)** | **63.07 MHz** | **66.04 MHz** | **61.93 MHz** |
+| **Setup Slack (Slow Model)** | **+4.144 ns** | **+4.858 ns** | **+6.176 ns** |
+| **Hold Slack (Slow Model)** | **+0.445 ns** | **+0.391 ns** | **+0.230 ns** |
+| **Max Frequency ($F_{max}$)** | **63.07 MHz** | **66.04 MHz** | **72.31 MHz** |
 | **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** |
 | **Peak Throughput (@ 50MHz)** | **1.60 GOPS** | **6.40 GOPS ($4.0\times$)** | **6.40 GOPS ($4.0\times$)** |
 | **Programming Bitstream** | `synthesis_soc/soc_top.sof` | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` |
@@ -316,7 +316,7 @@ UVM_ERROR : 0, UVM_FATAL : 0
 │   ├── seven_seg_decoder.sv     # 7-Segment Hexadecimal Display Decoder
 │   ├── soc_top.sv               # Complete Integrated SoC Top (DE1 Board)
 │   ├── soc_top_de2.sv           # Complete Integrated SoC Top (DE2 Board, 8x8 Array)
-│   ├── soc_top_de10.sv          # Complete Integrated SoC Top (DE10-Standard, 8x8 Array)
+│   ├── soc_top_de10.sv          # Complete Integrated SoC Top (DE10-Standard, 4x4 / 8x8 Parameterized)
 │   └── firmware.hex             # Synchronized boot firmware machine code
 ├── firmware/                    # RISC-V Embedded Bare-Metal C Firmware
 │   ├── systolic.h               # Accelerator MMIO driver, cycle counters, math helpers

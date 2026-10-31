@@ -1,7 +1,7 @@
 # Quartus Prime Settings for DE10-Standard Cyclone V SoC CNN Accelerator
 # Target Device: Intel Cyclone V SE — 5CSXFC6D6F31C6
 # Board:         Terasic DE10-Standard
-# Array Size:    8x8 (64 PEs) — leverages Cyclone V's 112 DSP Blocks
+# Array Size:    4x4 (16 PEs) default (matches verified firmware & CNN demo) — parameterizable to 8x8
 # Quartus Ver:   Quartus Prime Lite 20.1
 
 set_global_assignment -name FAMILY "Cyclone V"

@@ -1,4 +1,4 @@
-# DE10-Standard Synthesis Project — 8×8 Systolic Array SoC
+# DE10-Standard Synthesis Project — 4×4 / 8×8 Parameterized Systolic Array SoC
 
 ## Mục Đích
 Project này là bản **mở rộng quy mô (Scale-up)** từ DE1 (Cyclone II, 4×4) lên DE10-Standard (Cyclone V, 8×8).
