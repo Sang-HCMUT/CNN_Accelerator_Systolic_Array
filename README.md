@@ -192,106 +192,118 @@ Available Scenarios:
 
 ### Scenario Breakdown
 
-1. **Demo 1: Hardware vs Software GEMM Benchmark**:
-   - Calculates $C = \text{ReLU}((A \times B) \gg 7)$ on $8 \times 8$ matrices ($K=8$, 64 PEs).
-   - Demonstrates a **38.5x acceleration speedup** of Systolic Hardware Core over the software CPU computation (HW: 14,036 cycles vs SW: 540,862 cycles, 0 errors across 64 elements).
-2. **Demo 2: 16x16 Large Matrix Tiling Engine**:
-   - Hardware-aware 2D tiling partitioning a $16 \times 16$ GEMM into 4 sub-matrix tiles ($8 \times 8$, $K=16$).
-   - Demonstrates a **26.0x speedup** (Hardware: 65,302 cycles vs Software CPU: 1,697,716 cycles, 0 errors across 256 elements).
-3. **Demo 3: Real MNIST Conv1 Layer via im2col**:
+1. **Demo 1: Hardware vs Software 8x8 GEMM Benchmark ($K=8$, 512 MACs = 1,024 OPs)**:
+   - Calculates $C = \text{ReLU}((A \times B) \gg 7)$ on $8 \times 8$ matrices across 64 PEs with zero arithmetic errors.
+   - **Pure Compute-Only Performance (Accelerator Core)**:
+     - Pure HW Compute Latency: **93 clock cycles** ($1.86\ \mu\text{s}$ @ 50 MHz).
+     - Pure Compute Speedup: **3,529.6x faster** than RISC-V CPU software arithmetic loop (328,257 cycles).
+     - Pure Compute Throughput: **550.5 MOPS** (Single tile utilization vs 6,400 MOPS theoretical peak).
+   - **End-to-End System Performance (Full SoC with MMIO)**:
+     - Total Latency: **8,525 clock cycles** ($170.5\ \mu\text{s}$ @ 50 MHz, 1,274 CPU instructions).
+     - End-to-End Speedup: **38.5x faster** than software execution.
+     - End-to-End Throughput: **6.0 MOPS**.
+   - **Memory Wall / Roofline Breakdown**:
+     - Accelerator Hardware Computation: **93 cycles (1.1% of total time)**.
+     - AXI4-Lite Single-Word MMIO Communication Overhead: **8,432 cycles (98.9% of total time)**.
+
+2. **Demo 2: 16x16 Large Matrix GEMM Tiling Engine (4 Tiles x 8x8, $K=16$, 4,096 MACs = 8,192 OPs)**:
+   - Hardware-aware 2D tiling engine partitioning a $16 \times 16$ GEMM into 4 sub-matrix tiles ($8 \times 8$, $K=16$).
+   - **Pure Compute-Only Performance**:
+     - Pure HW Compute Latency: **404 clock cycles** ($8.08\ \mu\text{s}$ across 4 hardware tiles).
+     - Pure Compute Speedup: **7,507.2x faster** than CPU software nested loops (3,032,928 cycles).
+     - Pure Compute Throughput: **1,013.9 MOPS (1.01 GOPS)**.
+   - **End-to-End System Performance**:
+     - Total Latency: **114,046 clock cycles** ($2,280.9\ \mu\text{s}$ @ 50 MHz).
+     - End-to-End Speedup: **26.5x faster** than software execution.
+     - End-to-End Throughput: **3.59 MOPS**.
+     - Communication & Tiling Management Overhead: **99.6%**.
+
+3. **Demo 3: Real MNIST Conv1 Layer via im2col ($K=9$, 4 Tiles x 8x8, 2,304 MACs = 4,608 OPs)**:
    - Convolves real MNIST $28 \times 28$ image data with 16 trained $3 \times 3$ filters ($K=9$) across 16 spatial patches (4 tiles of $8 \times 8$).
-   - Verifies **256 activations** against PyTorch golden references with **100% bit-true match (0 bit mismatches)**.
-4. **Demo 4: 2-Layer MLP Forward Inference**:
+   - Pure HW Compute: **376 clock cycles** ($7.52\ \mu\text{s}$, **612.8 MOPS**). End-to-End: **90,787 clock cycles** ($1.81\text{ ms}$).
+   - Verifies **256 activations** against PyTorch floating-point golden references with **100% bit-true match (0 bit mismatches)**.
+
+4. **Demo 4: 2-Layer Neural Network (MLP) Forward Inference (FC1 -> FC2)**:
    - Architecture: Input [8] $\to$ FC1 ($8 \times 8$) + ReLU $\to$ FC2 ($8 \times 8$) $\to$ Class Logits [8].
-   - Correctly identifies Class 6 as winner with total inference latency of 46,743 cycles (~0.93 ms @ 50MHz).
-5. **Demo 5: Arithmetic Diagnostics & Guardband Suite (6/6 Passed)**:
+   - Correctly identifies Class 6 as winner with total inference latency of **39,998 cycles** (~0.80 ms @ 50MHz).
+
+5. **Demo 5: Arithmetic Diagnostics & Quantization Guardband Suite (6/6 Passed)**:
    - `[5A]` Positive Saturation Clamping (+127)
    - `[5B]` $(-128) \times (-128) = +16384$ Arithmetic Precision
    - `[5C]` ReLU Negative Clamping to Zero ($-10000 \to 0$)
    - `[5D]` ReLU Bypass Mode Signed Retention ($-40 \to -40$)
    - `[5E]` Multi-Scale Shift Sweep (shifts 4, 6, 8)
    - `[5F]` Hardware Guardband Rejection of Out-of-Range $K$ ($K=0, 17$ asserting `STATUS_ERROR` bit 2 over AXI bus)
-6. **Demo 6: MNIST Digit Telemetry (Digit '7')**:
-   - Evaluates 8 classes in parallel across 8 systolic rows, 8 tiles total.
-   - Output: Predicted Digit **'7'** with 69% confidence score, display on `HEX0 = '7'`.
-7. **Demo 7: Hardware Peripherals & MMIO Profiler Diagnostics**:
-   - Inspects `REG_ACCEL_STATUS`, `REG_ACCEL_CYCLES`, and `REG_ACCEL_VERSION` (`0x01080820`: v1.0, 8x8, INT8, INT32).
-   - Automated visual animations across 7-Segment Displays (`HEX0-HEX7`) and LEDs.
+
+6. **Demo 6: MNIST Digit Inference Telemetry (Digit '7')**:
+   - Evaluates full MNIST forward pass across 8 systolic tiles (808 pure HW cycles).
+   - Total System Latency: **205,908 cycles** (4.11 ms @ 50MHz).
+   - Output: Predicted Digit **'7'** with 69% confidence score, illuminated on onboard display `HEX0 = '7'`.
+
+7. **Demo 7: Hardware Peripherals & MMIO Register Diagnostics (DE2/DE10 Board)**:
+   - Live inspection of `REG_ACCEL_STATUS`, `REG_ACCEL_CYCLES`, and `REG_ACCEL_VERSION` (`0x01080820`: v1.0, 8x8 array, INT8 data, INT32 acc).
+   - Automated visual animations across 7-Segment Displays (`HEX0-HEX7`) and LEDs (`LEDR`/`LEDG`).
 
 ---
 
-## Verification Framework & UVM Coverage Closure
+## Verification Framework & Waveform Architecture
 
-### 1. Functional Verification Architecture
-The verification environment is designed around industry standards with SystemVerilog UVM 1.1c:
+The project adheres to the **Three-Tier Hardware Verification Pyramid** spanning Unit-Level, Subsystem/Protocol, and Full-SoC levels:
 
 ```text
-               +-------------------------------------------------------+
-               |                    gemm_env                           |
-               |                                                       |
-               |  +--------------------+        +--------------------+ |
-               |  |     gemm_agent     |        |   gemm_coverage    | |
-               |  |                    |        |  (88 Target Bins)  | |
-               |  |  +--------------+  |        +---------^----------+ |
-               |  |  | gemm_seqr    |  |                  |            |
-               |  |  +-------+------+  |                  | (mon_exp)  |
-               |  |          |         |                  |            |
-               |  |  +-------v------+  |        +---------+----------+ |
-               |  |  | gemm_driver  |  |        |  gemm_scoreboard   | |
-               |  |  +-------+------+  |=======>| (Bit-True Predict) | |
-               |  |          |         | (drv)  +---------^----------+ |
-               |  |  +-------v------+  |                  |            |
-               |  |  | gemm_monitor |  |------------------+            |
-               |  |  +-------+------+  |                               |
-               |  +----------|---------+                               |
-               +-------------|-----------------------------------------+
-                             | (gemm_if Interface with Clocking Blocks)
-                             v
-               +-------------------------------------------------------+
-               |              DUT: systolic_accelerator_top            |
-               +-------------------------------------------------------+
+                       /\
+                      /  \     TIER 3: System SoC Co-Simulation (tb_soc_top.sv)
+                     / SoC\    PicoRV32 RV32I CPU + AXI Bus + 7-Scenario Bare-Metal C Firmware
+                    /------\
+                   / Core & \   TIER 2: Subsystem & Protocol Verification
+                  /   AXI    \  UVM 1.1c (100% Coverage), GEMM Golden Model, AXI Backpressure
+                 /------------\
+                /  Unit-Level  \ TIER 1: Individual RTL Module Verification (tb_unit_modules.sv)
+               / (Từng Module)  \ 52/52 Checks (PE, Skew, Quantize/ReLU, Buffers A/B/C, Ctrl, 7-Seg)
+              /------------------\
 ```
 
-### 2. UVM Functional Cross-Coverage Closure: 100.00%
+### 1. Tier 1: Unit-Level Hardware Verification (`tb_unit_modules.sv`)
+Dedicated self-checking assertions validating all 7 fundamental hardware blocks with bit-true corner-case stimuli:
+* **`pe_gemm.sv`**: Multiplier extremes ($127 \times 127$, $-128 \times -128$, $-128 \times 127$), INT32 accumulator clear, systolic forwarding registers (`a_out`, `b_out`), and clock gating when disabled.
+* **`systolic_skew_unit.sv`**: Cycle-accurate verification of the triangular delay pipeline for an $8 \times 8$ array (Row $i$ delayed by $i$ cycles, Col $j$ delayed by $j$ cycles).
+* **`quantize_relu_unit.sv`**: Arithmetic right shift scaling ($0..15$), symmetric rounding, positive/negative saturation clamping ($[-128, +127]$), and ReLU activation bypass.
+* **`matrix_buffer_a.sv`, `matrix_buffer_b.sv`, `matrix_buffer_c.sv`**: Independent host write ports, 8-channel parallel streaming readout, dual-channel INT8 activation and INT32 accumulator storage, and out-of-bounds protection.
+* **`gemm_controller.sv`**: FSM lifecycle (`IDLE` $\to$ `CLEAR` $\to$ `STREAM` $\to$ `DRAIN` $\to$ `READOUT` $\to$ `FLUSH` $\to$ `DONE`), hardware guardband rejecting invalid dimensions ($K=0, K > 16$), and 1-cycle `done` pulse generation.
+* **`systolic_array_core.sv`**: 2D mesh of 64 PEs verifying nearest-neighbor horizontal and vertical data propagation.
+* **`seven_seg_decoder.sv`**: Active-low truth table for all 16 hexadecimal digits (`0..F`) and display blanking.
+* **Result**: **52 / 52 Checks PASSED (100.0%, 0 Errors)**.
 
-The testbench measures stimulus quality through **39 Point Coverage Bins** and **49 Industrial Cross-Coverage Bins**:
+### 2. Tier 2: AXI Protocol & UVM 1.1c Functional Coverage Closure
+* **AXI4-Lite Handshake & Backpressure (`tb_axi_backpressure.sv`)**: Exhaustive verification of `VALID`/`READY` handshakes across all slaves (`axi_ram`, `systolic_gemm_axi_lite`, `axi_uart`) under randomized multi-cycle wait states.
+* **UVM 1.1c Verification Suite (`uvm_verify/`)**: Measures stimulus quality through **39 Point Coverage Bins** and **49 Industrial Cross-Coverage Bins**:
 
 ```text
 ==================================================================
                  FUNCTIONAL COVERAGE CLOSURE REPORT               
 ==================================================================
-Matrix A [5 bins]    : pos=894 neg=854 zero=576 min(-128)=72 max(+127)=69
-Matrix B [3 bins]    : pos=925 neg=843 zero=556
-Activation [2 bins]  : relu_on=36 relu_bypass=35
-Shift [0..8] [9 bins]: s0:8, s1:7, s2:8, s3:7, s4:13, s5:7, s6:7, s7:7, s8:7
-Clamping [4 bins]    : sat_pos(+127)=404, sat_neg(-128)=192, relu_zero=249, linear_pass=291
-K-Dim [1..16] [16 b] : min(K=1)=17 max(K=16)=17 mid(2..15)=37
-------------------------------------------------------------------
-                 CROSS-COVERAGE CLOSURE MATRIX                    
-------------------------------------------------------------------
-Cross 1: [ReLU x Shift]      : 18 / 18 Bins Covered
-  ReLU_ON     x Shift[0..8]  : [7, 2, 5, 2, 7, 2, 5, 2, 4]
-  ReLU_BYPASS x Shift[0..8]  : [1, 5, 3, 5, 6, 5, 2, 5, 3]
-Cross 2: [K-Range x Shift]   : 27 / 27 Bins Covered
-  K_MIN (K=1)  x Shift[0..8] : [3, 2, 2, 3, 1, 1, 3, 1, 1]
-  K_MID (2..15)x Shift[0..8] : [4, 4, 3, 3, 11, 3, 3, 4, 2]
-  K_MAX (K=16) x Shift[0..8] : [1, 1, 3, 1, 1, 3, 1, 2, 4]
-Cross 3: [Extremes A x B Sign]: 4 / 4 Bins Covered
-  A(-128) x B(Neg): 8 | A(-128) x B(Pos): 8 | A(+127) x B(Neg): 8 | A(+127) x B(Pos): 8
-------------------------------------------------------------------
 POINT COVERAGE SCORE : 39 / 39 Target Bins Covered ( 100.00% )
 CROSS COVERAGE SCORE : 49 / 49 Target Bins Covered ( 100.00% )
 COMBINED SCORE       : 88 / 88 Total Bins Covered  ( 100.00% )
 COVERAGE VERDICT     : [100.00% FULL INDUSTRIAL CLOSURE ACHIEVED]
-Scoreboard Summary   : Total: 71 | Passed: 71 | Failed: 0
-UVM_ERROR : 0, UVM_FATAL : 0
+Scoreboard Summary   : Total: 71 | Passed: 71 | Failed: 0 (Bit-True)
 ==================================================================
 ```
 
-### 3. Full SoC Hardware-Software Co-Simulation (`tb_soc_top.sv`)
-- **Total Simulation Time**: 45,833,650 ns (**2,291,682 clock cycles**).
-- **CPU Retired Instructions**: **351,826 instructions** (0 TRAP, 0 pipeline stalls).
-- **UART Output Stream**: **5,342 characters** received with 100% parity against golden output.
+### 3. Tier 3: Full SoC Hardware-Software Co-Simulation (`tb_soc_top.sv`)
+Executes the actual compiled RISC-V bare-metal firmware (`firmware.hex`) across the entire interconnected SoC:
+- **Total Simulation Time**: 77,408,070 ns (**3,870,403 clock cycles** @ 50 MHz).
+- **CPU Retired Instructions**: **606,843 instructions** (0 TRAP, 0 pipeline stalls).
+- **UART Output Stream**: **8,414 characters** received with 100% parity against golden console logs.
+
+### 4. 1-Click Waveform Inspection Scripts (ModelSim GUI)
+
+| Verification Level | 1-Click Launch Script | ModelSim Do Script | Signals & Waveform Scope |
+| :--- | :--- | :--- | :--- |
+| **Unit Modules** | [`VEFIFY/open_wave_unit.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_unit.bat) | `run_unit_sim.do` | PE MAC signals, Skew delay wavefronts, Quantizer clamps, Buffer channels, FSM states |
+| **Systolic GEMM** | [`VEFIFY/open_wave_gemm.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_gemm.bat) | `run_gemm_sim.do` | 64 PE data streams, accumulator matrix `c_matrix_core`, output readout |
+| **Stress Test** | [`VEFIFY/open_wave_stress.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_stress.bat) | `run_stress_sim.do` | Extreme $-128 \times -128$ multipliers, saturation clamps, back-to-back tests |
+| **Full SoC Co-Sim**| [`VEFIFY/open_wave_soc.bat`](file:///e:/DATN/CNN_Systolic_Architecture/VEFIFY/open_wave_soc.bat) | `wave_soc.do` | CPU AXI bus, Interconnect routing, UART RX/TX, Board LEDs & 7-Seg |
 
 ---
 
@@ -388,11 +400,27 @@ make clean
 make
 ```
 
-### 2. Run Full SoC Co-Simulation on ModelSim
-```powershell
-cd VEFIFY
-C:\13.0sp1\modelsim_ase\win32aloem\vsim.exe -c -do run_soc_sim.do
-```
+### 2. Run Hardware Verification Suites on ModelSim
+
+- **Tier 1: Unit-Level Modules Verification (52/52 Checks Passed)**:
+  ```powershell
+  cd VEFIFY
+  .\run_unit_sim.bat        # Batch command-line execution & score table
+  .\open_wave_unit.bat      # 1-Click interactive GUI with grouped waveforms
+  ```
+
+- **Tier 2: AXI4-Lite Handshake & Backpressure Verification**:
+  ```powershell
+  cd VEFIFY
+  .\run_axi_backpressure_sim.bat
+  ```
+
+- **Tier 3: Full SoC Hardware-Software Co-Simulation**:
+  ```powershell
+  cd VEFIFY
+  .\run_soc_sim.bat         # Batch regression (3.87M cycles, 7 scenarios)
+  .\open_wave_soc.bat       # 1-Click interactive GUI with full SoC waveforms
+  ```
 
 ### 3. Run UVM 1.1c Functional Verification & Coverage
 ```powershell
@@ -404,28 +432,36 @@ To run multi-seed regression (e.g. 10 seeds):
 python run_regression.py --seeds 10 --test gemm_random_test
 ```
 
-### 4. Synthesize Bitstream on Quartus II
-- **Terasic DE1** ($4 \times 4$ Array, Cyclone II EP2C20):
-  ```powershell
-  cd synthesis_soc
-  .\compile_soc.bat
-  ```
-- **Terasic DE2** ($8 \times 8$ Array, Cyclone II EP2C35):
+### 4. Synthesize Bitstream on Quartus Prime / Quartus II
+
+- **Terasic DE2** ($8 \times 8$ Array, Cyclone II `EP2C35F672C6` — **Primary Platform**):
   ```powershell
   cd synthesis_soc_de2
-  .\compile_soc_de2.bat
-  ```
-- **Terasic DE10-Standard** ($8 \times 8$ Array, Cyclone V):
-  ```powershell
-  cd synthesis_soc_de10
-  .\compile_soc_de10.bat
+  .\compile_soc_de2.bat     # Generates soc_top_de2.sof (Slack: +4.588 ns)
   ```
 
-### 5. Deploy on Board & Launch Host PC GUI
-1. Connect USB-Blaster and RS-232 / USB-UART cable to the FPGA board.
-2. Program the bitstream:
+- **Terasic DE10-Standard** ($8 \times 8$ Array, Cyclone V `5CSXFC6D6F31C6N` — **Scale-Up Platform**):
+  ```powershell
+  cd synthesis_soc_de10
+  .\compile_soc_de10.bat    # Generates soc_top_de10.sof (Slack: +3.932 ns)
+  ```
+
+- **Terasic DE1** ($4 \times 4$ Legacy Array, Cyclone II `EP2C20F484C7` — **Deprecated & Archived**):
+  *(Archived reference at `synthesis_soc/`, limited by 52 multipliers).*
+
+### 5. Deploy on Board & Launch Interactive Console
+1. Connect USB-Blaster and RS-232 / USB-UART adapter (115200 Baud, 8-N-1).
+2. Program the FPGA bitstream:
    ```powershell
-   cd synthesis_soc     # or synthesis_soc_de2
+   # On Terasic DE2 (Primary):
+   cd synthesis_soc_de2
+   .\program_de2.bat
+
+   # On Terasic DE10-Standard (Scale-Up):
+   cd synthesis_soc_de10
+   .\program_de10.bat
+   ```
+3. Open PuTTY / TeraTerm on your COM port at 115,200 baud and press pushbutton `KEY[0]` to reset.
    .\program_de1.bat    # or .\program_de2.bat
    ```
 3. Launch the interactive real-time handwriting drawing GUI:
