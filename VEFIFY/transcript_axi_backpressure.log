@@ -88,10 +88,6 @@
 # Loading work.matrix_buffer_c
 # Loading work.axi_uart
 # Loading work.pe_gemm
-# ** Warning: (vsim-7) Failed to open readmem file "" in read mode.
-# 
-# Invalid argument. (errno = EINVAL)    : ../RTL/axi_ram.sv(56)
-#    Time: 0 ps  Iteration: 0  Instance: /tb_axi_backpressure/u_ram
 # 
 # ========================================================
 #   STARTING AXI4-LITE BACKPRESSURE COMPLIANCE VERIFICATION

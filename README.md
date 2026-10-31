@@ -10,10 +10,10 @@
 
 An industrial-grade, modular, and fully parameterized hardware accelerator System-on-Chip (SoC) tailored for Convolutional Neural Network (CNN) edge inference. Designed with an **Output-Stationary 2D Systolic Array**, an **AMBA AXI4-Lite** central interconnect, and an embedded **PicoRV32 RISC-V (RV32I)** soft-core CPU. 
 
-Validated, timing-closed, and deployable across three Altera/Intel FPGA development platforms:
-1. **Terasic DE1** (`EP2C20F484C7`, $4 \times 4$ array, 16 PEs)
-2. **Terasic DE2** (`EP2C35F672C6`, $8 \times 8$ array with 64 PEs, 8x 7-segments & 18 LEDs)
-3. **Terasic DE10-Standard** (`5CSXFC6D6F31C6N`, $4 \times 4$ array with 16 PEs default, parameterizable to $8 \times 8$)
+Validated, timing-closed, and deployable across active Altera/Intel FPGA development platforms:
+1. **Terasic DE2** (`EP2C35F672C6`, $8 \times 8$ array with 64 PEs, 64 Multipliers, 8x 7-segments & 18 LEDs) — **Primary Platform**
+2. **Terasic DE10-Standard** (`5CSXFC6D6F31C6N`, $8 \times 8$ array with 64 PEs, 64 DSP Blocks, 10 LEDs) — **High-End Scale-Up Platform**
+*(Note: Terasic DE1 is deprecated due to hardware DSP limit of 52 blocks, insufficient for the unified 8x8 architecture)*
 
 ---
 
@@ -148,21 +148,21 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 
 The design is synthesized, fully placed-and-routed, and timing-closed across three physical FPGA development platforms:
 
-| Metric | Terasic DE1 (`soc_top`) | Terasic DE2 (`soc_top_de2`) | Terasic DE10-Standard (`soc_top_de10`) |
+| Metric | Terasic DE2 (`soc_top_de2`) — **Primary** | Terasic DE10-Standard (`soc_top_de10`) — **Scale-Up** | Terasic DE1 (`soc_top`) — **Deprecated** |
 | :--- | :---: | :---: | :---: |
-| **FPGA Family / Device** | **Cyclone II EP2C20F484C7** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** |
-| **Technology Node** | 90 nm TSMC | 90 nm TSMC | 28 nm TSMC Low-Power |
-| **Array Architecture** | $4 \times 4$ (16 PEs legacy) | **$8 \times 8$ (64 PEs Primary)** | $4 \times 4$ / $8 \times 8$ |
-| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | **17,230 / 33,216 LEs (51.9%)** | 2,605 / 41,910 ALMs (6.2%) |
-| **Dedicated Logic Registers** | 3,365 registers | **9,038 registers (27.2%)** | 3,253 registers |
-| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | **64 / 70 9-bit (91.4%)** | 16 / 112 Variable DSPs (14.3%) |
-| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | **264,192 / 483,840 (54.6%, 32 KB)** | 264,832 / 5,662,720 (4.7%) |
-| **Target Clock Frequency** | 50.00 MHz (20.0 ns) | **50.00 MHz (20.0 ns)** | 50.00 MHz (20.0 ns) |
-| **Setup Slack (Slow Model)** | **+4.144 ns** | **+4.588 ns** | **+6.176 ns** |
-| **Hold Slack (Slow Model)** | **+0.445 ns** | **+0.391 ns** | **+0.230 ns** |
-| **Max Frequency ($F_{max}$)** | **63.07 MHz** | **64.88 MHz** | **72.31 MHz** |
-| **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** |
-| **Peak Throughput (@ 50MHz)** | **1.60 GOPS** | **6.40 GOPS ($4.0\times$)** | **6.40 GOPS ($4.0\times$)** |
+| **FPGA Family / Device** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** | Cyclone II EP2C20F484C7 (Limited) |
+| **Technology Node** | 90 nm TSMC | 28 nm TSMC Low-Power | 90 nm TSMC |
+| **Array Architecture** | **$8 \times 8$ (64 PEs Primary)** | **$8 \times 8$ (64 PEs Scale-Up)** | Deprecated (Only 52 Multipliers, < 64) |
+| **Logic Utilization** | **17,230 / 33,216 LEs (51.9%)** | **6,308 / 41,910 ALMs (15.1%)** | Legacy 4x4 (6,368 LEs) |
+| **Dedicated Logic Registers** | **9,038 registers (27.2%)** | **7,842 registers (18.7%)** | Legacy 4x4 (3,365 registers) |
+| **DSP / Embedded Multipliers** | **64 / 70 9-bit (91.4%)** | **64 / 112 Variable DSPs (57.1%)** | 16 / 52 9-bit (Cannot fit 8x8) |
+| **Total Memory Bits (BRAM)** | **264,192 / 483,840 (54.6%, 32 KB)** | **264,832 / 5,662,720 (4.7%, 32 KB)** | 134,144 bits (16 KB) |
+| **Target Clock Frequency** | **50.00 MHz (20.0 ns)** | **50.00 MHz (20.0 ns)** | 50.00 MHz (20.0 ns) |
+| **Setup Slack (Slow Model)** | **+4.588 ns** | **+3.932 ns** | +4.144 ns (4x4 legacy only) |
+| **Hold Slack (Slow Model)** | **+0.391 ns** | **+0.206 ns** | +0.445 ns |
+| **Max Frequency ($F_{max}$)** | **64.88 MHz** | **62.24 MHz** | 63.07 MHz |
+| **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | 0.000 ns |
+| **Peak Throughput (@ 50MHz)** | **6.40 GOPS** (3.20 GMAC/s) | **6.40 GOPS** (3.20 GMAC/s) | 1.60 GOPS (4x4 legacy) |
 | **Programming Bitstream** | `synthesis_soc/soc_top.sof` | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` |
 
 ---

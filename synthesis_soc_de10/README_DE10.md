@@ -71,21 +71,16 @@ cd synthesis_soc_de10
 rem 3. Kết quả: soc_top_de10.sof (bitstream nạp vào DE10-Standard)
 ```
 
-## Ước Tính Tài Nguyên (Chưa Synthesis Thực Tế)
+## Kết Quả Đo Đạc Thực Tế Trên Quartus Prime (Cấu hình 8×8)
 
-| Tài Nguyên | Ước Tính | Cyclone V Limit | Tỉ Lệ |
-|---|---|---|---|
-| ALMs | ~22,000 | 41,910 | ~52% |
-| DSP Blocks | 64 | 112 | ~57% |
-| BRAM | ~600 Kbits | 5,662 Kbits | ~11% |
-
-> **Ghi chú**: Đây là ước tính chưa synthesis. Cần chạy Quartus để có số liệu thực tế.
-
-## So Sánh Hiệu Năng Lý Thuyết
-
-| Chỉ Số | DE1 4×4 | DE10 8×8 |
-|---|---|---|
-| **PEs** | 16 | 64 |
-| **MACs/cycle** | 16 | 64 |
-| **Fmax (dự kiến)** | 64.14 MHz | ~60-70 MHz |
-| **Throughput lý thuyết** | 16×64.14M = **1.03 GMAC/s** | 64×60M = **3.84 GMAC/s** |
+| Tài Nguyên Phần Cứng | Số Lượng Sử Dụng | Giới Hạn Cyclone V | Tỉ Lệ Chiếm Dụng |
+|---|:---:|:---:|:---:|
+| **Logic ALMs** | **6,308** | 41,910 | **15.1%** |
+| **Dedicated Logic Registers** | **7,842** | -- | -- |
+| **DSP Blocks** | **64** | 112 | **57.1%** |
+| **Block RAM (M10K)** | **264,832 bits** (32 KB BRAM) | 5,662,720 bits | **4.7%** |
+| **Clock Danh Định** | **50.00 MHz** (20.0 ns) | -- | CLOCK_50[0] |
+| **Worst-Case Setup Slack** | **+3.932 ns** | -- | Timing Closure Met |
+| **Worst-Case Hold Slack** | **+0.206 ns** | -- | TNS = 0.000 ns |
+| **Tần Số Cực Đại ($F_{max}$)**| **62.24 MHz** | -- | Vượt trần 50 MHz |
+| **Peak Throughput** | **6.40 GOPS** (3.20 GMAC/s) | -- | Đồng nhất với DE2 8x8 |

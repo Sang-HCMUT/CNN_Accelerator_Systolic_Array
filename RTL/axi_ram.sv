@@ -51,9 +51,11 @@ module axi_ram #(
     // Multi-dimensional packed array [3:0][7:0] is mandatory for Quartus byte-enabled BRAM inference
     (* ramstyle = "no_rw_check" *) logic [3:0][7:0] mem [0:MEM_WORDS-1];
 
-    // Initialization directly with $readmemh (avoid runtime string condition)
+    // Initialization with $readmemh when file is specified
     initial begin
-        $readmemh(MEM_INIT_FILE, mem);
+        if (MEM_INIT_FILE != "") begin
+            $readmemh(MEM_INIT_FILE, mem);
+        end
     end
 
     // Internal RAM signals for synchronous Block RAM inference

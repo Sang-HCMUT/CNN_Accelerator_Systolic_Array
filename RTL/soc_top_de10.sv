@@ -5,15 +5,15 @@
 // Target: Terasic DE10-Standard (Intel Cyclone V 5CSXFC6D6F31C6)
 //
 // Features:
-// - Parameterized ARRAY_SIZE (defaults to 4 to match verified firmware demo & 6 co-sim suites).
-// - Parameterizable to 8 for standalone 8x8 DSP benchmark on Cyclone V (112 DSP blocks).
+// - Standardized 8x8 Systolic Array (64 PEs, 64 DSP blocks) matching unified 8x8 firmware.
+// - Scaled for Cyclone V SoC (112 DSP blocks available, 64 used = 57.1%).
 // - No LEDG on DE10-Standard (mapped to internal diagnostics & LEDR[7:2]).
 // - UART: mapped to GPIO_0 header (GPIO_0[0]=TX Pin W15, GPIO_0[1]=RX Pin AK2).
 // - Clock: 50 MHz CLOCK_50 (Pin AF14).
 // - Reset: KEY[0] active-low push-button (Pin AJ4).
 
 module soc_top_de10 #(
-    parameter ARRAY_SIZE        = 4,         // Default 4x4: matches firmware demo & 100% verified co-sim
+    parameter ARRAY_SIZE        = 8,         // Standardized 8x8: 64 PEs, matches 8x8 firmware suite
     parameter DATA_WIDTH        = 8,
     parameter ACC_WIDTH         = 32,
     parameter MEM_WORDS         = 8192,
