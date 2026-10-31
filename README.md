@@ -146,7 +146,7 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 
 ## Multi-Platform FPGA Synthesis Portfolio
 
-The design is synthesized, fully placed-and-routed, and timing-closed across three physical FPGA development platforms:
+The design is synthesized, fully placed-and-routed, and timing-closed across two active physical FPGA deployment platforms (with DE1 archived/deprecated):
 
 | Metric | Terasic DE2 (`soc_top_de2`) — **Primary** | Terasic DE10-Standard (`soc_top_de10`) — **Scale-Up** | Terasic DE1 (`soc_top`) — **Deprecated** |
 | :--- | :---: | :---: | :---: |
@@ -154,7 +154,7 @@ The design is synthesized, fully placed-and-routed, and timing-closed across thr
 | **Technology Node** | 90 nm TSMC | 28 nm TSMC Low-Power | 90 nm TSMC |
 | **Array Architecture** | **$8 \times 8$ (64 PEs Primary)** | **$8 \times 8$ (64 PEs Scale-Up)** | Deprecated (Only 52 Multipliers, < 64) |
 | **Logic Utilization** | **17,230 / 33,216 LEs (51.9%)** | **6,308 / 41,910 ALMs (15.1%)** | Legacy 4x4 (6,368 LEs) |
-| **Dedicated Logic Registers** | **9,038 registers (27.2%)** | **7,842 registers (18.7%)** | Legacy 4x4 (3,365 registers) |
+| **Dedicated Logic Registers** | **9,038 registers (27.2%)** | **7,062 registers (16.9%)** | Legacy 4x4 (3,365 registers) |
 | **DSP / Embedded Multipliers** | **64 / 70 9-bit (91.4%)** | **64 / 112 Variable DSPs (57.1%)** | 16 / 52 9-bit (Cannot fit 8x8) |
 | **Total Memory Bits (BRAM)** | **264,192 / 483,840 (54.6%, 32 KB)** | **264,832 / 5,662,720 (4.7%, 32 KB)** | 134,144 bits (16 KB) |
 | **Target Clock Frequency** | **50.00 MHz (20.0 ns)** | **50.00 MHz (20.0 ns)** | 50.00 MHz (20.0 ns) |

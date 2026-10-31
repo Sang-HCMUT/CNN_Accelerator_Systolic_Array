@@ -76,7 +76,7 @@ rem 3. Kết quả: soc_top_de10.sof (bitstream nạp vào DE10-Standard)
 | Tài Nguyên Phần Cứng | Số Lượng Sử Dụng | Giới Hạn Cyclone V | Tỉ Lệ Chiếm Dụng |
 |---|:---:|:---:|:---:|
 | **Logic ALMs** | **6,308** | 41,910 | **15.1%** |
-| **Dedicated Logic Registers** | **7,842** | -- | -- |
+| **Dedicated Logic Registers** | **7,062** | -- | -- |
 | **DSP Blocks** | **64** | 112 | **57.1%** |
 | **Block RAM (M10K)** | **264,832 bits** (32 KB BRAM) | 5,662,720 bits | **4.7%** |
 | **Clock Danh Định** | **50.00 MHz** (20.0 ns) | -- | CLOCK_50[0] |

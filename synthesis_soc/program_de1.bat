@@ -1,12 +1,17 @@
 @echo off
 echo ========================================================
-echo   PROGRAMMING TERASIC DE1 FPGA (Cyclone II EP2C20F484C7)
+echo   [DEPRECATED / ARCHIVED] PROGRAMMING TERASIC DE1 FPGA
 echo ========================================================
+echo [WARNING] Project DE1 is deprecated. The active deployment
+echo           targets are Terasic DE2 (synthesis_soc_de2) and
+echo           Terasic DE10-Standard (synthesis_soc_de10).
+echo ========================================================
+echo.
 
 cd /d "%~dp0"
 
 if not exist soc_top.sof (
-    echo [ERROR] soc_top.sof not found! Please run compile_soc.bat first.
+    echo [ERROR] soc_top.sof not found!
     pause
     exit /b 1
 )
@@ -20,16 +25,13 @@ C:\13.0sp1\quartus\bin64\quartus_pgm.exe -c "USB-Blaster" -m JTAG -o "p;soc_top.
 
 if %errorlevel% neq 0 (
     echo.
-    echo [ERROR] Programming failed! Please ensure:
-    echo   1. DE1 board is powered ON (Red push button).
-    echo   2. USB-Blaster cable is firmly connected and drivers installed in Device Manager.
-    echo   3. RUN/PROG switch on DE1 is set to RUN.
+    echo [ERROR] Programming failed!
     pause
     exit /b %errorlevel%
 )
 
 echo.
 echo ========================================================
-echo   DE1 FPGA PROGRAMMED SUCCESSFULLY!
+echo   DE1 FPGA PROGRAMMED (NOTE: DE1 IS ARCHIVED)
 echo ========================================================
 pause

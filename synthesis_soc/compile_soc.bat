@@ -1,7 +1,17 @@
 @echo off
 echo ========================================================
-echo   COMPILING RISC-V SoC TOP ON CYCLONE II (EP2C20F484C7)
+echo   [DEPRECATED / ARCHIVED] TERASIC DE1 BUILD SCRIPT
 echo ========================================================
+echo [WARNING] Project DE1 is deprecated because EP2C20 has only
+echo           52 multipliers, while the project uses an 8x8
+echo           systolic array (requiring 64 multipliers).
+echo.
+echo Please use the primary project target:
+echo   cd ..\synthesis_soc_de2
+echo   compile_soc_de2.bat
+echo ========================================================
+echo.
+pause
 
 cd /d "%~dp0"
 
@@ -34,6 +44,5 @@ if %errorlevel% neq 0 (
 )
 
 echo ========================================================
-echo   COMPILATION COMPLETED SUCCESSFULLY!
+echo   COMPILATION COMPLETED! (NOTE: DE1 IS ARCHIVED)
 echo ========================================================
-
