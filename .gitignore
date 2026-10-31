@@ -3,6 +3,9 @@
 **/incremental_db/
 **/.qsys_edit/
 **/output_files/
+!synthesis_soc_de10/output_files/soc_top_de10.sof
+!synthesis_soc_de10/soc_top_de10.sof
+!synthesis_soc_de2/soc_top_de2.sof
 *.done
 *.jdi
 *.pin
@@ -31,8 +34,6 @@ software_ref/data/
 
 # Local engineering reports
 BaoCao_*.md
-PROJECT_SPECIFICATION.md
-DEFENSE_CHEATSHEET.md
 *.docx
 *.pdf
 danh_muc_tu_viet_tat.*

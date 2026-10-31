@@ -134,22 +134,22 @@ module systolic_gemm_axi_lite #(
             if (write_strb[1]) control_reg[15:8]  <= write_data[15:8];
             if (write_strb[2]) control_reg[23:16] <= write_data[23:16];
             if (write_strb[3]) control_reg[31:24] <= write_data[31:24];
-            if (write_strb[0] && write_data[0]) begin
+            if (write_strb[0] && write_data[0] && !core_busy) begin
                 core_start    <= 1'b1;
                 status_reg[0] <= 1'b0; // Clear done bit on start
                 status_reg[2] <= 1'b0; // Clear error bit on start
             end
         end else if (write_addr == 12'h008) begin
             // Pass through k_dim directly to core; guardband violations are reported via STATUS_ERROR (bit 2)
-            if (write_strb[0]) k_dim_reg <= write_data[7:0];
+            if (write_strb[0] && !core_busy) k_dim_reg <= write_data[7:0];
         end else if (write_addr >= 12'h100 && write_addr < 12'h300) begin
-            if (write_strb[0]) begin
+            if (write_strb[0] && !core_busy) begin
                 core_wr_a_en   <= 1'b1;
                 core_wr_a_addr <= (write_addr - 12'h100) >> 2;
                 core_wr_a_data <= write_data[DATA_WIDTH-1:0];
             end
         end else if (write_addr >= 12'h300 && write_addr < 12'h500) begin
-            if (write_strb[0]) begin
+            if (write_strb[0] && !core_busy) begin
                 core_wr_b_en   <= 1'b1;
                 core_wr_b_addr <= (write_addr - 12'h300) >> 2;
                 core_wr_b_data <= write_data[DATA_WIDTH-1:0];

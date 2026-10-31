@@ -94,21 +94,7 @@ static __attribute__((noinline)) void demo_gemm_benchmark(void) {
     print_str("\n====================================================================\n");
     print_str("Performance Telemetry & Roofline Analysis (@ 50 MHz):\n");
     print_str("====================================================================\n");
-    print_str("[1] Pure Compute-Only Telemetry (Systolic Math Core vs CPU Math Loop):\n");
-    print_str("  Workload Size         : 8x8 x 8x8 (K=8) -> 512 MACs (1,024 Operations)\n");
-    print_str("  CPU Software Math     : "); print_dec((int)cyc_sw); print_str(" cycles (");
-    print_dec((int)ins_sw); print_str(" instrs, ");
-    print_dec((int)(cyc_sw / 50)); print_str(" us)\n");
-    print_str("  Systolic Array Core   : "); print_dec((int)cyc_pure_hw); print_str(" cycles (");
-    print_dec((int)(cyc_pure_hw * 20)); print_str(" ns, via REG_ACCEL_CYCLES)\n");
-    if (cyc_pure_hw > 0) {
-        int speedup_pure = (int)(cyc_sw / cyc_pure_hw);
-        print_str("  Pure Compute Speedup  : "); print_dec(speedup_pure); print_str("x faster than CPU math loop\n");
-        int mops_pure = (1024 * 50) / (int)cyc_pure_hw;
-        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS (Peak 8x8 Array: 6,400 MOPS)\n");
-    }
-
-    print_str("\n[2] End-to-End System Telemetry (Full SoC: MMIO Load + Compute + Readout):\n");
+    print_str("[1] Primary System Benchmark: End-to-End Speedup (Full SoC):\n");
     print_str("  Total End-to-End Time : "); print_dec((int)cyc_hw); print_str(" cycles (");
     print_dec((int)ins_hw); print_str(" instrs, ");
     print_dec((int)(cyc_hw / 50)); print_str(" us)\n");
@@ -116,14 +102,28 @@ static __attribute__((noinline)) void demo_gemm_benchmark(void) {
         int speedup_e2e_x10 = (int)((cyc_sw * 10) / cyc_hw);
         print_str("  End-to-End Speedup    : ");
         print_dec(speedup_e2e_x10 / 10); print_str("."); print_dec(speedup_e2e_x10 % 10);
-        print_str("x faster\n");
+        print_str("x faster (includes CPU MMIO load + compute + readout)\n");
         int mops_e2e = (1024 * 50) / (int)cyc_hw;
         print_str("  End-to-End Throughput : "); print_dec(mops_e2e); print_str(" MOPS\n");
     }
 
+    print_str("\n[2] Inner Math Core Benchmark: Pure Compute Telemetry:\n");
+    print_str("  Workload Size         : 8x8 x 8x8 (K=8) -> 512 MACs (1,024 Operations)\n");
+    print_str("  CPU Software Math Loop: "); print_dec((int)cyc_sw); print_str(" cycles (");
+    print_dec((int)ins_sw); print_str(" instrs, ");
+    print_dec((int)(cyc_sw / 50)); print_str(" us, RV32I libgcc __mulsi3 @ ~641 cyc/MAC)\n");
+    print_str("  Systolic Array Core   : "); print_dec((int)cyc_pure_hw); print_str(" cycles (");
+    print_dec((int)(cyc_pure_hw * 20)); print_str(" ns, via REG_ACCEL_CYCLES)\n");
+    if (cyc_pure_hw > 0) {
+        int speedup_pure = (int)(cyc_sw / cyc_pure_hw);
+        print_str("  Pure Compute Speedup  : "); print_dec(speedup_pure); print_str("x faster (Math Core vs SW Loop)\n");
+        int mops_pure = (1024 * 50) / (int)cyc_pure_hw;
+        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS (Peak 8x8 Array: 6,400 MOPS)\n");
+    }
+
     uint32_t comm_overhead = (cyc_hw > cyc_pure_hw) ? (cyc_hw - cyc_pure_hw) : 0;
     int comm_pct = cyc_hw > 0 ? (int)((comm_overhead * 100) / cyc_hw) : 0;
-    print_str("\n[3] Memory & Bus Overhead Decomposition:\n");
+    print_str("\n[3] Memory Wall & Bus Overhead Decomposition:\n");
     print_str("  MMIO Transfer Overhead: "); print_dec((int)comm_overhead); print_str(" cycles (");
     print_dec(comm_pct); print_str("% time spent on AXI-Lite MMIO)\n");
     print_str("  Pure Compute Portion  : "); print_dec((int)cyc_pure_hw); print_str(" cycles (");
@@ -233,19 +233,10 @@ static __attribute__((noinline)) void demo_large_matrix_tiling(void) {
     print_str("Tiling Telemetry & Roofline Analysis (4 Tiles of 8x8, K=16):\n");
     print_str("  Total Tiles Processed : 4 tiles (8x8 submatrices, K=16)\n");
     print_str("  Total Workload        : 4,096 INT8 MACs (8,192 Operations)\n");
-    print_str("  Pure HW Compute Time  : "); print_dec((int)total_pure_hw_cycles); print_str(" cycles (");
-    print_dec((int)(total_pure_hw_cycles * 20 / 1000)); print_str(" us @ 50MHz, sum of 4 tiles)\n");
-    if (total_pure_hw_cycles > 0) {
-        int speedup_pure = (int)(cyc_sw / total_pure_hw_cycles);
-        print_str("  Pure Compute Speedup  : "); print_dec(speedup_pure); print_str("x faster than CPU math loop\n");
-        int mops_pure = (8192 * 50) / (int)total_pure_hw_cycles;
-        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS (");
-        print_dec(mops_pure / 1000); print_str("."); print_dec((mops_pure % 1000) / 100); print_str(" GOPS)\n");
-    }
     print_str("  Total End-to-End Time : "); print_dec((int)cyc_hw); print_str(" cycles (");
     print_dec((int)(cyc_hw / 50)); print_str(" us @ 50MHz)\n");
-    print_str("  Software CPU GEMM Time: "); print_dec((int)cyc_sw); print_str(" cycles (");
-    print_dec((int)(cyc_sw / 50)); print_str(" us @ 50MHz)\n");
+    print_str("  Software CPU GEMM Time: "); print_dec((int)cyc_sw); print_str(" cycles (Projected 4x Tile 0, ");
+    print_dec((int)(cyc_sw / 50)); print_str(" us @ 50MHz, RV32I __mulsi3)\n");
 
     if (cyc_hw > 0) {
         int speedup_x10 = (cyc_sw * 10) / cyc_hw;
@@ -253,9 +244,19 @@ static __attribute__((noinline)) void demo_large_matrix_tiling(void) {
         print_dec(speedup_x10 / 10);
         print_str(".");
         print_dec(speedup_x10 % 10);
-        print_str("x faster\n");
+        print_str("x faster (Primary System Benchmark)\n");
         int mops_e2e = (8192 * 50) / (int)cyc_hw;
         print_str("  End-to-End Throughput : "); print_dec(mops_e2e); print_str(" MOPS\n");
+    }
+
+    print_str("  Pure HW Compute Time  : "); print_dec((int)total_pure_hw_cycles); print_str(" cycles (");
+    print_dec((int)(total_pure_hw_cycles * 20 / 1000)); print_str(" us @ 50MHz, sum of 4 tiles)\n");
+    if (total_pure_hw_cycles > 0) {
+        int speedup_pure = (int)(cyc_sw / total_pure_hw_cycles);
+        print_str("  Pure Compute Speedup  : "); print_dec(speedup_pure); print_str("x faster (Math Core vs SW Loop)\n");
+        int mops_pure = (8192 * 50) / (int)total_pure_hw_cycles;
+        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS (");
+        print_dec(mops_pure / 1000); print_str("."); print_dec((mops_pure % 1000) / 100); print_str(" GOPS)\n");
     }
 
     uint32_t comm_overhead = (cyc_hw > total_pure_hw_cycles) ? (cyc_hw - total_pure_hw_cycles) : 0;
