@@ -135,7 +135,7 @@ module axi_interconnect (
             if (s_axi_awvalid && !wr_active) begin
                 wr_sel_latched <= decode_addr(s_axi_awaddr);
                 wr_active      <= 1'b1;
-            end else if (s_axi_bvalid) begin
+            end else if (s_axi_bvalid && s_axi_bready) begin
                 wr_active      <= 1'b0;
             end
         end
@@ -214,7 +214,7 @@ module axi_interconnect (
             if (s_axi_arvalid && !rd_active) begin
                 rd_sel_latched <= decode_addr(s_axi_araddr);
                 rd_active      <= 1'b1;
-            end else if (s_axi_rvalid) begin
+            end else if (s_axi_rvalid && s_axi_rready) begin
                 rd_active      <= 1'b0;
             end
         end

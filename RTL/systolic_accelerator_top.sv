@@ -12,7 +12,7 @@
 //   7. matrix_buffer_c: On-chip Output & Debug Storage
 
 module systolic_accelerator_top #(
-    parameter ARRAY_SIZE = 4,   // Size of 2D systolic array (e.g. 4x4, 8x8)
+    parameter ARRAY_SIZE = 8,   // Size of 2D systolic array (8x8 = 64 PEs)
     parameter DATA_WIDTH = 8,   // INT8 operands
     parameter ACC_WIDTH  = 32,  // INT32 accumulator
     parameter MAX_K      = 16   // Maximum inner dimension K supported in buffers

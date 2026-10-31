@@ -30,7 +30,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top_de2.sv
 set_global_assignment -name SDC_FILE soc_top_de2.sdc
 
-set_parameter -name ARRAY_SIZE 4
+set_parameter -name ARRAY_SIZE 8
 set_parameter -name MEM_WORDS 8192
 
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0

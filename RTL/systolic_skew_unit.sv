@@ -6,7 +6,7 @@
 // Column j of Matrix B is delayed by j cycles (0T, 1T, 2T, ...).
 
 module systolic_skew_unit #(
-    parameter ARRAY_SIZE = 4,
+    parameter ARRAY_SIZE = 8,
     parameter DATA_WIDTH = 8
 )(
     input  logic                                          clk,

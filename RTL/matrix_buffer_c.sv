@@ -9,7 +9,7 @@
 // Host read port for downstream layers / CPU bus.
 
 module matrix_buffer_c #(
-    parameter ARRAY_SIZE = 4,
+    parameter ARRAY_SIZE = 8,
     parameter DATA_WIDTH = 8,
     parameter ACC_WIDTH  = 32,
     parameter ADDR_WIDTH = $clog2(ARRAY_SIZE * ARRAY_SIZE)

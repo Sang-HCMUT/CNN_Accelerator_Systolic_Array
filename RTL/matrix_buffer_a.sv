@@ -6,7 +6,7 @@
 // Supports parallel systolic streaming read port (feeds all rows).
 
 module matrix_buffer_a #(
-    parameter ARRAY_SIZE = 4,
+    parameter ARRAY_SIZE = 8,
     parameter MAX_K      = 16,
     parameter DATA_WIDTH = 8,
     parameter ADDR_WIDTH = $clog2(ARRAY_SIZE * MAX_K)

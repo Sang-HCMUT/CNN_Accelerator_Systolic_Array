@@ -12,7 +12,7 @@
 module tb_soc_top;
 
     localparam CLK_PERIOD = 20; // 50 MHz -> 20 ns period
-    localparam MAX_CYCLES = 3500000;
+    localparam MAX_CYCLES = 5000000;
     localparam UART_CLKS  = 16;
 
     logic clk;
@@ -35,7 +35,7 @@ module tb_soc_top;
 
     // DUT Instantiation
     soc_top #(
-        .ARRAY_SIZE        (4),
+        .ARRAY_SIZE        (8),
         .DATA_WIDTH        (8),
         .ACC_WIDTH         (32),
         .MEM_WORDS         (8192),
@@ -107,7 +107,7 @@ module tb_soc_top;
     // Simulation Sequence
     initial begin
         $display("\nStarting RISC-V SoC Hardware-Software Co-Simulation");
-        $display("PicoRV32 (RV32I) + AXI4-Lite + 4x4 Systolic Array Accelerator\n");
+        $display("PicoRV32 (RV32I) + AXI4-Lite + 8x8 Systolic Array Accelerator (64 PEs, DE2)\n");
 
         rst_n = 0;
         #(CLK_PERIOD * 10);

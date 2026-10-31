@@ -6,7 +6,7 @@
 // Pure nearest-neighbor interconnections between adjacent PEs.
 
 module systolic_array_core #(
-    parameter ARRAY_SIZE = 4,  // Number of PEs per row/col
+    parameter ARRAY_SIZE = 8,  // Number of PEs per row/col (8x8 = 64 PEs)
     parameter DATA_WIDTH = 8,  // INT8 operands
     parameter ACC_WIDTH  = 32  // INT32 accumulator
 )(

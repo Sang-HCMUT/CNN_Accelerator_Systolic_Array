@@ -6,7 +6,7 @@
 // Enables direct MMIO control from RISC-V or Nios II Host CPU.
 
 module systolic_gemm_axi_lite #(
-    parameter ARRAY_SIZE = 4,
+    parameter ARRAY_SIZE = 8,
     parameter DATA_WIDTH = 8,
     parameter ACC_WIDTH  = 32,
     parameter C_S_AXI_DATA_WIDTH = 32,
@@ -51,13 +51,16 @@ module systolic_gemm_axi_lite #(
 
     wire rst_n = s_axi_aresetn;
 
-    // Registers:
+    // Registers & MMIO Buffers (8x8 Systolic Architecture):
     // 0x000: Control (bit 0: Start, bit 1: Bypass ReLU, bit [6:2]: shift_bits)
-    // 0x004: Status  (bit 0: Done, bit 1: Busy)
-    // 0x008: K_DIM   (Dimension K)
-    // 0x100 - 0x1FC: Matrix A Buffer
-    // 0x200 - 0x2FC: Matrix B Buffer
-    // 0x300 - 0x3FC: Matrix C Output Buffer
+    // 0x004: Status  (bit 0: Done, bit 1: Busy, bit 2: Error)
+    // 0x008: K_DIM   (Dimension K: 1 to 16)
+    // 0x00C: HW Performance Cycle Counter (read-only)
+    // 0x010: HW IP Version & Architecture ID (0x01080820)
+    // 0x100 - 0x2FF: Matrix A Buffer (up to 128 words: 8 rows x 16 cols)
+    // 0x300 - 0x4FF: Matrix B Buffer (up to 128 words: 16 rows x 8 cols)
+    // 0x500 - 0x5FF: Matrix C INT8 Output Buffer (64 words: 8 rows x 8 cols post-ReLU)
+    // 0x600 - 0x6FF: Matrix C INT32 Raw Accumulator Buffer (64 words: 8 rows x 8 cols)
     logic [31:0] control_reg;
     logic [31:0] status_reg;
     logic [7:0]  k_dim_reg;
@@ -139,16 +142,16 @@ module systolic_gemm_axi_lite #(
         end else if (write_addr == 12'h008) begin
             // Pass through k_dim directly to core; guardband violations are reported via STATUS_ERROR (bit 2)
             if (write_strb[0]) k_dim_reg <= write_data[7:0];
-        end else if (write_addr >= 12'h100 && write_addr < 12'h200) begin
+        end else if (write_addr >= 12'h100 && write_addr < 12'h300) begin
             if (write_strb[0]) begin
                 core_wr_a_en   <= 1'b1;
                 core_wr_a_addr <= (write_addr - 12'h100) >> 2;
                 core_wr_a_data <= write_data[DATA_WIDTH-1:0];
             end
-        end else if (write_addr >= 12'h200 && write_addr < 12'h300) begin
+        end else if (write_addr >= 12'h300 && write_addr < 12'h500) begin
             if (write_strb[0]) begin
                 core_wr_b_en   <= 1'b1;
-                core_wr_b_addr <= (write_addr - 12'h200) >> 2;
+                core_wr_b_addr <= (write_addr - 12'h300) >> 2;
                 core_wr_b_data <= write_data[DATA_WIDTH-1:0];
             end
         end
@@ -166,7 +169,7 @@ module systolic_gemm_axi_lite #(
             latched_wstrb  <= '0;
             control_reg    <= '0;
             status_reg     <= '0;
-            k_dim_reg      <= 8'd4;
+            k_dim_reg      <= 8'd8;
             core_start     <= 1'b0;
             core_wr_a_en   <= 1'b0;
             core_wr_a_addr <= '0;
@@ -241,8 +244,10 @@ module systolic_gemm_axi_lite #(
                 WR_RESP: begin
                     s_axi_awready <= 1'b0;
                     s_axi_wready  <= 1'b0;
-                    s_axi_bvalid  <= 1'b0;
-                    wr_state      <= WR_IDLE;
+                    if (s_axi_bready) begin
+                        s_axi_bvalid  <= 1'b0;
+                        wr_state      <= WR_IDLE;
+                    end
                 end
 
                 default: wr_state <= WR_IDLE;
@@ -252,10 +257,10 @@ module systolic_gemm_axi_lite #(
 
     // Combinational readout address to matrix_buffer_c
     always_comb begin
-        if (s_axi_araddr >= 12'h400 && s_axi_araddr < 12'h500)
-            core_rd_c_addr = (s_axi_araddr - 12'h400) >> 2;
+        if (s_axi_araddr >= 12'h600 && s_axi_araddr < 12'h700)
+            core_rd_c_addr = (s_axi_araddr - 12'h600) >> 2;
         else
-            core_rd_c_addr = (s_axi_araddr - 12'h300) >> 2;
+            core_rd_c_addr = (s_axi_araddr - 12'h500) >> 2;
     end
 
     // AXI Read State Machine
@@ -287,9 +292,9 @@ module systolic_gemm_axi_lite #(
                         s_axi_rdata <= perf_cycles_reg; // Hardware cycle counter
                     end else if (s_axi_araddr == 12'h010) begin
                         s_axi_rdata <= IP_VERSION_REG;  // Hardware IP Version ID
-                    end else if (s_axi_araddr >= 12'h300 && s_axi_araddr < 12'h400) begin
+                    end else if (s_axi_araddr >= 12'h500 && s_axi_araddr < 12'h600) begin
                         s_axi_rdata <= {24'd0, core_rd_c_data};
-                    end else if (s_axi_araddr >= 12'h400 && s_axi_araddr < 12'h500) begin
+                    end else if (s_axi_araddr >= 12'h600 && s_axi_araddr < 12'h700) begin
                         s_axi_rdata <= core_rd_c_acc;
                     end else begin
                         s_axi_rdata <= 32'd0;
@@ -299,7 +304,9 @@ module systolic_gemm_axi_lite #(
                 end
             end else begin
                 s_axi_arready <= 1'b0;
-                s_axi_rvalid  <= 1'b0;
+                if (s_axi_rready) begin
+                    s_axi_rvalid  <= 1'b0;
+                end
             end
         end
     end

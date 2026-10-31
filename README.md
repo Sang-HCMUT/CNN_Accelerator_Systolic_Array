@@ -126,10 +126,10 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 | :--- | :--- | :--- |
 | `0x0000_0000 - 0x0000_7FFF` | **AXI On-Chip BRAM (32 KB)** | Firmware Instructions & Static Data (`firmware.hex`) |
 | `0x1000_0000 - 0x1000_00FF` | **Systolic Accelerator Control** | Control, Status, Dimensions, Hardware Profiling |
-| `0x1000_0100 - 0x1000_01FF` | **Matrix A Buffer (Weights)** | Memory-Mapped Input Weights (Word-aligned, INT8) |
-| `0x1000_0200 - 0x1000_02FF` | **Matrix B Buffer (Activations)** | Memory-Mapped Input Activations (Word-aligned, INT8) |
-| `0x1000_0300 - 0x1000_03FF` | **Matrix C Buffer (Quantized Out)** | Post-ReLU Quantized Activations (Word-aligned, INT8) |
-| `0x1000_0400 - 0x1000_04FF` | **Matrix C Accumulator (Raw Out)** | Raw 32-bit Accumulator Output (Word-aligned, INT32) |
+| `0x1000_0100 - 0x1000_02FF` | **Matrix A Buffer (Weights)** | Memory-Mapped Input Weights (128 words, $8 \times 16$ INT8) |
+| `0x1000_0300 - 0x1000_04FF` | **Matrix B Buffer (Activations)** | Memory-Mapped Input Activations (128 words, $16 \times 8$ INT8) |
+| `0x1000_0500 - 0x1000_05FF` | **Matrix C Buffer (Quantized Out)** | Post-ReLU Quantized Activations (64 words, $8 \times 8$ INT8) |
+| `0x1000_0600 - 0x1000_06FF` | **Matrix C Accumulator (Raw Out)** | Raw 32-bit Accumulator Output (64 words, $8 \times 8$ INT32) |
 | `0x2000_0000 - 0x2000_000F` | **UART & Board I/O** | TX/RX FIFOs, Status, 7-Segment displays, LEDs |
 
 ### Accelerator MMIO Register Map (`ACCEL_BASE = 0x1000_0000`)
@@ -152,15 +152,15 @@ The design is synthesized, fully placed-and-routed, and timing-closed across thr
 | :--- | :---: | :---: | :---: |
 | **FPGA Family / Device** | **Cyclone II EP2C20F484C7** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** |
 | **Technology Node** | 90 nm TSMC | 90 nm TSMC | 28 nm TSMC Low-Power |
-| **Array Architecture** | $4 \times 4$ (16 PEs) | **$8 \times 8$ (64 PEs)** | $4 \times 4$ (16 PEs default) / $8 \times 8$ |
-| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | 6,944 / 33,216 LEs (20.9%) [4×4] | 2,605 / 41,910 ALMs (6.2%) [4×4] |
-| **Dedicated Logic Registers** | 3,365 registers | 3,529 registers [4×4] | 3,253 registers [4×4] |
-| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | 16 / 70 9-bit (22.9%) [4×4] | 16 / 112 Variable DSPs (14.3%) [4×4] |
-| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | 264,192 / 483,840 (54.6%) [4×4] | 264,832 / 5,662,720 (4.7%) |
-| **Target Clock Frequency** | 50.00 MHz (20.0 ns) | 50.00 MHz (20.0 ns) | 50.00 MHz (20.0 ns) |
-| **Setup Slack (Slow Model)** | **+4.144 ns** | **+5.661 ns** | **+6.176 ns** |
+| **Array Architecture** | $4 \times 4$ (16 PEs legacy) | **$8 \times 8$ (64 PEs Primary)** | $4 \times 4$ / $8 \times 8$ |
+| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | **17,230 / 33,216 LEs (51.9%)** | 2,605 / 41,910 ALMs (6.2%) |
+| **Dedicated Logic Registers** | 3,365 registers | **9,038 registers (27.2%)** | 3,253 registers |
+| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | **64 / 70 9-bit (91.4%)** | 16 / 112 Variable DSPs (14.3%) |
+| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | **264,192 / 483,840 (54.6%, 32 KB)** | 264,832 / 5,662,720 (4.7%) |
+| **Target Clock Frequency** | 50.00 MHz (20.0 ns) | **50.00 MHz (20.0 ns)** | 50.00 MHz (20.0 ns) |
+| **Setup Slack (Slow Model)** | **+4.144 ns** | **+4.588 ns** | **+6.176 ns** |
 | **Hold Slack (Slow Model)** | **+0.445 ns** | **+0.391 ns** | **+0.230 ns** |
-| **Max Frequency ($F_{max}$)** | **63.07 MHz** | **66.04 MHz** | **72.31 MHz** |
+| **Max Frequency ($F_{max}$)** | **63.07 MHz** | **64.88 MHz** | **72.31 MHz** |
 | **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** |
 | **Peak Throughput (@ 50MHz)** | **1.60 GOPS** | **6.40 GOPS ($4.0\times$)** | **6.40 GOPS ($4.0\times$)** |
 | **Programming Bitstream** | `synthesis_soc/soc_top.sof` | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` |
@@ -193,30 +193,30 @@ Available Scenarios:
 ### Scenario Breakdown
 
 1. **Demo 1: Hardware vs Software GEMM Benchmark**:
-   - Calculates $C = \text{ReLU}((A \times B) \gg 7)$ on $4 \times 4$ matrices ($K=4$).
-   - Demonstrates a **15.2x acceleration speedup** of Systolic Hardware Core over the software CPU computation.
+   - Calculates $C = \text{ReLU}((A \times B) \gg 7)$ on $8 \times 8$ matrices ($K=8$, 64 PEs).
+   - Demonstrates a **38.5x acceleration speedup** of Systolic Hardware Core over the software CPU computation (HW: 14,036 cycles vs SW: 540,862 cycles, 0 errors across 64 elements).
 2. **Demo 2: 16x16 Large Matrix Tiling Engine**:
-   - Hardware-aware 2D tiling partitioning a $16 \times 16$ GEMM into 16 sub-matrix tiles ($K=16$).
-   - Demonstrates a **16.1x speedup** (Hardware: 180,893 cycles vs. Software CPU: 2,924,592 cycles).
+   - Hardware-aware 2D tiling partitioning a $16 \times 16$ GEMM into 4 sub-matrix tiles ($8 \times 8$, $K=16$).
+   - Demonstrates a **26.0x speedup** (Hardware: 65,302 cycles vs Software CPU: 1,697,716 cycles, 0 errors across 256 elements).
 3. **Demo 3: Real MNIST Conv1 Layer via im2col**:
-   - Convolves real MNIST $28 \times 28$ image data with 16 trained $3 \times 3$ filters across 16 spatial patches.
-   - Verifies **256 activations** against PyTorch golden references with **0 bit mismatches** (Acc Checksum = 26,450, Out Checksum = 3,865).
+   - Convolves real MNIST $28 \times 28$ image data with 16 trained $3 \times 3$ filters ($K=9$) across 16 spatial patches (4 tiles of $8 \times 8$).
+   - Verifies **256 activations** against PyTorch golden references with **100% bit-true match (0 bit mismatches)**.
 4. **Demo 4: 2-Layer MLP Forward Inference**:
-   - Architecture: Input [16] $\to$ FC1 ($16 \times 16$) + ReLU $\to$ FC2 ($16 \times 4$) $\to$ Class Logits [4].
-   - Correctly identifies Class 0 as winner with total inference latency of 125,833 cycles (~2.51 ms @ 50MHz).
-5. **Demo 5: Arithmetic Diagnostics & Corner-Case Suite**:
-   - 5/5 robustness tests passed:
-     * `[5A]` Positive Saturation Clamping (+127)
-     * `[5B]` $(-128) \times (-128) = +16384$ Arithmetic Precision
-     * `[5C]` ReLU Negative Clamping to Zero ($-10000 \to 0$)
-     * `[5D]` ReLU Bypass Mode Signed Retention ($-40 \to -40$)
-     * `[5E]` Multi-Scale Shift Sweep (shifts 4, 6, 8)
+   - Architecture: Input [8] $\to$ FC1 ($8 \times 8$) + ReLU $\to$ FC2 ($8 \times 8$) $\to$ Class Logits [8].
+   - Correctly identifies Class 6 as winner with total inference latency of 46,743 cycles (~0.93 ms @ 50MHz).
+5. **Demo 5: Arithmetic Diagnostics & Guardband Suite (6/6 Passed)**:
+   - `[5A]` Positive Saturation Clamping (+127)
+   - `[5B]` $(-128) \times (-128) = +16384$ Arithmetic Precision
+   - `[5C]` ReLU Negative Clamping to Zero ($-10000 \to 0$)
+   - `[5D]` ReLU Bypass Mode Signed Retention ($-40 \to -40$)
+   - `[5E]` Multi-Scale Shift Sweep (shifts 4, 6, 8)
+   - `[5F]` Hardware Guardband Rejection of Out-of-Range $K$ ($K=0, 17$ asserting `STATUS_ERROR` bit 2 over AXI bus)
 6. **Demo 6: MNIST Digit Telemetry (Digit '7')**:
-   - ASCII visualizer of receptive field, streaming 12 systolic tiles ($K=16$).
-   - Output: Class 7 logit = **9,793 (Winner)** with 69% confidence score, display on `HEX0 = '7'`.
+   - Evaluates 8 classes in parallel across 8 systolic rows, 8 tiles total.
+   - Output: Predicted Digit **'7'** with 69% confidence score, display on `HEX0 = '7'`.
 7. **Demo 7: Hardware Peripherals & MMIO Profiler Diagnostics**:
-   - Inspects `REG_ACCEL_STATUS`, `REG_ACCEL_CYCLES`, and `REG_ACCEL_VERSION`.
-   - Triggers automated visual animations across 7-Segment Displays (`HEX0-HEX7`) and LEDs.
+   - Inspects `REG_ACCEL_STATUS`, `REG_ACCEL_CYCLES`, and `REG_ACCEL_VERSION` (`0x01080820`: v1.0, 8x8, INT8, INT32).
+   - Automated visual animations across 7-Segment Displays (`HEX0-HEX7`) and LEDs.
 
 ---
 

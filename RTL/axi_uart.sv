@@ -327,8 +327,10 @@ module axi_uart #(
                 WR_RESP: begin
                     s_axi_awready <= 1'b0;
                     s_axi_wready  <= 1'b0;
-                    s_axi_bvalid  <= 1'b0;
-                    wr_state      <= WR_IDLE;
+                    if (s_axi_bready) begin
+                        s_axi_bvalid  <= 1'b0;
+                        wr_state      <= WR_IDLE;
+                    end
                 end
 
                 default: wr_state <= WR_IDLE;
@@ -380,7 +382,9 @@ module axi_uart #(
                 end
             end else begin
                 s_axi_arready <= 1'b0;
-                s_axi_rvalid  <= 1'b0;
+                if (s_axi_rready) begin
+                    s_axi_rvalid  <= 1'b0;
+                end
             end
         end
     end

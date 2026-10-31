@@ -6,7 +6,7 @@
 // Generates cycle-accurate control signals for buffers, skew unit, systolic core, and quantizer.
 
 module gemm_controller #(
-    parameter ARRAY_SIZE = 4,
+    parameter ARRAY_SIZE = 8,
     parameter MAX_K      = 16
 )(
     input  logic                                          clk,

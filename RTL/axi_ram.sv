@@ -76,7 +76,26 @@ module axi_ram #(
         ram_rdata <= mem[rd_word_idx];
     end
 
-    assign s_axi_rdata = ram_rdata;
+    logic [31:0] rdata_hold;
+    logic        rdata_latched;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rdata_hold    <= '0;
+            rdata_latched <= 1'b0;
+        end else begin
+            if (s_axi_rvalid && !s_axi_rready) begin
+                if (!rdata_latched) begin
+                    rdata_hold    <= ram_rdata;
+                    rdata_latched <= 1'b1;
+                end
+            end else if (s_axi_rready) begin
+                rdata_latched <= 1'b0;
+            end
+        end
+    end
+
+    assign s_axi_rdata = rdata_latched ? rdata_hold : ram_rdata;
 
     // Internal handshakes & FSM
     typedef enum logic [1:0] {
@@ -172,8 +191,10 @@ module axi_ram #(
                 WR_RESP: begin
                     s_axi_awready <= 1'b0;
                     s_axi_wready  <= 1'b0;
-                    s_axi_bvalid  <= 1'b0;
-                    wr_state      <= WR_IDLE;
+                    if (s_axi_bready) begin
+                        s_axi_bvalid  <= 1'b0;
+                        wr_state      <= WR_IDLE;
+                    end
                 end
 
                 default: wr_state <= WR_IDLE;
@@ -200,7 +221,9 @@ module axi_ram #(
                 end
             end else begin
                 s_axi_arready <= 1'b0;
-                s_axi_rvalid  <= 1'b0;
+                if (s_axi_rready) begin
+                    s_axi_rvalid  <= 1'b0;
+                end
             end
         end
     end

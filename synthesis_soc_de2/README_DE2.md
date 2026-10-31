@@ -11,13 +11,13 @@ This directory contains the Quartus II 13.0 SP1 project configuration, timing co
 | **FPGA Board** | Terasic DE2 Development & Education Board |
 | **Target Device** | Altera Cyclone II **EP2C35F672C6** |
 | **Systolic Array Size** | **$8 \times 8$ (64 Processing Elements)** |
-| **Logic Elements (LEs)**| **16,356 / 33,216 (49.2%)** |
-| **Registers** | **8,961 / 33,216 (27.0%)** |
-| **M4K RAM Blocks** | 105 (483,840 RAM bits) — **265,216 bits used (54.8%)** |
+| **Logic Elements (LEs)**| **17,230 / 33,216 (51.9%)** |
+| **Registers** | **9,038 / 33,216 (27.2%)** |
+| **M4K RAM Blocks** | 105 (483,840 RAM bits) — **264,192 bits used (54.6%, 32 KB BRAM)** |
 | **Embedded Multipliers**| 35 (up to 70 9x9 multipliers) — **64 / 70 used (91.4%)** |
 | **Primary Clock** | 50.000 MHz Oscillator (`PIN_N2`, `CLOCK_50`) |
-| **Worst-Case Slack (@ 50MHz)**| **+3.395 ns** (Setup), **+0.391 ns** (Hold) |
-| **Maximum Frequency ($F_{max}$)**| **60.22 MHz** ($T_{clk} = 16.605 \text{ ns}$) |
+| **Worst-Case Slack (@ 50MHz)**| **+4.588 ns** (Setup), **+0.391 ns** (Hold) |
+| **Maximum Frequency ($F_{max}$)**| **64.88 MHz** ($T_{clk} = 15.412 \text{ ns}$) |
 | **Peak Throughput (@ 50MHz)**| **6.40 GOPS** (3.20 GMAC/s) |
 | **Reset Input** | Pushbutton `KEY[0]` (`PIN_G26`, Active-Low) |
 | **UART Interface** | Onboard RS-232 DB9 Connector (MAX232 transceiver) |

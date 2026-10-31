@@ -18,18 +18,18 @@
 #define REG_ACCEL_CYCLES   (*(volatile uint32_t*)(ACCEL_BASE + 0x00C))
 #define REG_ACCEL_VERSION  (*(volatile uint32_t*)(ACCEL_BASE + 0x010))
 
-// Memory-Mapped Tile Buffers
-// Matrix A (Weights): 16 words (word-aligned, 0x100 to 0x13C)
-#define REG_ACCEL_A(idx)   (*(volatile uint32_t*)(ACCEL_BASE + 0x100 + ((idx) << 2)))
+// Memory-Mapped Tile Buffers (8x8 Systolic Architecture)
+// Matrix A (Weights): up to 128 words (8 rows x 16 cols, word-aligned, 0x100 to 0x2FC)
+#define REG_ACCEL_A(idx)     (*(volatile uint32_t*)(ACCEL_BASE + 0x100 + ((idx) << 2)))
 
-// Matrix B (Activations): 16 words (word-aligned, 0x200 to 0x23C)
-#define REG_ACCEL_B(idx)   (*(volatile uint32_t*)(ACCEL_BASE + 0x200 + ((idx) << 2)))
+// Matrix B (Activations): up to 128 words (16 rows x 8 cols, word-aligned, 0x300 to 0x4FC)
+#define REG_ACCEL_B(idx)     (*(volatile uint32_t*)(ACCEL_BASE + 0x300 + ((idx) << 2)))
 
-// Matrix C (INT8 Post-ReLU Activations): 16 words (word-aligned, 0x300 to 0x33C)
-#define REG_ACCEL_C(idx)   (*(volatile uint32_t*)(ACCEL_BASE + 0x300 + ((idx) << 2)))
+// Matrix C (INT8 Post-ReLU Activations): 64 words (8 rows x 8 cols, word-aligned, 0x500 to 0x5FC)
+#define REG_ACCEL_C(idx)     (*(volatile uint32_t*)(ACCEL_BASE + 0x500 + ((idx) << 2)))
 
-// Matrix C (INT32 Raw Accumulators): 16 words (word-aligned, 0x400 to 0x43C)
-#define REG_ACCEL_C_ACC(idx) (*(volatile uint32_t*)(ACCEL_BASE + 0x400 + ((idx) << 2)))
+// Matrix C (INT32 Raw Accumulators): 64 words (8 rows x 8 cols, word-aligned, 0x600 to 0x6FC)
+#define REG_ACCEL_C_ACC(idx) (*(volatile uint32_t*)(ACCEL_BASE + 0x600 + ((idx) << 2)))
 
 // Control Register Bit Masks
 #define CTRL_START         (1 << 0)
@@ -179,9 +179,15 @@ static __attribute__((noinline)) int run_accelerator_gemm(const int8_t *A, const
 
     REG_ACCEL_KDIM = (uint32_t)k_dim;
 
-    int total_elements = 4 * k_dim;
-    for (int i = 0; i < total_elements; i++) {
+    // Stream Matrix A: 8 rows x k_dim columns = 8 * k_dim elements
+    int total_a = 8 * k_dim;
+    for (int i = 0; i < total_a; i++) {
         REG_ACCEL_A(i) = (uint32_t)(uint8_t)A[i];
+    }
+
+    // Stream Matrix B: k_dim rows x 8 columns = k_dim * 8 elements
+    int total_b = k_dim * 8;
+    for (int i = 0; i < total_b; i++) {
         REG_ACCEL_B(i) = (uint32_t)(uint8_t)B[i];
     }
 
@@ -199,47 +205,47 @@ static __attribute__((noinline)) int run_accelerator_gemm(const int8_t *A, const
     return 0; // Success
 }
 
-// Read back quantized INT8 results (16 elements)
+// Read back quantized INT8 results (64 elements: 8x8)
 static __attribute__((noinline)) void read_accelerator_c_int8(int8_t *out_c) {
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 64; i++) {
         out_c[i] = (int8_t)(REG_ACCEL_C(i) & 0xFF);
     }
 }
 
-// Read back unquantized INT32 accumulators (16 elements)
+// Read back unquantized INT32 accumulators (64 elements: 8x8)
 static __attribute__((noinline)) void read_accelerator_c_int32(int32_t *out_acc) {
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 64; i++) {
         out_acc[i] = (int32_t)REG_ACCEL_C_ACC(i);
     }
 }
 
-// Pretty print 4x4 INT8 matrix
-static __attribute__((noinline)) void print_matrix_4x4(const int8_t *mat, const char *title) {
+// Pretty print 8x8 INT8 matrix
+static __attribute__((noinline)) void print_matrix_8x8(const int8_t *mat, const char *title) {
     if (title) {
         print_str(title);
         print_str(":\n");
     }
-    for (int r = 0; r < 4; r++) {
+    for (int r = 0; r < 8; r++) {
         print_str("  [");
-        for (int c = 0; c < 4; c++) {
-            print_signed((int)mat[r * 4 + c], 5);
-            if (c < 3) print_str(" ");
+        for (int c = 0; c < 8; c++) {
+            print_signed((int)mat[r * 8 + c], 5);
+            if (c < 7) print_str(" ");
         }
         print_str(" ]\n");
     }
 }
 
-// Pretty print 4x4 INT32 matrix
-static __attribute__((noinline)) void print_matrix_4x4_int32(const int32_t *mat, const char *title) {
+// Pretty print 8x8 INT32 matrix
+static __attribute__((noinline)) void print_matrix_8x8_int32(const int32_t *mat, const char *title) {
     if (title) {
         print_str(title);
         print_str(":\n");
     }
-    for (int r = 0; r < 4; r++) {
+    for (int r = 0; r < 8; r++) {
         print_str("  [");
-        for (int c = 0; c < 4; c++) {
-            print_signed((int)mat[r * 4 + c], 7);
-            if (c < 3) print_str(" ");
+        for (int c = 0; c < 8; c++) {
+            print_signed((int)mat[r * 8 + c], 7);
+            if (c < 7) print_str(" ");
         }
         print_str(" ]\n");
     }
