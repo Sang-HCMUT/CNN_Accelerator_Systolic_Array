@@ -134,6 +134,12 @@ static inline uint32_t get_instrs(void) {
     return ins;
 }
 
+// Pure Hardware Accelerator Execution Cycle Counter (MMIO REG_ACCEL_CYCLES at offset 0x00C)
+// Measures exact hardware clock cycles spent inside the systolic array from core_start to core_done
+static inline uint32_t get_accelerator_hw_cycles(void) {
+    return REG_ACCEL_CYCLES;
+}
+
 // Formatted signed integer printing with right alignment
 static __attribute__((noinline)) void print_signed(int val, int width) {
     char buf[12];

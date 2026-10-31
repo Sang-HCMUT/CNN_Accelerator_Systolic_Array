@@ -1,8 +1,10 @@
-# DE10-Standard Synthesis Project — 4×4 / 8×8 Parameterized Systolic Array SoC
+# DE10-Standard Synthesis Project — 8×8 Systolic Array SoC (Scale-Up)
 
 ## Mục Đích
-Project này là bản **mở rộng quy mô (Scale-up)** từ DE1 (Cyclone II, 4×4) lên DE10-Standard (Cyclone V, 8×8).
-Sử dụng **cùng một RTL source**, chỉ thay tham số `ARRAY_SIZE = 8` và chip đích.
+Project này là bản **mở rộng quy mô (Scale-Up)** chuẩn hóa kiến trúc **$8 \times 8$ Systolic Array (64 PEs, 64 DSP Blocks)** lên bo mạch hiện đại **Terasic DE10-Standard** (Intel Cyclone V `5CSXFC6D6F31C6N`).
+Sử dụng **cùng kiến trúc RTL và firmware $8 \times 8$ đồng bộ** như bo mạch chính Terasic DE2, chỉ cấu hình lại pinout và chip đích Cyclone V.
+
+*(Lưu ý: Nền tảng cũ DE1 đã được lưu trữ/deprecated tại `synthesis_soc/` do chip EP2C20 chỉ có 52 multiplier, không đủ tài nguyên phần cứng cho mảng 8×8).*
 
 ---
 
@@ -78,7 +80,7 @@ rem 3. Kết quả: soc_top_de10.sof (bitstream nạp vào DE10-Standard)
 | **Logic ALMs** | **6,308** | 41,910 | **15.1%** |
 | **Dedicated Logic Registers** | **7,062** | -- | -- |
 | **DSP Blocks** | **64** | 112 | **57.1%** |
-| **Block RAM (M10K)** | **264,832 bits** (32 KB BRAM) | 5,662,720 bits | **4.7%** |
+| **Block RAM (M10K)** | **266,752 bits** (32.5 KB BRAM) | 5,662,720 bits | **4.7%** |
 | **Clock Danh Định** | **50.00 MHz** (20.0 ns) | -- | CLOCK_50[0] |
 | **Worst-Case Setup Slack** | **+3.932 ns** | -- | Timing Closure Met |
 | **Worst-Case Hold Slack** | **+0.206 ns** | -- | TNS = 0.000 ns |

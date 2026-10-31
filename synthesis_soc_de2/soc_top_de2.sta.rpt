@@ -1,5 +1,5 @@
 TimeQuest Timing Analyzer report for soc_top_de2
-Sat Oct 31 17:15:23 2026
+Sat Oct 31 22:28:19 2026
 Quartus II 64-Bit Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
 
 
@@ -94,7 +94,7 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +-----------------+--------+--------------------------+
 ; SDC File Path   ; Status ; Read at                  ;
 +-----------------+--------+--------------------------+
-; soc_top_de2.sdc ; OK     ; Sat Oct 31 17:15:19 2026 ;
+; soc_top_de2.sdc ; OK     ; Sat Oct 31 22:28:16 2026 ;
 +-----------------+--------+--------------------------+
 
 
@@ -1396,7 +1396,7 @@ Info: Running Quartus II 64-Bit TimeQuest Timing Analyzer
     Info: programming logic devices manufactured by Altera and sold by 
     Info: Altera or its authorized distributors.  Please refer to the 
     Info: applicable agreement for further details.
-    Info: Processing started: Sat Oct 31 17:15:17 2026
+    Info: Processing started: Sat Oct 31 22:28:13 2026
 Info: Command: quartus_sta soc_top_de2
 Info: qsta_default_script.tcl version: #1
 Warning (20028): Parallel compilation is not licensed and has been disabled
@@ -1452,9 +1452,9 @@ Info (332001): The selected device family is not supported by the report_metasta
 Info (332101): Design is fully constrained for setup requirements
 Info (332101): Design is fully constrained for hold requirements
 Info: Quartus II 64-Bit TimeQuest Timing Analyzer was successful. 0 errors, 2 warnings
-    Info: Peak virtual memory: 4797 megabytes
-    Info: Processing ended: Sat Oct 31 17:15:23 2026
+    Info: Peak virtual memory: 4792 megabytes
+    Info: Processing ended: Sat Oct 31 22:28:19 2026
     Info: Elapsed time: 00:00:06
-    Info: Total CPU time (on all processors): 00:00:06
+    Info: Total CPU time (on all processors): 00:00:05
 
 

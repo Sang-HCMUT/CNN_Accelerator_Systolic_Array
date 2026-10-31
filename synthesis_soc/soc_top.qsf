@@ -1,3 +1,10 @@
+# ==============================================================================
+# [ARCHIVED / DEPRECATED] Terasic DE1 Synthesis Project (Legacy 4x4 Only)
+# NOTE: The project has standardized on 8x8 Systolic Architecture.
+#       DE1 (EP2C20) only has 52 embedded multipliers, insufficient for 8x8 (64 DSPs).
+#       USE synthesis_soc_de2/ (Primary) or synthesis_soc_de10/ (Scale-Up) instead.
+# ==============================================================================
+
 set_global_assignment -name FAMILY "Cyclone II"
 set_global_assignment -name DEVICE EP2C20F484C7
 set_global_assignment -name TOP_LEVEL_ENTITY soc_top

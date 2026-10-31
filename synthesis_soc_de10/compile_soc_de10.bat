@@ -77,8 +77,7 @@ echo ====================================================================
 echo.
 echo   To program DE10-Standard:
 echo     1. Open Quartus Programmer
-echo     2. Hardware Setup -> USB-Blaster
+echo     2. Hardware Setup -^> USB-Blaster
 echo     3. Add device: %PROJECT%.sof
 echo     4. Program!
 echo.
-pause

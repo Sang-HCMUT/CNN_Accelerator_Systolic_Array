@@ -37,7 +37,7 @@ static int8_t img_buf[784];
 
 // Forward declarations
 static __attribute__((noinline)) void extract_features(const int8_t *img784, int8_t *feats64);
-static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats64, int32_t *scores, int *out_conf);
+static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats64, int32_t *scores, int *out_conf, uint32_t *out_pure_hw);
 static __attribute__((noinline)) int run_mnist_onchip_inference(const int8_t *img784, int32_t *scores, int *out_conf);
 
 // Demo 1: Hardware vs Software 8x8 GEMM Benchmark & Speedup Analysis
@@ -73,6 +73,7 @@ static __attribute__((noinline)) void demo_gemm_benchmark(void) {
     t0 = get_cycles();
     i0 = get_instrs();
     int gemm_status = run_accelerator_gemm(test_tile_a, test_tile_b, 8, 7, 0);
+    uint32_t cyc_pure_hw = get_accelerator_hw_cycles();
     read_accelerator_c_int8(c_hw);
     uint32_t cyc_hw = get_cycles() - t0;
     uint32_t ins_hw = get_instrs() - i0;
@@ -90,22 +91,46 @@ static __attribute__((noinline)) void demo_gemm_benchmark(void) {
     print_matrix_8x8(c_hw, "Hardware Output Matrix C (INT8 Post-ReLU: 8x8)");
     print_matrix_8x8_int32(c_acc, "Raw Unquantized Accumulators (INT32: 8x8)");
 
-    print_str("\nPerformance Telemetry (DE2 50 MHz):\n");
-    print_str("  CPU Software GEMM : "); print_dec((int)cyc_sw); print_str(" cycles (");
-    print_dec((int)ins_sw); print_str(" instrs)\n");
-    print_str("  Systolic Array HW : "); print_dec((int)cyc_hw); print_str(" cycles (");
-    print_dec((int)ins_hw); print_str(" instrs)\n");
-
-    if (cyc_hw > 0) {
-        int speedup_x10 = (cyc_sw * 10) / cyc_hw;
-        print_str("  Hardware Speedup  : ");
-        print_dec(speedup_x10 / 10);
-        print_str(".");
-        print_dec(speedup_x10 % 10);
-        print_str("x faster\n");
+    print_str("\n====================================================================\n");
+    print_str("Performance Telemetry & Roofline Analysis (@ 50 MHz):\n");
+    print_str("====================================================================\n");
+    print_str("[1] Pure Compute-Only Telemetry (Systolic Math Core vs CPU Math Loop):\n");
+    print_str("  Workload Size         : 8x8 x 8x8 (K=8) -> 512 MACs (1,024 Operations)\n");
+    print_str("  CPU Software Math     : "); print_dec((int)cyc_sw); print_str(" cycles (");
+    print_dec((int)ins_sw); print_str(" instrs, ");
+    print_dec((int)(cyc_sw / 50)); print_str(" us)\n");
+    print_str("  Systolic Array Core   : "); print_dec((int)cyc_pure_hw); print_str(" cycles (");
+    print_dec((int)(cyc_pure_hw * 20)); print_str(" ns, via REG_ACCEL_CYCLES)\n");
+    if (cyc_pure_hw > 0) {
+        int speedup_pure = (int)(cyc_sw / cyc_pure_hw);
+        print_str("  Pure Compute Speedup  : "); print_dec(speedup_pure); print_str("x faster than CPU math loop\n");
+        int mops_pure = (1024 * 50) / (int)cyc_pure_hw;
+        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS (Peak 8x8 Array: 6,400 MOPS)\n");
     }
 
-    print_str("  Bit-True Parity   : ");
+    print_str("\n[2] End-to-End System Telemetry (Full SoC: MMIO Load + Compute + Readout):\n");
+    print_str("  Total End-to-End Time : "); print_dec((int)cyc_hw); print_str(" cycles (");
+    print_dec((int)ins_hw); print_str(" instrs, ");
+    print_dec((int)(cyc_hw / 50)); print_str(" us)\n");
+    if (cyc_hw > 0) {
+        int speedup_e2e_x10 = (int)((cyc_sw * 10) / cyc_hw);
+        print_str("  End-to-End Speedup    : ");
+        print_dec(speedup_e2e_x10 / 10); print_str("."); print_dec(speedup_e2e_x10 % 10);
+        print_str("x faster\n");
+        int mops_e2e = (1024 * 50) / (int)cyc_hw;
+        print_str("  End-to-End Throughput : "); print_dec(mops_e2e); print_str(" MOPS\n");
+    }
+
+    uint32_t comm_overhead = (cyc_hw > cyc_pure_hw) ? (cyc_hw - cyc_pure_hw) : 0;
+    int comm_pct = cyc_hw > 0 ? (int)((comm_overhead * 100) / cyc_hw) : 0;
+    print_str("\n[3] Memory & Bus Overhead Decomposition:\n");
+    print_str("  MMIO Transfer Overhead: "); print_dec((int)comm_overhead); print_str(" cycles (");
+    print_dec(comm_pct); print_str("% time spent on AXI-Lite MMIO)\n");
+    print_str("  Pure Compute Portion  : "); print_dec((int)cyc_pure_hw); print_str(" cycles (");
+    print_dec(100 - comm_pct); print_str("% time in hardware PE array)\n");
+    print_str("====================================================================\n");
+
+    print_str("  Bit-True Parity       : ");
     if (errors == 0) {
         print_str("VERIFIED MATCH (0 errors across 64 elements)\n");
         set_board_hex(0, 1);
@@ -144,6 +169,7 @@ static __attribute__((noinline)) void demo_large_matrix_tiling(void) {
 
     // Measure hardware tiling execution: 2x2 = 4 tiles of 8x8
     uint32_t t0 = get_cycles();
+    uint32_t total_pure_hw_cycles = 0;
 
     for (int ti = 0; ti < 2; ti++) {
         for (int tj = 0; tj < 2; tj++) {
@@ -167,6 +193,7 @@ static __attribute__((noinline)) void demo_large_matrix_tiling(void) {
             if (run_accelerator_gemm(tile_a, tile_b, 16, 8, 0) != 0) {
                 print_str("[ERROR] Tile GEMM execution failed!\n");
             }
+            total_pure_hw_cycles += get_accelerator_hw_cycles();
             read_accelerator_c_int8(tile_c);
 
             if (ti == 0 && tj == 0) {
@@ -203,21 +230,38 @@ static __attribute__((noinline)) void demo_large_matrix_tiling(void) {
         if (tile0_sw[i] != tile0_hw[i]) tile0_errors++;
     }
 
-    print_str("Tiling Statistics (8x8 Accelerator Mesh):\n");
+    print_str("Tiling Telemetry & Roofline Analysis (4 Tiles of 8x8, K=16):\n");
     print_str("  Total Tiles Processed : 4 tiles (8x8 submatrices, K=16)\n");
-    print_str("  Hardware GEMM Time    : "); print_dec((int)cyc_hw); print_str(" cycles (");
+    print_str("  Total Workload        : 4,096 INT8 MACs (8,192 Operations)\n");
+    print_str("  Pure HW Compute Time  : "); print_dec((int)total_pure_hw_cycles); print_str(" cycles (");
+    print_dec((int)(total_pure_hw_cycles * 20 / 1000)); print_str(" us @ 50MHz, sum of 4 tiles)\n");
+    if (total_pure_hw_cycles > 0) {
+        int speedup_pure = (int)(cyc_sw / total_pure_hw_cycles);
+        print_str("  Pure Compute Speedup  : "); print_dec(speedup_pure); print_str("x faster than CPU math loop\n");
+        int mops_pure = (8192 * 50) / (int)total_pure_hw_cycles;
+        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS (");
+        print_dec(mops_pure / 1000); print_str("."); print_dec((mops_pure % 1000) / 100); print_str(" GOPS)\n");
+    }
+    print_str("  Total End-to-End Time : "); print_dec((int)cyc_hw); print_str(" cycles (");
     print_dec((int)(cyc_hw / 50)); print_str(" us @ 50MHz)\n");
     print_str("  Software CPU GEMM Time: "); print_dec((int)cyc_sw); print_str(" cycles (");
     print_dec((int)(cyc_sw / 50)); print_str(" us @ 50MHz)\n");
 
     if (cyc_hw > 0) {
         int speedup_x10 = (cyc_sw * 10) / cyc_hw;
-        print_str("  Tiling Speedup Factor : ");
+        print_str("  End-to-End Speedup    : ");
         print_dec(speedup_x10 / 10);
         print_str(".");
         print_dec(speedup_x10 % 10);
-        print_str("x\n");
+        print_str("x faster\n");
+        int mops_e2e = (8192 * 50) / (int)cyc_hw;
+        print_str("  End-to-End Throughput : "); print_dec(mops_e2e); print_str(" MOPS\n");
     }
+
+    uint32_t comm_overhead = (cyc_hw > total_pure_hw_cycles) ? (cyc_hw - total_pure_hw_cycles) : 0;
+    int comm_pct = cyc_hw > 0 ? (int)((comm_overhead * 100) / cyc_hw) : 0;
+    print_str("  MMIO Comm Overhead    : "); print_dec((int)comm_overhead); print_str(" cycles (");
+    print_dec(comm_pct); print_str("% bus overhead)\n");
 
     print_str("  Accumulated Checksum  : "); print_dec((int)checksum_hw); print_str("\n");
     print_str("  Tile 0 Verification   : ");
@@ -266,6 +310,7 @@ static __attribute__((noinline)) void demo_conv2d_im2col(void) {
     int32_t total_acc_sum = 0;
 
     uint32_t t_hw_start = get_cycles();
+    uint32_t conv_pure_hw_cycles = 0;
     for (int fb = 0; fb < 2; fb++) {
         int f_base = fb * 8;
         for (int pb = 0; pb < 2; pb++) {
@@ -291,6 +336,7 @@ static __attribute__((noinline)) void demo_conv2d_im2col(void) {
             if (run_accelerator_gemm(tile_w, tile_p, 9, 8, 1) != 0) {
                 print_str("[ERROR] Conv1 tile execution failed!\n");
             }
+            conv_pure_hw_cycles += get_accelerator_hw_cycles();
             read_accelerator_c_int32(c_tile_acc);
 
             // Add Conv1 bias and apply ReLU + right shift
@@ -314,12 +360,22 @@ static __attribute__((noinline)) void demo_conv2d_im2col(void) {
     }
     uint32_t cyc_conv = get_cycles() - t_hw_start;
 
-    print_str("Conv1 Layer Verification:\n");
+    print_str("Conv1 Layer Verification & Telemetry:\n");
     print_str("  Total Outputs Verified: 256 / 256 Elements (16 Filters x 16 Patches)\n");
     print_str("  Total Errors Detected : "); print_dec(total_errors); print_str("\n");
     print_str("  Output Feature Checksum: "); print_dec((int)total_acc_sum); print_str("\n");
-    print_str("  Hardware Latency      : "); print_dec((int)cyc_conv); print_str(" cycles (");
-    print_dec((int)(cyc_conv / 50)); print_str(" us @ 50MHz)\n");
+    print_str("  Pure HW Compute Time  : "); print_dec((int)conv_pure_hw_cycles); print_str(" cycles (");
+    print_dec((int)(conv_pure_hw_cycles * 20 / 1000)); print_str(" us @ 50MHz, 4 tiles)\n");
+    if (conv_pure_hw_cycles > 0) {
+        int mops_pure = (4608 * 50) / (int)conv_pure_hw_cycles;
+        print_str("  Compute Throughput    : "); print_dec(mops_pure); print_str(" MOPS\n");
+    }
+    print_str("  End-to-End Latency    : "); print_dec((int)cyc_conv); print_str(" cycles (");
+    print_dec((int)(cyc_conv / 50)); print_str(" us @ 50MHz, im2col+MMIO+bias/ReLU)\n");
+    if (cyc_conv > 0) {
+        int mops_e2e = (4608 * 50) / (int)cyc_conv;
+        print_str("  End-to-End Throughput : "); print_dec(mops_e2e); print_str(" MOPS\n");
+    }
     print_str("  Bit-True PyTorch Match: ");
     if (total_errors == 0) {
         print_str("100% PASS (Zero mismatches against 97.06% CNN model)\n");
@@ -546,7 +602,7 @@ static __attribute__((noinline)) void extract_features(const int8_t *img784, int
 }
 
 // MNIST Inference Core using 8x8 Systolic Accelerator (8 Classes in Parallel)
-static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats64, int32_t *scores, int *out_conf) {
+static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats64, int32_t *scores, int *out_conf, uint32_t *out_pure_hw) {
     for (int i = 0; i < 10; i++) {
         scores[i] = 0;
     }
@@ -554,6 +610,7 @@ static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats
     int8_t tile_a[128]; // 8 x 16 (Weights)
     int8_t tile_b[128]; // 16 x 8 (Activations)
     int32_t c_acc[64];  // 8 x 8 (Accumulators)
+    uint32_t pure_hw = 0;
 
     // Two passes:
     // Pass 0: classes 0..7 (8 classes parallel on 8 systolic rows)
@@ -587,6 +644,7 @@ static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats
             if (run_accelerator_gemm(tile_a, tile_b, 16, 0, 1) != 0) {
                 print_str("[ERROR] MNIST inference GEMM rejected!\n");
             }
+            pure_hw += get_accelerator_hw_cycles();
             read_accelerator_c_int32(c_acc);
 
             // Accumulate class scores from row r, col 0
@@ -598,6 +656,8 @@ static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats
             }
         }
     }
+
+    if (out_pure_hw) *out_pure_hw = pure_hw;
 
     int best_class = 0;
     int32_t best_score = scores[0];
@@ -628,7 +688,7 @@ static __attribute__((noinline)) int run_mnist_systolic_core(const int8_t *feats
 static __attribute__((noinline)) int run_mnist_onchip_inference(const int8_t *img784, int32_t *scores, int *out_conf) {
     int8_t feats[64];
     extract_features(img784, feats);
-    return run_mnist_systolic_core(feats, scores, out_conf);
+    return run_mnist_systolic_core(feats, scores, out_conf, NULL);
 }
 
 // Demo 6: MNIST Digit Inference Telemetry (100% Real On-Chip Hardware Acceleration)
@@ -666,8 +726,9 @@ static __attribute__((noinline)) void demo_mnist_builtin(void) {
     print_str("Executing Hardware Inference across 8 Systolic Tiles...\n");
     int32_t scores[10];
     int conf = 0;
+    uint32_t pure_mnist_hw = 0;
     uint32_t t0 = get_cycles();
-    int pred = run_mnist_systolic_core(sample_digit7_feats, scores, &conf);
+    int pred = run_mnist_systolic_core(sample_digit7_feats, scores, &conf, &pure_mnist_hw);
     uint32_t cyc_mnist = get_cycles() - t0;
 
     print_str("Logits Computed by 8x8 Systolic Array PE Accumulators (INT32):\n");
@@ -684,6 +745,13 @@ static __attribute__((noinline)) void demo_mnist_builtin(void) {
     print_str("  Confidence Score  : "); print_dec(conf); print_str("%\n");
     print_str("  Inference Latency : "); print_dec((int)cyc_mnist); print_str(" cycles (");
     print_dec((int)(cyc_mnist / 50)); print_str(" us @ 50MHz)\n");
+    print_str("  Pure HW Compute   : "); print_dec((int)pure_mnist_hw); print_str(" cycles (");
+    print_dec((int)(pure_mnist_hw * 20 / 1000)); print_str(" us across 8 systolic tiles)\n");
+    if (cyc_mnist > 0) {
+        int pct_pure = (int)((pure_mnist_hw * 100) / cyc_mnist);
+        print_str("  Compute vs MMIO   : "); print_dec(pct_pure); print_str("% pure compute, ");
+        print_dec(100 - pct_pure); print_str("% feature extraction & MMIO\n");
+    }
     print_str("  Hardware State    : HEX0 = '"); print_dec(pred); print_str("', LEDs = 0x");
     print_hex((uint32_t)(1 << pred), 2); print_str("\n\n");
 
@@ -706,6 +774,8 @@ static __attribute__((noinline)) void demo_hardware_peripherals(void) {
     print_str("  Main BRAM Memory  : 32 KB On-Chip SRAM (8,192 words)\n\n");
 
     uint32_t accel_ver = REG_ACCEL_VERSION;
+    uint32_t accel_status = REG_ACCEL_STATUS;
+    uint32_t accel_cycles = REG_ACCEL_CYCLES;
     uint32_t uart_status = REG_UART_STATUS;
 
     print_str("Live Hardware Telemetry Probes:\n");
@@ -716,7 +786,17 @@ static __attribute__((noinline)) void demo_hardware_peripherals(void) {
     print_str(", In=INT"); print_dec((accel_ver >> 8) & 0xFF);
     print_str(", Acc=INT"); print_dec(accel_ver & 0xFF);
     print_str(")\n");
+    print_str("  REG_ACCEL_STATUS  : 0x"); print_hex(accel_status, 8);
+    print_str(" (DONE="); print_dec(accel_status & 1);
+    print_str(", BUSY="); print_dec((accel_status >> 1) & 1);
+    print_str(", ERROR="); print_dec((accel_status >> 2) & 1);
+    print_str(")\n");
+    print_str("  REG_ACCEL_CYCLES  : "); print_dec((int)accel_cycles);
+    print_str(" cycles (Last hardware GEMM execution duration)\n");
     print_str("  REG_UART_STATUS   : 0x"); print_hex(uart_status, 8);
+    print_str(" (TX Ready="); print_dec((uart_status & UART_STATUS_TX_READY) ? 1 : 0);
+    print_str(", RX Valid="); print_dec((uart_status & UART_STATUS_RX_VALID) ? 1 : 0);
+    print_str(")\n\n");
     print_str(" (TX Ready="); print_dec((uart_status & UART_STATUS_TX_READY) ? 1 : 0);
     print_str(", RX Valid="); print_dec((uart_status & UART_STATUS_RX_VALID) ? 1 : 0);
     print_str(")\n\n");

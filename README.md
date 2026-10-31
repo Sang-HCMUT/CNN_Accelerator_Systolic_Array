@@ -156,14 +156,14 @@ The design is synthesized, fully placed-and-routed, and timing-closed across two
 | **Logic Utilization** | **17,230 / 33,216 LEs (51.9%)** | **6,308 / 41,910 ALMs (15.1%)** | Legacy 4x4 (6,368 LEs) |
 | **Dedicated Logic Registers** | **9,038 registers (27.2%)** | **7,062 registers (16.9%)** | Legacy 4x4 (3,365 registers) |
 | **DSP / Embedded Multipliers** | **64 / 70 9-bit (91.4%)** | **64 / 112 Variable DSPs (57.1%)** | 16 / 52 9-bit (Cannot fit 8x8) |
-| **Total Memory Bits (BRAM)** | **264,192 / 483,840 (54.6%, 32 KB)** | **264,832 / 5,662,720 (4.7%, 32 KB)** | 134,144 bits (16 KB) |
+| **Total Memory Bits (BRAM)** | **264,192 / 483,840 (54.6%, 32 KB)** | **266,752 / 5,662,720 (4.7%, 32.5 KB)** | 134,144 bits (16 KB) |
 | **Target Clock Frequency** | **50.00 MHz (20.0 ns)** | **50.00 MHz (20.0 ns)** | 50.00 MHz (20.0 ns) |
 | **Setup Slack (Slow Model)** | **+4.588 ns** | **+3.932 ns** | +4.144 ns (4x4 legacy only) |
 | **Hold Slack (Slow Model)** | **+0.391 ns** | **+0.206 ns** | +0.445 ns |
 | **Max Frequency ($F_{max}$)** | **64.88 MHz** | **62.24 MHz** | 63.07 MHz |
 | **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | 0.000 ns |
 | **Peak Throughput (@ 50MHz)** | **6.40 GOPS** (3.20 GMAC/s) | **6.40 GOPS** (3.20 GMAC/s) | 1.60 GOPS (4x4 legacy) |
-| **Programming Bitstream** | `synthesis_soc/soc_top.sof` | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` |
+| **Programming Bitstream** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` | `synthesis_soc/soc_top.sof` *(Archived 4x4)* |
 
 ---
 
@@ -173,18 +173,18 @@ The firmware operates as an interactive real-time operating console over UART (1
 
 ```text
 ====================================================================
-RISC-V SoC & Systolic Array Accelerator Demonstration Suite
-Graduation Thesis Project - Dual Platform DE1 / DE2 / DE10
+  PicoRV32 RISC-V SoC & 8x8 Systolic Array AI Accelerator
+  Terasic DE2 Development Board (Altera Cyclone II EP2C35F672C6)
 ====================================================================
 
 Available Scenarios:
-  [1] Hardware vs Software GEMM Benchmark & Speedup Analysis
-  [2] 16x16 Large Matrix GEMM Tiling Engine (Multi-Tile K=16)
-  [3] Real MNIST Conv1 Layer via Systolic GEMM (im2col + Tiling)
+  [1] Hardware vs Software 8x8 GEMM Benchmark & Speedup Analysis
+  [2] 16x16 Large Matrix GEMM Tiling Engine (4 Tiles x 8x8, K=16)
+  [3] Real MNIST Conv1 Layer via Systolic GEMM (im2col + 8x8 Tiling)
   [4] 2-Layer Neural Network (MLP) Forward Inference (FC1 -> FC2)
-  [5] Arithmetic Edge-Case & Quantization Diagnostics Suite
-  [6] MNIST Digit Inference Telemetry (Built-in Sample)
-  [7] Hardware Peripherals & MMIO Register Diagnostics
+  [5] Arithmetic Edge-Case & Quantization Diagnostics Suite (8x8)
+  [6] MNIST Digit Inference Telemetry (Built-in Digit 7)
+  [7] Hardware Peripherals & MMIO Register Diagnostics (DE2 Board)
   [0-9] Direct Set HEX0 display
   [I] Receive Live MNIST Image Tensor (Host PC)
   [M] / [?] Show Menu
