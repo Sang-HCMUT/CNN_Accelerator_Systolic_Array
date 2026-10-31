@@ -1,0 +1,116 @@
+# do run_unit_sim.do 
+# ** Warning: (vlib-34) Library already exists at "work".
+# 
+# Modifying modelsim.ini
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module pe_gemm
+# 
+# Top level modules:
+# 	pe_gemm
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module systolic_skew_unit
+# 
+# Top level modules:
+# 	systolic_skew_unit
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module quantize_relu_unit
+# 
+# Top level modules:
+# 	quantize_relu_unit
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module matrix_buffer_a
+# 
+# Top level modules:
+# 	matrix_buffer_a
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module matrix_buffer_b
+# 
+# Top level modules:
+# 	matrix_buffer_b
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module matrix_buffer_c
+# 
+# Top level modules:
+# 	matrix_buffer_c
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module seven_seg_decoder
+# 
+# Top level modules:
+# 	seven_seg_decoder
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module tb_unit_modules
+# 
+# Top level modules:
+# 	tb_unit_modules
+# vsim -voptargs=\"+acc\" work.tb_unit_modules 
+# Loading sv_std.std
+# Loading work.tb_unit_modules
+# Loading work.pe_gemm
+# Loading work.systolic_skew_unit
+# Loading work.quantize_relu_unit
+# Loading work.matrix_buffer_a
+# Loading work.matrix_buffer_c
+# Loading work.seven_seg_decoder
+# delete wave not supported in batch mode
+# ================================================================================
+#   STARTING COMPREHENSIVE UNIT-LEVEL HARDWARE VERIFICATION SUITE
+#   Architecture: 8x8 INT8 Output-Stationary Systolic Neural Accelerator
+# ================================================================================
+# 
+# >>> [UNIT 1] Processing Element (pe_gemm.sv) Unit Tests...
+# [PASS] PE Clear Accumulator Check
+# [PASS] PE MAC: 5 * 10 = 50
+# [PASS] PE Systolic Pass-Through a_out/b_out
+# [PASS] PE MAC: 50 + (-4 * 7) = 22
+# [PASS] PE Extreme Positive MAC: 127 * 127
+# [PASS] PE Negative Asymmetry MAC: (-128) * (-128)
+# [PASS] PE Cross Sign Extreme MAC: (-128) * 127
+# [PASS] PE Enable Gating: Accumulator holds state when en=0
+# 
+# >>> [UNIT 2] Systolic Skew Unit (systolic_skew_unit.sv) Unit Tests...
+# [PASS] Skew Row 0 (0T delay) instant pass-through
+# [PASS] Skew Row 1 (1T delay) registered output
+# [PASS] Skew Row 2 (2T delay) wavefront verified
+# [PASS] Skew Row 3 (3T delay) wavefront verified
+# [PASS] Skew Row 4 (4T delay) wavefront verified
+# [PASS] Skew Row 5 (5T delay) wavefront verified
+# [PASS] Skew Row 6 (6T delay) wavefront verified
+# [PASS] Skew Row 7 (7T delay) wavefront verified
+# 
+# >>> [UNIT 3] Hardware Quantization & ReLU (quantize_relu_unit.sv) Unit Tests...
+# [PASS] Quantization Scale: 1280 >> 7 = 10
+# [PASS] ReLU Activation: Negative input clipped to 0
+# [PASS] Bypass ReLU: Signed negative value preserved (-10)
+# [PASS] Positive Saturation: 5000 clamped to +127
+# [PASS] Negative Saturation: -5000 clamped to -128
+# 
+# >>> [UNIT 4] On-Chip Matrix Storage Buffers Unit Tests...
+# [PASS] Buffer A Parallel Readout Row 0
+# [PASS] Buffer A Parallel Readout Row 1
+# [PASS] Buffer A Parallel Readout Row 2
+# [PASS] Buffer A Parallel Readout Row 3
+# [PASS] Buffer A Parallel Readout Row 4
+# [PASS] Buffer A Parallel Readout Row 5
+# [PASS] Buffer A Parallel Readout Row 6
+# [PASS] Buffer A Parallel Readout Row 7
+# [PASS] Buffer C INT8 Readout at addr 15
+# [PASS] Buffer C INT32 Accumulator Readout at addr 15
+# 
+# >>> [UNIT 5] Active-Low 7-Segment Display Decoder Unit Tests...
+# [PASS] Decoder Blanking (All Segments OFF)
+# [PASS] Decoder Digit 0 -> 7'b1000000 (0x40)
+# [PASS] Decoder Digit 7 -> 7'b1111000 (0x78)
+# [PASS] Decoder Digit 8 -> 7'b0000000 (0x00)
+# [PASS] Decoder Digit F -> 7'b0001110 (0x0E)
+# 
+# ================================================================================
+#   UNIT-LEVEL HARDWARE VERIFICATION SUMMARY REPORT
+# ================================================================================
+#   Total Unit Checks Executed : 36
+#   Passed Checks              : 36
+#   Failed Checks              : 0
+#   VERIFICATION RESULT        : >>> 100% PASSED (0 ERRORS) <<<
+# ================================================================================
+# 
+# ** Note: $finish    : tb_unit_modules.sv(428)
+#    Time: 910 ns  Iteration: 1  Instance: /tb_unit_modules
