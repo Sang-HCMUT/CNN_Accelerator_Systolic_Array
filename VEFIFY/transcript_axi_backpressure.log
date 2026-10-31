@@ -1,0 +1,110 @@
+# do run_axi_backpressure_sim.do 
+# ** Warning: (vlib-34) Library already exists at "work".
+# 
+# Modifying modelsim.ini
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module pe_gemm
+# 
+# Top level modules:
+# 	pe_gemm
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module systolic_skew_unit
+# 
+# Top level modules:
+# 	systolic_skew_unit
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module systolic_array_core
+# 
+# Top level modules:
+# 	systolic_array_core
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module quantize_relu_unit
+# 
+# Top level modules:
+# 	quantize_relu_unit
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module matrix_buffer_a
+# 
+# Top level modules:
+# 	matrix_buffer_a
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module matrix_buffer_b
+# 
+# Top level modules:
+# 	matrix_buffer_b
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module matrix_buffer_c
+# 
+# Top level modules:
+# 	matrix_buffer_c
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module gemm_controller
+# 
+# Top level modules:
+# 	gemm_controller
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module systolic_accelerator_top
+# 
+# Top level modules:
+# 	systolic_accelerator_top
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module systolic_gemm_axi_lite
+# 
+# Top level modules:
+# 	systolic_gemm_axi_lite
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module axi_ram
+# 
+# Top level modules:
+# 	axi_ram
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module axi_uart
+# 
+# Top level modules:
+# 	axi_uart
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module axi_interconnect
+# 
+# Top level modules:
+# 	axi_interconnect
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module tb_axi_backpressure
+# 
+# Top level modules:
+# 	tb_axi_backpressure
+# vsim -c -t 1ps work.tb_axi_backpressure 
+# Loading sv_std.std
+# Loading work.tb_axi_backpressure
+# Loading work.axi_interconnect
+# Loading work.axi_ram
+# Loading work.systolic_gemm_axi_lite
+# Loading work.systolic_accelerator_top
+# Loading work.gemm_controller
+# Loading work.matrix_buffer_a
+# Loading work.matrix_buffer_b
+# Loading work.systolic_skew_unit
+# Loading work.systolic_array_core
+# Loading work.quantize_relu_unit
+# Loading work.matrix_buffer_c
+# Loading work.axi_uart
+# Loading work.pe_gemm
+# ** Warning: (vsim-7) Failed to open readmem file "" in read mode.
+# 
+# Invalid argument. (errno = EINVAL)    : ../RTL/axi_ram.sv(56)
+#    Time: 0 ps  Iteration: 0  Instance: /tb_axi_backpressure/u_ram
+# 
+# ========================================================
+#   STARTING AXI4-LITE BACKPRESSURE COMPLIANCE VERIFICATION
+# ========================================================
+# [TEST 1] Testing AXI RAM with 1..8 cycles BREADY & RREADY delays...
+# [TEST 1] RAM backpressure tests completed.
+# [TEST 2] Testing Systolic Accelerator MMIO with backpressure...
+#          IP Version 0x01080820 confirmed stable over 6 delay cycles.
+# [TEST 3] Testing UART MMIO with backpressure...
+# 
+# ========================================================
+#   ALL AXI4-LITE BACKPRESSURE TESTS PASSED (100% COMPLIANT)!
+# ========================================================
+# 
+# ** Note: $finish    : tb_axi_backpressure.sv(499)
+#    Time: 5530 ns  Iteration: 1  Instance: /tb_axi_backpressure

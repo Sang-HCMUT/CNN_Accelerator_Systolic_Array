@@ -22,6 +22,8 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/axi_uart.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top.sv
 set_global_assignment -name SDC_FILE soc_top.sdc
 
+# Explicit configuration for DE1 (EP2C20 has 52 DSPs; 8x8 requires 64 DSPs on DE2)
+set_parameter -name ARRAY_SIZE 4
 set_parameter -name MEM_WORDS 4096
 
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0

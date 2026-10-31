@@ -32,7 +32,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top_de10.sv
 set_global_assignment -name SDC_FILE soc_top_de10.sdc
 
 # Parameter Overrides
-set_parameter -name ARRAY_SIZE 4
+set_parameter -name ARRAY_SIZE 8
 set_parameter -name MEM_WORDS 8192
 
 # Thermal & IO Settings
