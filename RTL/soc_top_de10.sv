@@ -4,22 +4,21 @@
 // DE10-Standard Board Wrapper for RISC-V SoC CNN Accelerator.
 // Target: Terasic DE10-Standard (Intel Cyclone V 5CSXFC6D6F31C6)
 //
-// Key Differences from DE1 (soc_top.sv):
-// - ARRAY_SIZE = 8 (8x8 Systolic Array, 64 PEs)
-//   DE10-Standard has 112 DSP blocks vs 52 on Cyclone II.
-// - No LEDG (DE10-Standard only has 10x LEDR).
-//   ledg[7:0] from soc_top are mapped to the internal diagnostic
-//   signals and OR-combined with LEDR[7:2] for visibility.
-// - UART: mapped to GPIO_0 header (GPIO_0[0]=TX, GPIO_0[1]=RX)
-// - Clock: 50 MHz CLOCK_50 (same as DE1)
-// - Reset: KEY[0] active-low push-button
-//
-// Resource Estimate on Cyclone V 5CSXFC6D6F31C6:
-// - ALMs:       ~22,000 / 41,910  (~52%)
-// - DSP blocks: 64      / 112      (~57%)
-// - BRAM:       ~600 Kbits / 5,662 Kbits (~11%)
+// Features:
+// - Parameterized ARRAY_SIZE (defaults to 4 to match verified firmware demo & 6 co-sim suites).
+// - Parameterizable to 8 for standalone 8x8 DSP benchmark on Cyclone V (112 DSP blocks).
+// - No LEDG on DE10-Standard (mapped to internal diagnostics & LEDR[7:2]).
+// - UART: mapped to GPIO_0 header (GPIO_0[0]=TX Pin W15, GPIO_0[1]=RX Pin AK2).
+// - Clock: 50 MHz CLOCK_50 (Pin AF14).
+// - Reset: KEY[0] active-low push-button (Pin AJ4).
 
-module soc_top_de10 (
+module soc_top_de10 #(
+    parameter ARRAY_SIZE        = 4,         // Default 4x4: matches firmware demo & 100% verified co-sim
+    parameter DATA_WIDTH        = 8,
+    parameter ACC_WIDTH         = 32,
+    parameter MEM_WORDS         = 8192,
+    parameter UART_CLKS_PER_BIT = 434
+)(
     // Clock & Reset
     input  logic       clk,        // CLOCK_50[0] — 50 MHz crystal oscillator
     input  logic       rst_n,      // KEY[0] — active-low push-button reset
@@ -47,7 +46,7 @@ module soc_top_de10 (
     //   LEDR[6] = reserved (ledg[3] from soc_top)
     //   LEDR[7] = reserved (ledg[4] from soc_top)
     //   LEDR[8] = heartbeat (LED blinks at ~1Hz to show clock alive)
-    //   LEDR[9] = array_size_indicator (always ON to indicate 8x8 mode)
+    //   LEDR[9] = array_size_indicator (1 = 8x8 mode, 0 = 4x4 mode)
     output logic [9:0] ledr
 );
 
@@ -61,7 +60,7 @@ module soc_top_de10 (
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            hb_cnt  <= '0;
+            hb_cnt    <= '0;
             heartbeat <= 1'b0;
         end else begin
             if (hb_cnt == 26'd49_999_999) begin
@@ -83,7 +82,7 @@ module soc_top_de10 (
     assign ledr[6] = soc_ledg[3];   // Spare from ledg
     assign ledr[7] = soc_ledg[4];   // Spare from ledg
     assign ledr[8] = heartbeat;     // 1 Hz heartbeat — confirms chip alive
-    assign ledr[9] = 1'b1;          // Always ON — indicates 8x8 ARRAY_SIZE mode
+    assign ledr[9] = (ARRAY_SIZE == 8) ? 1'b1 : 1'b0; // Mode indicator
 
     // Unused HEX displays: blank (Active-Low: 7'b1111111 = all segments OFF)
     assign hex2 = 7'b111_1111;
@@ -91,14 +90,14 @@ module soc_top_de10 (
     assign hex4 = 7'b111_1111;
     assign hex5 = 7'b111_1111;
 
-    // SoC Core Instantiation (8x8 Systolic Array)
+    // SoC Core Instantiation
     soc_top #(
-        .ARRAY_SIZE         (8),         // 8x8 = 64 PEs (vs 4x4 on DE1)
-        .DATA_WIDTH         (8),
-        .ACC_WIDTH          (32),
-        .MEM_WORDS          (8192),      // 32 KB BRAM (same as DE1, firmware fits easily)
+        .ARRAY_SIZE         (ARRAY_SIZE),
+        .DATA_WIDTH         (DATA_WIDTH),
+        .ACC_WIDTH          (ACC_WIDTH),
+        .MEM_WORDS          (MEM_WORDS),
         .MEM_INIT_FILE      ("firmware.hex"),
-        .UART_CLKS_PER_BIT  (434)        // 50 MHz / 115200 baud = 434 clocks/bit (same as DE1)
+        .UART_CLKS_PER_BIT  (UART_CLKS_PER_BIT)
     ) u_soc (
         .clk        (clk),
         .rst_n      (rst_n),

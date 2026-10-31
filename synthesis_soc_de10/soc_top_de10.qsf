@@ -32,7 +32,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../RTL/soc_top_de10.sv
 set_global_assignment -name SDC_FILE soc_top_de10.sdc
 
 # Parameter Overrides
-set_parameter -name ARRAY_SIZE 8
+set_parameter -name ARRAY_SIZE 4
 set_parameter -name MEM_WORDS 8192
 
 # Thermal & IO Settings
@@ -190,6 +190,25 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[6]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[7]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[8]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr[9]
+
+
+# Output Drive Strength and Slew Rate Assignments
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to uart_tx
+set_instance_assignment -name SLEW_RATE 1 -to uart_tx
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to hex0[*]
+set_instance_assignment -name SLEW_RATE 1 -to hex0[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to hex1[*]
+set_instance_assignment -name SLEW_RATE 1 -to hex1[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to hex2[*]
+set_instance_assignment -name SLEW_RATE 1 -to hex2[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to hex3[*]
+set_instance_assignment -name SLEW_RATE 1 -to hex3[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to hex4[*]
+set_instance_assignment -name SLEW_RATE 1 -to hex4[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to hex5[*]
+set_instance_assignment -name SLEW_RATE 1 -to hex5[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 16MA -to ledr[*]
+set_instance_assignment -name SLEW_RATE 1 -to ledr[*]
 
 # Fitter Options
 

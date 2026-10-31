@@ -117,28 +117,40 @@ module systolic_gemm_axi_lite #(
     } wr_state_t;
 
     wr_state_t wr_state;
-    logic [C_S_AXI_ADDR_WIDTH-1:0] latched_awaddr;
-    logic [C_S_AXI_DATA_WIDTH-1:0] latched_wdata;
+    logic [C_S_AXI_ADDR_WIDTH-1:0]     latched_awaddr;
+    logic [C_S_AXI_DATA_WIDTH-1:0]     latched_wdata;
+    logic [(C_S_AXI_DATA_WIDTH/8)-1:0] latched_wstrb;
 
-    task automatic do_write_op(input [C_S_AXI_ADDR_WIDTH-1:0] write_addr, input [C_S_AXI_DATA_WIDTH-1:0] write_data);
+    task automatic do_write_op(
+        input [C_S_AXI_ADDR_WIDTH-1:0]     write_addr,
+        input [C_S_AXI_DATA_WIDTH-1:0]     write_data,
+        input [(C_S_AXI_DATA_WIDTH/8)-1:0] write_strb
+    );
         if (write_addr == 12'h000) begin
-            control_reg <= write_data;
-            if (write_data[0]) begin
+            if (write_strb[0]) control_reg[7:0]   <= write_data[7:0];
+            if (write_strb[1]) control_reg[15:8]  <= write_data[15:8];
+            if (write_strb[2]) control_reg[23:16] <= write_data[23:16];
+            if (write_strb[3]) control_reg[31:24] <= write_data[31:24];
+            if (write_strb[0] && write_data[0]) begin
                 core_start    <= 1'b1;
                 status_reg[0] <= 1'b0; // Clear done bit on start
                 status_reg[2] <= 1'b0; // Clear error bit on start
             end
         end else if (write_addr == 12'h008) begin
             // Pass through k_dim directly to core; guardband violations are reported via STATUS_ERROR (bit 2)
-            k_dim_reg <= write_data[7:0];
+            if (write_strb[0]) k_dim_reg <= write_data[7:0];
         end else if (write_addr >= 12'h100 && write_addr < 12'h200) begin
-            core_wr_a_en   <= 1'b1;
-            core_wr_a_addr <= (write_addr - 12'h100) >> 2;
-            core_wr_a_data <= write_data[DATA_WIDTH-1:0];
+            if (write_strb[0]) begin
+                core_wr_a_en   <= 1'b1;
+                core_wr_a_addr <= (write_addr - 12'h100) >> 2;
+                core_wr_a_data <= write_data[DATA_WIDTH-1:0];
+            end
         end else if (write_addr >= 12'h200 && write_addr < 12'h300) begin
-            core_wr_b_en   <= 1'b1;
-            core_wr_b_addr <= (write_addr - 12'h200) >> 2;
-            core_wr_b_data <= write_data[DATA_WIDTH-1:0];
+            if (write_strb[0]) begin
+                core_wr_b_en   <= 1'b1;
+                core_wr_b_addr <= (write_addr - 12'h200) >> 2;
+                core_wr_b_data <= write_data[DATA_WIDTH-1:0];
+            end
         end
     endtask
 
@@ -151,6 +163,7 @@ module systolic_gemm_axi_lite #(
             s_axi_bresp    <= 2'b00;
             latched_awaddr <= '0;
             latched_wdata  <= '0;
+            latched_wstrb  <= '0;
             control_reg    <= '0;
             status_reg     <= '0;
             k_dim_reg      <= 8'd4;
@@ -178,7 +191,7 @@ module systolic_gemm_axi_lite #(
                     if (s_axi_awvalid && s_axi_wvalid) begin
                         s_axi_awready <= 1'b1;
                         s_axi_wready  <= 1'b1;
-                        do_write_op(s_axi_awaddr, s_axi_wdata);
+                        do_write_op(s_axi_awaddr, s_axi_wdata, s_axi_wstrb);
                         s_axi_bvalid  <= 1'b1;
                         s_axi_bresp   <= 2'b00;
                         wr_state      <= WR_RESP;
@@ -191,6 +204,7 @@ module systolic_gemm_axi_lite #(
                         s_axi_awready  <= 1'b0;
                         s_axi_wready   <= 1'b1;
                         latched_wdata  <= s_axi_wdata;
+                        latched_wstrb  <= s_axi_wstrb;
                         wr_state       <= WR_WAIT_ADDR;
                     end else begin
                         s_axi_awready  <= 1'b0;
@@ -202,7 +216,7 @@ module systolic_gemm_axi_lite #(
                     s_axi_awready <= 1'b0;
                     if (s_axi_wvalid) begin
                         s_axi_wready <= 1'b1;
-                        do_write_op(latched_awaddr, s_axi_wdata);
+                        do_write_op(latched_awaddr, s_axi_wdata, s_axi_wstrb);
                         s_axi_bvalid <= 1'b1;
                         s_axi_bresp  <= 2'b00;
                         wr_state     <= WR_RESP;
@@ -215,7 +229,7 @@ module systolic_gemm_axi_lite #(
                     s_axi_wready <= 1'b0;
                     if (s_axi_awvalid) begin
                         s_axi_awready <= 1'b1;
-                        do_write_op(s_axi_awaddr, latched_wdata);
+                        do_write_op(s_axi_awaddr, latched_wdata, latched_wstrb);
                         s_axi_bvalid  <= 1'b1;
                         s_axi_bresp   <= 2'b00;
                         wr_state      <= WR_RESP;
