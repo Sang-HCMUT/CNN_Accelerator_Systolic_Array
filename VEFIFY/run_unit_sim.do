@@ -11,6 +11,8 @@ vlog -sv -work work ../RTL/quantize_relu_unit.sv
 vlog -sv -work work ../RTL/matrix_buffer_a.sv
 vlog -sv -work work ../RTL/matrix_buffer_b.sv
 vlog -sv -work work ../RTL/matrix_buffer_c.sv
+vlog -sv -work work ../RTL/gemm_controller.sv
+vlog -sv -work work ../RTL/systolic_array_core.sv
 vlog -sv -work work ../RTL/seven_seg_decoder.sv
 
 # Compile Unit Testbench
@@ -66,7 +68,26 @@ add wave -color "Green"  -radix dec    /tb_unit_modules/buf_c_wr_int8_data
 add wave -color "Green"  -radix dec    /tb_unit_modules/buf_c_rd_data_int8
 add wave -color "Yellow" -radix dec    /tb_unit_modules/buf_c_rd_data_acc32
 
-# Divider 6: UNIT 5 - 7-Segment Decoder
+# Divider 6: UNIT 6 - Central GEMM FSM Controller
+add wave -divider "UNIT 6: GEMM FSM Controller"
+add wave -color "Green"                 /tb_unit_modules/ctrl_start
+add wave -color "White"  -radix dec     /tb_unit_modules/ctrl_k_dim
+add wave -color "Orange"                /tb_unit_modules/ctrl_busy
+add wave -color "Cyan"                  /tb_unit_modules/ctrl_done
+add wave -color "Red"                   /tb_unit_modules/ctrl_error
+add wave -color "Yellow"                /tb_unit_modules/ctrl_stream_en
+add wave -color "White"  -radix dec     /tb_unit_modules/ctrl_k_step
+add wave -color "Magenta" -radix dec    /tb_unit_modules/ctrl_readout_idx
+
+# Divider 7: UNIT 7 - 2D Systolic Processing Mesh Core
+add wave -divider "UNIT 7: 2D Systolic Core (64 PEs)"
+add wave -color "Cyan"                  /tb_unit_modules/core_en
+add wave -color "Red"                   /tb_unit_modules/core_clear_acc
+add wave -color "Green"  -radix dec     /tb_unit_modules/core_a_row_skew
+add wave -color "Green"  -radix dec     /tb_unit_modules/core_b_col_skew
+add wave -color "Yellow" -radix dec     /tb_unit_modules/core_c_matrix_out
+
+# Divider 8: UNIT 5 - 7-Segment Decoder
 add wave -divider "UNIT 5: 7-Segment Display Decoder"
 add wave -color "White"  -radix hex    /tb_unit_modules/dec_digit
 add wave -color "Red"                  /tb_unit_modules/dec_blank

@@ -33,6 +33,16 @@
 # Top level modules:
 # 	matrix_buffer_c
 # Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module gemm_controller
+# 
+# Top level modules:
+# 	gemm_controller
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module systolic_array_core
+# 
+# Top level modules:
+# 	systolic_array_core
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
 # -- Compiling module seven_seg_decoder
 # 
 # Top level modules:
@@ -49,8 +59,11 @@
 # Loading work.systolic_skew_unit
 # Loading work.quantize_relu_unit
 # Loading work.matrix_buffer_a
+# Loading work.matrix_buffer_b
 # Loading work.matrix_buffer_c
 # Loading work.seven_seg_decoder
+# Loading work.gemm_controller
+# Loading work.systolic_array_core
 # delete wave not supported in batch mode
 # ================================================================================
 #   STARTING COMPREHENSIVE UNIT-LEVEL HARDWARE VERIFICATION SUITE
@@ -84,7 +97,7 @@
 # [PASS] Positive Saturation: 5000 clamped to +127
 # [PASS] Negative Saturation: -5000 clamped to -128
 # 
-# >>> [UNIT 4] On-Chip Matrix Storage Buffers Unit Tests...
+# >>> [UNIT 4] On-Chip Matrix Storage Buffers (A, B, C) Unit Tests...
 # [PASS] Buffer A Parallel Readout Row 0
 # [PASS] Buffer A Parallel Readout Row 1
 # [PASS] Buffer A Parallel Readout Row 2
@@ -93,6 +106,14 @@
 # [PASS] Buffer A Parallel Readout Row 5
 # [PASS] Buffer A Parallel Readout Row 6
 # [PASS] Buffer A Parallel Readout Row 7
+# [PASS] Buffer B Parallel Readout Col 0
+# [PASS] Buffer B Parallel Readout Col 1
+# [PASS] Buffer B Parallel Readout Col 2
+# [PASS] Buffer B Parallel Readout Col 3
+# [PASS] Buffer B Parallel Readout Col 4
+# [PASS] Buffer B Parallel Readout Col 5
+# [PASS] Buffer B Parallel Readout Col 6
+# [PASS] Buffer B Parallel Readout Col 7
 # [PASS] Buffer C INT8 Readout at addr 15
 # [PASS] Buffer C INT32 Accumulator Readout at addr 15
 # 
@@ -103,14 +124,26 @@
 # [PASS] Decoder Digit 8 -> 7'b0000000 (0x00)
 # [PASS] Decoder Digit F -> 7'b0001110 (0x0E)
 # 
+# >>> [UNIT 6] Central GEMM FSM Controller (gemm_controller.sv) Unit Tests...
+# [PASS] Controller Guardband: Reject K=0
+# [PASS] Controller Guardband: Reject K > MAX_K
+# [PASS] Controller FSM Transition to BUSY state
+# [PASS] Controller FSM Full Cycle to DONE state
+# 
+# >>> [UNIT 7] 2D Systolic Array Core (systolic_array_core.sv - 64 PEs) Unit Tests...
+# [PASS] Systolic Array Core: All 64 PEs cleared to 0
+# [PASS] Systolic Core PE(0,0) First Cycle Compute: 1 * 2 = 2
+# [PASS] Systolic Core PE(0,1) Horizontal Propagation
+# [PASS] Systolic Core PE(1,0) Vertical Propagation
+# 
 # ================================================================================
 #   UNIT-LEVEL HARDWARE VERIFICATION SUMMARY REPORT
 # ================================================================================
-#   Total Unit Checks Executed : 36
-#   Passed Checks              : 36
+#   Total Unit Checks Executed : 52
+#   Passed Checks              : 52
 #   Failed Checks              : 0
 #   VERIFICATION RESULT        : >>> 100% PASSED (0 ERRORS) <<<
 # ================================================================================
 # 
-# ** Note: $finish    : tb_unit_modules.sv(428)
-#    Time: 910 ns  Iteration: 1  Instance: /tb_unit_modules
+# ** Note: $finish    : tb_unit_modules.sv(624)
+#    Time: 3130 ns  Iteration: 1  Instance: /tb_unit_modules

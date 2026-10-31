@@ -9,6 +9,8 @@
 //   [UNIT 3] Hardware Quantization & ReLU Unit (quantize_relu_unit)
 //   [UNIT 4] On-Chip Matrix Storage Buffers (matrix_buffer_a, b, c)
 //   [UNIT 5] Active-Low 7-Segment Decoder (seven_seg_decoder)
+//   [UNIT 6] Central GEMM FSM Controller (gemm_controller)
+//   [UNIT 7] 2D Systolic Processing Mesh Core (systolic_array_core - 8x8 = 64 PEs)
 // ==============================================================================
 
 module tb_unit_modules;
@@ -138,6 +140,29 @@ module tb_unit_modules;
         .row_data_out(buf_a_row_out)
     );
 
+    logic                       buf_b_wr_en;
+    logic [6:0]                 buf_b_wr_addr;
+    logic signed [7:0]          buf_b_wr_data;
+    logic                       buf_b_stream_en;
+    logic [7:0]                 buf_b_k_step, buf_b_k_dim;
+    logic signed [7:0]          buf_b_col_out [N];
+
+    matrix_buffer_b #(
+        .ARRAY_SIZE(N),
+        .MAX_K(16),
+        .DATA_WIDTH(8)
+    ) u_buf_b (
+        .clk         (clk),
+        .rst_n       (rst_n),
+        .wr_en       (buf_b_wr_en),
+        .wr_addr     (buf_b_wr_addr),
+        .wr_data     (buf_b_wr_data),
+        .stream_en   (buf_b_stream_en),
+        .k_step      (buf_b_k_step),
+        .k_dim       (buf_b_k_dim),
+        .col_data_out(buf_b_col_out)
+    );
+
     logic                       buf_c_wr_acc_en;
     logic [5:0]                 buf_c_wr_acc_addr;
     logic signed [31:0]         buf_c_wr_acc_data;
@@ -180,6 +205,76 @@ module tb_unit_modules;
     );
 
     // ==========================================================================
+    // UNIT 6: Central GEMM FSM Controller (gemm_controller)
+    // ==========================================================================
+    logic                       ctrl_start;
+    logic [7:0]                 ctrl_k_dim;
+    logic                       ctrl_busy;
+    logic                       ctrl_done;
+    logic                       ctrl_error;
+    logic                       ctrl_sys_en;
+    logic                       ctrl_sys_clear_acc;
+    logic                       ctrl_stream_en;
+    logic [7:0]                 ctrl_k_step;
+    logic                       ctrl_quant_in_en;
+    logic [$clog2(N)-1:0]       ctrl_readout_r, ctrl_readout_c;
+    logic [$clog2(N*N)-1:0]     ctrl_readout_idx;
+    logic                       ctrl_wr_acc_en;
+    logic [$clog2(N*N)-1:0]     ctrl_wr_acc_addr;
+    logic                       ctrl_quant_out_valid;
+    logic                       ctrl_wr_int8_en;
+    logic [$clog2(N*N)-1:0]     ctrl_wr_int8_addr;
+
+    gemm_controller #(
+        .ARRAY_SIZE(N),
+        .MAX_K(16)
+    ) u_ctrl (
+        .clk             (clk),
+        .rst_n           (rst_n),
+        .start           (ctrl_start),
+        .k_dim           (ctrl_k_dim),
+        .busy            (ctrl_busy),
+        .done            (ctrl_done),
+        .error           (ctrl_error),
+        .sys_en          (ctrl_sys_en),
+        .sys_clear_acc   (ctrl_sys_clear_acc),
+        .stream_en       (ctrl_stream_en),
+        .k_step          (ctrl_k_step),
+        .quant_in_en     (ctrl_quant_in_en),
+        .readout_r       (ctrl_readout_r),
+        .readout_c       (ctrl_readout_c),
+        .readout_idx     (ctrl_readout_idx),
+        .wr_acc_en       (ctrl_wr_acc_en),
+        .wr_acc_addr     (ctrl_wr_acc_addr),
+        .quant_out_valid (ctrl_quant_out_valid),
+        .wr_int8_en      (ctrl_wr_int8_en),
+        .wr_int8_addr    (ctrl_wr_int8_addr)
+    );
+
+    // ==========================================================================
+    // UNIT 7: 2D Systolic Processing Mesh Core (systolic_array_core - 8x8)
+    // ==========================================================================
+    logic                       core_en;
+    logic                       core_clear_acc;
+    logic signed [7:0]          core_a_row_skew [N];
+    logic signed [7:0]          core_b_col_skew [N];
+    logic signed [31:0]         core_c_matrix_out [N][N];
+
+    systolic_array_core #(
+        .ARRAY_SIZE(N),
+        .DATA_WIDTH(8),
+        .ACC_WIDTH(32)
+    ) u_core (
+        .clk         (clk),
+        .rst_n       (rst_n),
+        .en          (core_en),
+        .clear_acc   (core_clear_acc),
+        .a_row_skew  (core_a_row_skew),
+        .b_col_skew  (core_b_col_skew),
+        .c_matrix_out(core_c_matrix_out)
+    );
+
+    // ==========================================================================
     // MAIN VERIFICATION PROCEDURE
     // ==========================================================================
     initial begin
@@ -197,14 +292,19 @@ module tb_unit_modules;
         skew_en = 0; skew_clear = 0;
         for (int k = 0; k < N; k++) begin
             skew_a_in[k] = 0; skew_b_in[k] = 0;
+            core_a_row_skew[k] = 0; core_b_col_skew[k] = 0;
         end
         q_en = 0; q_bypass_relu = 0; q_shift_bits = 0; q_din = 0;
         buf_a_wr_en = 0; buf_a_wr_addr = 0; buf_a_wr_data = 0;
         buf_a_stream_en = 0; buf_a_k_step = 0; buf_a_k_dim = 8;
+        buf_b_wr_en = 0; buf_b_wr_addr = 0; buf_b_wr_data = 0;
+        buf_b_stream_en = 0; buf_b_k_step = 0; buf_b_k_dim = 8;
         buf_c_wr_acc_en = 0; buf_c_wr_acc_addr = 0; buf_c_wr_acc_data = 0;
         buf_c_wr_int8_en = 0; buf_c_wr_int8_addr = 0; buf_c_wr_int8_data = 0;
         buf_c_rd_addr = 0;
         dec_digit = 0; dec_blank = 0;
+        ctrl_start = 0; ctrl_k_dim = 8; ctrl_quant_out_valid = 0;
+        core_en = 0; core_clear_acc = 0;
 
         repeat (5) @(posedge clk);
         rst_n = 1;
@@ -215,7 +315,6 @@ module tb_unit_modules;
         // ----------------------------------------------------------------------
         $display("\n>>> [UNIT 1] Processing Element (pe_gemm.sv) Unit Tests...");
         
-        // Test 1.1: Clear accumulator
         @(negedge clk);
         pe_clear_acc = 1;
         @(posedge clk); #1;
@@ -224,7 +323,6 @@ module tb_unit_modules;
         @(negedge clk);
         pe_clear_acc = 0;
 
-        // Test 1.2: Multiply-Accumulate standard operations
         // MAC 1: 5 * 10 = 50
         pe_en = 1; pe_a_in = 8'sd5; pe_b_in = 8'sd10;
         @(posedge clk); #1;
@@ -275,19 +373,15 @@ module tb_unit_modules;
         // Apply a pulse of unique values across rows 0..7 at cycle T0
         for (int r = 0; r < N; r++) skew_a_in[r] = 8'sd10 + r;
         
-        // At T0: Row 0 is combinational / unskewed, so it should be visible immediately!
         #1;
         `CHECK(skew_a_out[0] == 10, "Skew Row 0 (0T delay) instant pass-through");
 
-        // Clock edge T1: Row 1 should register the input
         @(posedge clk); #1;
         `CHECK(skew_a_out[1] == 11, "Skew Row 1 (1T delay) registered output");
 
-        // Clear input stream
         @(negedge clk);
         for (int r = 0; r < N; r++) skew_a_in[r] = 8'sd0;
 
-        // Advance through subsequent clock cycles: Row r should see pulse at clock edge r
         for (int step = 2; step < N; step++) begin
             @(posedge clk); #1;
             `CHECK(skew_a_out[step] == 10 + step, $sformatf("Skew Row %0d (%0dT delay) wavefront verified", step, step));
@@ -340,27 +434,44 @@ module tb_unit_modules;
         `CHECK(q_dout == -8'sd128, "Negative Saturation: -5000 clamped to -128");
 
         // ----------------------------------------------------------------------
-        // [UNIT 4] MATRIX BUFFERS VERIFICATION (A & C)
+        // [UNIT 4] MATRIX BUFFERS VERIFICATION (A, B, C)
         // ----------------------------------------------------------------------
-        $display("\n>>> [UNIT 4] On-Chip Matrix Storage Buffers Unit Tests...");
+        $display("\n>>> [UNIT 4] On-Chip Matrix Storage Buffers (A, B, C) Unit Tests...");
 
-        // Write row 0..7 of Buffer A for K=0
+        // Buffer A: Write row 0..7 for K=0
         for (int r = 0; r < N; r++) begin
             @(negedge clk);
             buf_a_wr_en = 1;
-            buf_a_wr_addr = r * 8 + 0; // K_dim=8, step=0
+            buf_a_wr_addr = r * 8 + 0;
             buf_a_wr_data = 8'sd20 + r;
         end
         @(negedge clk);
         buf_a_wr_en = 0;
 
-        // Readout via streaming interface
         buf_a_stream_en = 1;
         buf_a_k_step = 0;
         buf_a_k_dim  = 8;
-        #1; // Combinational read
+        #1;
         for (int r = 0; r < N; r++) begin
             `CHECK(buf_a_row_out[r] == 20 + r, $sformatf("Buffer A Parallel Readout Row %0d", r));
+        end
+
+        // Buffer B: Write col 0..7 for K=0
+        for (int c = 0; c < N; c++) begin
+            @(negedge clk);
+            buf_b_wr_en = 1;
+            buf_b_wr_addr = 0 * N + c;
+            buf_b_wr_data = 8'sd30 + c;
+        end
+        @(negedge clk);
+        buf_b_wr_en = 0;
+
+        buf_b_stream_en = 1;
+        buf_b_k_step = 0;
+        buf_b_k_dim  = 8;
+        #1;
+        for (int c = 0; c < N; c++) begin
+            `CHECK(buf_b_col_out[c] == 30 + c, $sformatf("Buffer B Parallel Readout Col %0d", c));
         end
 
         // Buffer C dual write/read (INT8 and INT32 accumulated)
@@ -386,27 +497,112 @@ module tb_unit_modules;
         // ----------------------------------------------------------------------
         $display("\n>>> [UNIT 5] Active-Low 7-Segment Display Decoder Unit Tests...");
         
-        // Blanking test
         dec_blank = 1; dec_digit = 4'h0;
         #1;
         `CHECK(dec_seg == 7'b1111111, "Decoder Blanking (All Segments OFF)");
 
         dec_blank = 0;
-        // Digit 0 (Active-low: 7'b1000000 = 0x40)
         dec_digit = 4'h0; #1;
         `CHECK(dec_seg == 7'b1000000, "Decoder Digit 0 -> 7'b1000000 (0x40)");
 
-        // Digit 7 (Active-low: 7'b1111000 = 0x78)
         dec_digit = 4'h7; #1;
         `CHECK(dec_seg == 7'b1111000, "Decoder Digit 7 -> 7'b1111000 (0x78)");
 
-        // Digit 8 (Active-low: 7'b0000000 = 0x00)
         dec_digit = 4'h8; #1;
         `CHECK(dec_seg == 7'b0000000, "Decoder Digit 8 -> 7'b0000000 (0x00)");
 
-        // Digit F (Active-low: 7'b0001110 = 0x0E)
         dec_digit = 4'hF; #1;
         `CHECK(dec_seg == 7'b0001110, "Decoder Digit F -> 7'b0001110 (0x0E)");
+
+        // ----------------------------------------------------------------------
+        // [UNIT 6] GEMM FSM CONTROLLER VERIFICATION
+        // ----------------------------------------------------------------------
+        $display("\n>>> [UNIT 6] Central GEMM FSM Controller (gemm_controller.sv) Unit Tests...");
+
+        // Test 6.1: Invalid K dimension guardband rejection (K=0)
+        @(negedge clk);
+        ctrl_k_dim = 8'd0;
+        ctrl_start = 1;
+        @(posedge clk); #1;
+        `CHECK(ctrl_error == 1 && ctrl_done == 1 && ctrl_busy == 0, "Controller Guardband: Reject K=0");
+        @(negedge clk);
+        ctrl_start = 0;
+        @(posedge clk); #1;
+
+        // Test 6.2: Invalid K dimension guardband rejection (K=25 > MAX_K)
+        @(negedge clk);
+        ctrl_k_dim = 8'd25;
+        ctrl_start = 1;
+        @(posedge clk); #1;
+        `CHECK(ctrl_error == 1 && ctrl_done == 1, "Controller Guardband: Reject K > MAX_K");
+        @(negedge clk);
+        ctrl_start = 0;
+        @(posedge clk); #1;
+
+        // Test 6.3: Valid FSM lifecycle execution (K=8)
+        @(negedge clk);
+        ctrl_k_dim = 8'd8;
+        ctrl_start = 1;
+        @(posedge clk); #1;
+        @(negedge clk);
+        ctrl_start = 0;
+
+        `CHECK(ctrl_busy == 1 && ctrl_error == 0, "Controller FSM Transition to BUSY state");
+
+        // Wait until controller completes full cycle and pulses done
+        fork : wait_ctrl_done
+            begin
+                @(posedge ctrl_done); #1;
+                `CHECK(ctrl_done == 1 && ctrl_busy == 0, "Controller FSM Full Cycle to DONE state");
+            end
+            begin
+                repeat (200) @(posedge clk);
+                `CHECK(1'b0, "Controller FSM Timeout waiting for done");
+            end
+        join_any
+        disable wait_ctrl_done;
+
+        // ----------------------------------------------------------------------
+        // [UNIT 7] 2D SYSTOLIC ARRAY CORE VERIFICATION (8x8 = 64 PEs)
+        // ----------------------------------------------------------------------
+        $display("\n>>> [UNIT 7] 2D Systolic Array Core (systolic_array_core.sv - 64 PEs) Unit Tests...");
+
+        @(negedge clk);
+        core_clear_acc = 1;
+        core_en = 0;
+        @(posedge clk); #1;
+        @(negedge clk);
+        core_clear_acc = 0;
+
+        // Verify all 64 accumulators are zero
+        begin
+            int zero_cnt;
+            zero_cnt = 0;
+            for (int r = 0; r < N; r++) begin
+                for (int c = 0; c < N; c++) begin
+                    if (core_c_matrix_out[r][c] == 0) zero_cnt++;
+                end
+            end
+            `CHECK(zero_cnt == 64, "Systolic Array Core: All 64 PEs cleared to 0");
+        end
+
+        // Step 1: Feed input A=[1..1] across all rows, B=[2..2] across all cols
+        @(negedge clk);
+        core_en = 1;
+        for (int k = 0; k < N; k++) begin
+            core_a_row_skew[k] = 8'sd1;
+            core_b_col_skew[k] = 8'sd2;
+        end
+        @(posedge clk); #1;
+
+        // PE(0,0) receives a_row_skew[0]=1 and b_col_skew[0]=2 immediately!
+        // At 1st posedge clk, PE(0,0) accumulator becomes: 0 + 1 * 2 = 2
+        `CHECK(core_c_matrix_out[0][0] == 2, "Systolic Core PE(0,0) First Cycle Compute: 1 * 2 = 2");
+
+        // Clock cycle 2: a_out from PE(0,0) propagates to PE(0,1), b_out propagates to PE(1,0)
+        @(posedge clk); #1;
+        `CHECK(core_c_matrix_out[0][1] == 2, "Systolic Core PE(0,1) Horizontal Propagation");
+        `CHECK(core_c_matrix_out[1][0] == 2, "Systolic Core PE(1,0) Vertical Propagation");
 
         // ----------------------------------------------------------------------
         // FINAL SUMMARY REPORT
