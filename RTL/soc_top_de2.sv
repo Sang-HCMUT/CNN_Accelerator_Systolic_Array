@@ -6,7 +6,7 @@
 // Top-Level Board Wrapper adapting the RISC-V SoC Systolic CNN Accelerator.
 //
 // Hardware Features & Mappings:
-//   - Systolic Array Size: 8x8 = 64 PEs (64 Embedded 9-bit Multipliers)
+//   - Systolic Array Size: 4x4 = 16 PEs (16 Embedded 9-bit Multipliers)
 //   - Clock:  50 MHz Crystal Oscillator on PIN_N2 (CLOCK_50)
 //   - Reset:  KEY[0] Active-Low Pushbutton on PIN_G26 (with AASD synchronizer inside soc_top)
 //   - UART:   Dedicated RS-232 Transceiver DB9 Port
@@ -21,7 +21,7 @@
 //               LEDR[1]   : Systolic Array Computing (Busy)
 //               LEDR[9:2] : Firmware Diagnostics / Register Map LEDs
 //               LEDR[15:10]: Reserved (Tied to 0)
-//               LEDR[16]  : 8x8 Mode Indicator (Always ON = 64 PEs active)
+//               LEDR[16]  : 8x8 Mode Indicator (1 = 8x8 mode, 0 = 4x4 mode)
 //               LEDR[17]  : 1 Hz Heartbeat Monitor (alive indicator)
 //             LEDG[8:0] (9 Green LEDs)
 //               LEDG[0]   : Systolic Array Tile Done
@@ -31,7 +31,7 @@
 // ============================================================================
 
 module soc_top_de2 #(
-    parameter ARRAY_SIZE        = 8,         // 8x8 = 64 PEs (Mapped to 64/70 DSP blocks on EP2C35)
+    parameter ARRAY_SIZE        = 4,         // 4x4 = 16 PEs (Mapped to 16/70 DSP blocks on EP2C35)
     parameter DATA_WIDTH        = 8,
     parameter ACC_WIDTH         = 32,
     parameter MEM_WORDS         = 8192,      // 32 KB Main BRAM
@@ -90,7 +90,7 @@ module soc_top_de2 #(
     end
 
     // ------------------------------------------------------------------------
-    // SoC Core Instantiation (8x8 = 64 PEs Systolic Array)
+    // SoC Core Instantiation (4x4 = 16 PEs Systolic Array)
     // ------------------------------------------------------------------------
     soc_top #(
         .ARRAY_SIZE        (ARRAY_SIZE),
@@ -124,7 +124,7 @@ module soc_top_de2 #(
     // Red LED Mapping
     assign ledr[9:0]   = soc_ledr[9:0];
     assign ledr[15:10] = 6'b000_000;
-    assign ledr[16]    = 1'b1;          // Indicator: 8x8 Mode Active (64 PEs)
+    assign ledr[16]    = (ARRAY_SIZE == 8); // 1 = 8x8 Mode, 0 = 4x4 Mode
     assign ledr[17]    = heartbeat;
 
     // Green LED Mapping

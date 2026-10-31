@@ -153,12 +153,12 @@ The design is synthesized, fully placed-and-routed, and timing-closed across thr
 | **FPGA Family / Device** | **Cyclone II EP2C20F484C7** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** |
 | **Technology Node** | 90 nm TSMC | 90 nm TSMC | 28 nm TSMC Low-Power |
 | **Array Architecture** | $4 \times 4$ (16 PEs) | **$8 \times 8$ (64 PEs)** | $4 \times 4$ (16 PEs default) / $8 \times 8$ |
-| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | **16,356 / 33,216 LEs (49.2%)** | 2,605 / 41,910 ALMs (6.2%) [4×4] |
-| **Dedicated Logic Registers** | 3,365 registers | **8,987 registers** | 3,253 registers [4×4] |
-| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | **64 / 70 9-bit (91.4%)** | 16 / 112 Variable DSPs (14.3%) [4×4] |
-| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | **265,216 / 483,840 (54.8%)** | 264,832 / 5,662,720 (4.7%) |
+| **Logic Utilization** | 6,368 / 18,752 LEs (34.0%) | 6,944 / 33,216 LEs (20.9%) [4×4] | 2,605 / 41,910 ALMs (6.2%) [4×4] |
+| **Dedicated Logic Registers** | 3,365 registers | 3,529 registers [4×4] | 3,253 registers [4×4] |
+| **DSP / Embedded Multipliers** | 16 / 52 9-bit (30.8%) | 16 / 70 9-bit (22.9%) [4×4] | 16 / 112 Variable DSPs (14.3%) [4×4] |
+| **Total Memory Bits (BRAM)** | 134,144 / 239,616 (56.0%) | 264,192 / 483,840 (54.6%) [4×4] | 264,832 / 5,662,720 (4.7%) |
 | **Target Clock Frequency** | 50.00 MHz (20.0 ns) | 50.00 MHz (20.0 ns) | 50.00 MHz (20.0 ns) |
-| **Setup Slack (Slow Model)** | **+4.144 ns** | **+4.858 ns** | **+6.176 ns** |
+| **Setup Slack (Slow Model)** | **+4.144 ns** | **+5.661 ns** | **+6.176 ns** |
 | **Hold Slack (Slow Model)** | **+0.445 ns** | **+0.391 ns** | **+0.230 ns** |
 | **Max Frequency ($F_{max}$)** | **63.07 MHz** | **66.04 MHz** | **72.31 MHz** |
 | **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** |
@@ -315,7 +315,7 @@ UVM_ERROR : 0, UVM_FATAL : 0
 │   ├── axi_uart.sv              # AXI4-Lite UART Serial Controller
 │   ├── seven_seg_decoder.sv     # 7-Segment Hexadecimal Display Decoder
 │   ├── soc_top.sv               # Complete Integrated SoC Top (DE1 Board)
-│   ├── soc_top_de2.sv           # Complete Integrated SoC Top (DE2 Board, 8x8 Array)
+│   ├── soc_top_de2.sv           # Complete Integrated SoC Top (DE2 Board, 4x4 / 8x8 Parameterized)
 │   ├── soc_top_de10.sv          # Complete Integrated SoC Top (DE10-Standard, 4x4 / 8x8 Parameterized)
 │   └── firmware.hex             # Synchronized boot firmware machine code
 ├── firmware/                    # RISC-V Embedded Bare-Metal C Firmware
