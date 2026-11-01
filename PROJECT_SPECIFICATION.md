@@ -69,7 +69,7 @@ Giao tiếp chuẩn hóa AMBA AXI4-Lite: Module đỉnh được đóng gói qua
 - **Mô hình đối chứng toán học (Golden Model)**: Python 3.13 (kèm bộ script `software_ref/` tự động xuất test vector `.hex`, mô phỏng Bit-True float/int8).
 - **Ngôn ngữ mô tả phần cứng (RTL)**: SystemVerilog (IEEE 1800-2012) tuân thủ nghiêm ngặt nguyên tắc thiết kế đồng bộ thuần túy (Pure Synchronous Design).
 - **Môi trường mô phỏng & kiểm chứng**:
-  * Unit Simulation: Mentor Graphics ModelSim-Altera 10.1d (52/52 Unit Checks, 100% Pass).
+  * Unit Simulation: Mentor Graphics ModelSim-Altera 10.1d (61/61 Unit Checks, 100% Pass).
   * SystemVerilog / UVM Verification: UVM 1.1c Class-based Architecture (88 Functional Coverage Bins).
   * SoC Hardware/Software Co-Simulation: 7 Demo Suites với firmware C thật chạy trên CPU PicoRV32.
 - **Công cụ tổng hợp & phân tích thời gian vật lý**:
@@ -815,15 +815,15 @@ Cấu hình $8 \times 8$ ($F_{max} = 67.60 \text{ MHz}$): $\frac{128 \times 67.6
 | Tiêu Chí Đo Đạc Vật Lý | Terasic DE2 (`soc_top_de2`) — **Primary** | Terasic DE10-Standard (`soc_top_de10`) — **Scale-Up** | Ghi Chú Kỹ Thuật & Đánh Giá |
 | :--- | :---: | :---: | :--- |
 | **Dòng Chip FPGA** | **Altera Cyclone II EP2C35F672C6** | **Intel Cyclone V 5CSXFC6D6F31C6N** | 90 nm TSMC vs 28 nm TSMC Low-Power |
-| **Quy Mô Mảng Tâm Thu** | **$8 \times 8$ (64 PEs)** | **$8 \times 8$ (64 PEs)** | 64 PEs chạy đồng thời (128 OPs/cycle) |
-| **Tài Nguyên Logic** | **17,230 / 33,216 LEs (51.9%)** | **6,308 / 41,910 ALMs (15.1%)** | Cân đối tối ưu, tuyến đường dây thông thoáng |
-| **Dedicated Logic Registers** | **9,038 registers (27.2%)** | **7,062 registers (16.9%)** | Báo cáo fitter thực tế chính xác |
-| **Bộ Nhớ Nhúng Block RAM** | **264,192 / 483,840 bits (54.6%)** | **264,832 / 5,662,720 bits (4.7%)** | 32 KB Main BRAM + Dual-channel Output Buffers |
+| **Quy Mô Mảng Tâm Thu** | **$8 \times 8$ (64 PEs, Gen-2)** | **$8 \times 8$ (64 PEs, Gen-2)** | 64 PEs + 8 Parallel Quantizers |
+| **Tài Nguyên Logic** | **19,107 / 33,216 LEs (57.5%)** | **8,290 / 41,910 ALMs (19.8%)** | Tích hợp 8 Quantizers + Packed MMIO |
+| **Dedicated Logic Registers** | **9,423 registers (28.4%)** | **9,982 registers (23.8%)** | Báo cáo fitter thực tế chính xác |
+| **Bộ Nhớ Nhúng Block RAM** | **264,192 / 483,840 bits (54.6%)** | **264,192 / 5,662,720 bits (4.7%)** | 32 KB Main BRAM (PicoRV32 Boot/FW) |
 | **Khối Nhân Cứng DSP** | **64 / 70 9-bit (91.4%)** | **64 / 112 Variable DSPs (57.1%)** | $100\%$ các PE đều map vào DSP phần cứng |
 | **Tần Số Hoạt Động Danh Định**| **50.00 MHz (20.000 ns)** | **50.00 MHz (20.000 ns)** | Tương thích chuẩn oscillator trên bo mạch |
-| **Worst-Case Setup Slack** | **+4.588 ns** | **+3.932 ns** | Đạt chỉ tiêu đóng thời gian an toàn (TNS = 0.000 ns) |
-| **Worst-Case Hold Slack** | **+0.391 ns** | **+0.206 ns** | Không có vi phạm giữ dữ liệu (THNS = 0.000 ns) |
-| **Tần Số Cực Đại ($F_{max}$)** | **64.88 MHz** | **62.24 MHz** | Vượt tần số danh định 50 MHz |
+| **Worst-Case Setup Slack** | **+4.626 ns** | **+5.609 ns** | Đạt chỉ tiêu đóng thời gian an toàn (TNS = 0.000 ns) |
+| **Worst-Case Hold Slack** | **+0.391 ns** | **+0.128 ns** | Không có vi phạm giữ dữ liệu (THNS = 0.000 ns) |
+| **Tần Số Cực Đại ($F_{max}$)** | **65.04 MHz** | **69.49 MHz** | Vượt tần số danh định 50 MHz |
 | **Năng Lực Tính Toán Đỉnh** | **128 OPs / cycle** | **128 OPs / cycle** | 64 PEs $\times$ 2 OPs/cycle (1 Mult + 1 Acc) |
 | **Thông Lượng Đỉnh (@ 50MHz)**| **6.40 GOPS** (3.20 GMAC/s) | **6.40 GOPS** (3.20 GMAC/s) | Đồng nhất tuyệt đối giữa hai nền tảng |
 | **File Bitstream Đóng Gói** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` | Bitstream hoàn chỉnh sẵn sàng nạp xuống kit |
@@ -934,6 +934,37 @@ Dựa trên phân tích định lượng từ Bus Profiler, đề tài vạch ra
 4. **Đợt 4 (Bước 5 & Bước 6)**: Chỉ thực hiện sau khi đã có DMA, nhằm tối ưu hóa triệt để khi mảng tính toán đã trở thành nút thắt.
 5. **Đợt 5 (Bước 7)**: Áp dụng khi nâng cấp quy mô lên mảng $16 \times 16$ hoặc khi cần tiết kiệm diện tích logic trên các dòng chip FPGA nhỏ.
 
+
+
+### 6.6. Nâng Cấp Kiến Trúc Đợt 2 (Gen-2 Architecture): Đóng Gói 4-INT8 Word Transfer & 8 Bộ Quantizer Đọc Song Song
+
+Dựa trên kết quả phân tích profiling ở mục 6.5 (cho thấy 98.9% thời gian trễ toàn hệ thống nằm ở CPU MMIO và pha đọc tuần tự 64 chu kỳ), đề tài đã triển khai phiên bản nâng cấp phần cứng Gen-2 (Branch `feature/gen2-phase2-opt`):
+
+1. **Cơ Chế Đóng Gói 4-INT8 Word Transfer (Packed Memory-Mapped Transfers)**:
+   - Thay vì nạp từng byte qua một giao dịch AXI 32-bit độc lập, kiến trúc mới bổ sung các vùng nhớ đóng gói:
+     * `0x1000_0700 - 0x1000_077F`: Buffer A Packed (32 words cho $8 \times 16$ ma trận A).
+     * `0x1000_0780 - 0x1000_07FF`: Buffer B Packed (32 words cho $16 \times 8$ ma trận B).
+     * `0x1000_0800 - 0x1000_083F`: Buffer C Packed Readout (16 words cho $8 \times 8$ kết quả C).
+   - Mỗi lệnh `sw` (Store Word) hoặc `lw` (Load Word) của CPU xử lý đồng thời 4 phần tử INT8, giảm số vòng lặp CPU đi 4 lần và số giao dịch bus đi 4 lần.
+
+2. **Đọc Ra Song Song Theo Hàng Bằng 8 Bộ Quantizer Độc Lập (8-Parallel Quantizers Readout)**:
+   - Module đỉnh `systolic_accelerator_top.sv` được trang bị 8 khối `quantize_relu_unit` hoạt động đồng thời.
+   - Khi mảng PE hoàn tất tính toán (`ST_READOUT`), thay vì quét 64 chu kỳ tuần tự từng phần tử, FSM quét theo từng hàng trong đúng **8 chu kỳ** (mỗi chu kỳ xuất trọn vẹn 8 phần tử của 1 hàng).
+   - Thời gian tính toán thuần của lõi ($K=8$) giảm ngoạn mục từ **93 chu kỳ xuống 37 chu kỳ** (giảm 60.2%), nâng thông lượng tính toán thuần lên **1,383 MOPS**.
+
+3. **Kết Quả Đo Đạc Thực Nghiệm So Sánh Gen-1 vs Gen-2 (Demo 1 @ 50 MHz)**:
+
+| Chỉ Số Hệ Thống | Chế Độ Gen-1 (Legacy Single-Byte) | Chế Độ Gen-2 (Packed + 8 Quantizers) | Mức Độ Cải Thiện (Improvement) |
+| :--- | :---: | :---: | :---: |
+| **Chu Kỳ Tính Toán Lõi ($T_{compute}$)** | **93 chu kỳ** | **37 chu kỳ** | **Nhanh hơn $2.51\times$ (giảm 60.2%)** |
+| **Thông Lượng Lõi (Pure Throughput)** | **550.5 MOPS** | **1,383.8 MOPS (1.38 GOPS)** | **Tăng $2.51\times$** |
+| **Số Lệnh CPU Thực Thi (Instructions)** | **1,269 lệnh** | **275 lệnh** | **Giảm $4.61\times$ số lệnh CPU** |
+| **Tổng Chu Kỳ Hệ Thống (End-to-End)** | **8,484 chu kỳ** | **1,920 chu kỳ** | **Tăng tốc $\mathbf{4.42\times}$ toàn hệ thống** |
+| **Speedup So Với Phần Mềm CPU RV32I** | **$39.3\times$** | **$\mathbf{173.7\times}$** | **Gấp $4.42\times$ so với Gen-1** |
+| **Tính Đúng Đắn (Bit-True Parity)** | **100% Khớp Tuyệt Đối** | **100% Khớp Tuyệt Đối** | **0 lỗi sai lệch (Bit-True)** |
+| **Bộ Kiểm Thử Đơn Vị (Unit Checks)** | **36/36 Passed** | **61/61 Passed (100%)** | **Bổ sung đủ unit test cho mọi module** |
+
+---
 
 ## 7. HIỆN THỰC GIAI ĐOẠN 2: THUẬT TOÁN IM2COL, BỘ CHIA KHỐI TILING & THỰC NGHIỆM SUY LUẬN MNIST
 

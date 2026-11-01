@@ -126,10 +126,13 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 | :--- | :--- | :--- |
 | `0x0000_0000 - 0x0000_7FFF` | **AXI On-Chip BRAM (32 KB)** | Firmware Instructions & Static Data (`firmware.hex`) |
 | `0x1000_0000 - 0x1000_00FF` | **Systolic Accelerator Control** | Control, Status, Dimensions, Hardware Profiling |
-| `0x1000_0100 - 0x1000_02FF` | **Matrix A Buffer (Weights)** | Memory-Mapped Input Weights (128 words, $8 \times 16$ INT8) |
-| `0x1000_0300 - 0x1000_04FF` | **Matrix B Buffer (Activations)** | Memory-Mapped Input Activations (128 words, $16 \times 8$ INT8) |
-| `0x1000_0500 - 0x1000_05FF` | **Matrix C Buffer (Quantized Out)** | Post-ReLU Quantized Activations (64 words, $8 \times 8$ INT8) |
+| `0x1000_0100 - 0x1000_02FF` | **Matrix A Buffer (Legacy)** | Memory-Mapped Input Weights (128 words, $8 \times 16$ INT8) |
+| `0x1000_0300 - 0x1000_04FF` | **Matrix B Buffer (Legacy)** | Memory-Mapped Input Activations (128 words, $16 \times 8$ INT8) |
+| `0x1000_0500 - 0x1000_05FF` | **Matrix C Buffer (Legacy)** | Post-ReLU Quantized Activations (64 words, $8 \times 8$ INT8) |
 | `0x1000_0600 - 0x1000_06FF` | **Matrix C Accumulator (Raw Out)** | Raw 32-bit Accumulator Output (64 words, $8 \times 8$ INT32) |
+| `0x1000_0700 - 0x1000_077F` | **Matrix A Buffer (Gen-2 Packed)** | Packed 4-INT8 per 32-bit word (32 words, 128 bytes, 4x faster load) |
+| `0x1000_0780 - 0x1000_07FF` | **Matrix B Buffer (Gen-2 Packed)** | Packed 4-INT8 per 32-bit word (32 words, 128 bytes, 4x faster load) |
+| `0x1000_0800 - 0x1000_083F` | **Matrix C Buffer (Gen-2 Packed)** | Packed 4-INT8 per 32-bit word (16 words, 64 bytes, 4x faster read) |
 | `0x2000_0000 - 0x2000_000F` | **UART & Board I/O** | TX/RX FIFOs, Status, 7-Segment displays, LEDs |
 
 ### Accelerator MMIO Register Map (`ACCEL_BASE = 0x1000_0000`)
@@ -140,7 +143,7 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 | `0x004` | `REG_ACCEL_STATUS` | RO | `[0]`: `DONE` (1 = Computation finished or rejected by guardband)<br/>`[1]`: `BUSY` (1 = Core computation in progress)<br/>`[2]`: `ERROR` (1 = Invalid matrix dimensions rejected: $K=0$ or $K > \text{MAX\_K}$) |
 | `0x008` | `REG_ACCEL_KDIM` | R/W | `[7:0]`: Inner dot-product dimension $K$ ($1 \le K \le 16$) |
 | `0x00C` | `REG_ACCEL_CYCLES` | RO | `[31:0]`: **Hardware Execution Cycle Counter** (counts exact clock cycles from `core_start` to `core_done`) |
-| `0x010` | `REG_ACCEL_VERSION` | RO | `[31:24]`: Major/Minor Version (`0x01`)<br/>`[23:16]`: Array Size $N$ (`0x04` for $4\times4$, `0x08` for $8\times8$)<br/>`[15:8]`: Input Data Width (`0x08` = INT8)<br/>`[7:0]`: Accumulator Width (`0x20` = INT32) |
+| `0x010` | `REG_ACCEL_VERSION` | RO | `[31:24]`: Major/Minor Version (`0x02` for Gen-2)<br/>`[23:16]`: Array Size $N$ (`0x04` for $4\times4$, `0x08` for $8\times8$)<br/>`[15:8]`: Input Data Width (`0x08` = INT8)<br/>`[7:0]`: Accumulator Width (`0x20` = INT32) |
 
 ---
 
@@ -153,14 +156,14 @@ The design is synthesized, fully placed-and-routed, and timing-closed across two
 | **FPGA Family / Device** | **Cyclone II EP2C35F672C6** | **Cyclone V 5CSXFC6D6F31C6N** | Cyclone II EP2C20F484C7 (Limited) |
 | **Technology Node** | 90 nm TSMC | 28 nm TSMC Low-Power | 90 nm TSMC |
 | **Array Architecture** | **$8 \times 8$ (64 PEs Primary)** | **$8 \times 8$ (64 PEs Scale-Up)** | Deprecated (Only 52 Multipliers, < 64) |
-| **Logic Utilization** | **17,230 / 33,216 LEs (51.9%)** | **6,308 / 41,910 ALMs (15.1%)** | Legacy 4x4 (6,368 LEs) |
-| **Dedicated Logic Registers** | **9,038 registers (27.2%)** | **7,062 registers (16.9%)** | Legacy 4x4 (3,365 registers) |
+| **Logic Utilization** | **19,107 / 33,216 LEs (57.5%)** | **8,290 / 41,910 ALMs (19.8%)** | Legacy 4x4 (6,368 LEs) |
+| **Dedicated Logic Registers** | **9,423 registers (28.4%)** | **9,982 registers (23.8%)** | Legacy 4x4 (3,365 registers) |
 | **DSP / Embedded Multipliers** | **64 / 70 9-bit (91.4%)** | **64 / 112 Variable DSPs (57.1%)** | 16 / 52 9-bit (Cannot fit 8x8) |
-| **Total Memory Bits (BRAM)** | **264,192 / 483,840 (54.6%, 32 KB)** | **266,752 / 5,662,720 (4.7%, 32.5 KB)** | 134,144 bits (16 KB) |
+| **Total Memory Bits (BRAM)** | **264,192 / 483,840 (54.6%, 32 KB)** | **264,192 / 5,662,720 (4.7%, 32 KB)** | 134,144 bits (16 KB) |
 | **Target Clock Frequency** | **50.00 MHz (20.0 ns)** | **50.00 MHz (20.0 ns)** | 50.00 MHz (20.0 ns) |
-| **Setup Slack (Slow Model)** | **+4.588 ns** | **+3.932 ns** | +4.144 ns (4x4 legacy only) |
-| **Hold Slack (Slow Model)** | **+0.391 ns** | **+0.206 ns** | +0.445 ns |
-| **Max Frequency ($F_{max}$)** | **64.88 MHz** | **62.24 MHz** | 63.07 MHz |
+| **Setup Slack (Slow Model)** | **+4.626 ns** | **+5.609 ns** | +4.144 ns (4x4 legacy only) |
+| **Hold Slack (Slow Model)** | **+0.391 ns** | **+0.128 ns** | +0.445 ns |
+| **Max Frequency ($F_{max}$)** | **65.04 MHz** | **69.49 MHz** | 63.07 MHz |
 | **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | 0.000 ns |
 | **Peak Throughput (@ 50MHz)** | **6.40 GOPS** (3.20 GMAC/s) | **6.40 GOPS** (3.20 GMAC/s) | 1.60 GOPS (4x4 legacy) |
 | **Programming Bitstream** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` | `synthesis_soc/soc_top.sof` *(Archived 4x4)* |
@@ -193,15 +196,15 @@ Available Scenarios:
 ### Scenario Breakdown
 
 1. **Demo 1: Hardware vs Software 8x8 GEMM Benchmark ($K=8$, 512 MACs = 1,024 OPs)**:
-   - Calculates $C = \text{ReLU}((A \times B) \gg 7)$ on $8 \times 8$ matrices across 64 PEs with zero arithmetic errors.
-   - **Pure Compute-Only Performance (Accelerator Core)**:
-     - Pure HW Compute Latency: **93 clock cycles** ($1.86\ \mu\text{s}$ @ 50 MHz).
-     - Pure Compute Speedup: **3,529.6x faster** than RISC-V CPU software arithmetic loop (328,257 cycles).
-     - Pure Compute Throughput: **550.5 MOPS** (Single tile utilization vs 6,400 MOPS theoretical peak).
-   - **End-to-End System Performance (Full SoC with MMIO)**:
-     - Total Latency: **8,525 clock cycles** ($170.5\ \mu\text{s}$ @ 50 MHz, 1,274 CPU instructions).
-     - End-to-End Speedup: **38.5x faster** than software execution.
-     - End-to-End Throughput: **6.0 MOPS**.
+   - Calculates $C = \text{ReLU}((A \times B) \gg 7)$ on $8 \times 8$ matrices across 64 PEs with 100% Bit-True match against C software and Python golden references.
+   - **Gen-2 Architecture (Packed Word Transfer & 8 Parallel Quantizers Readout)**:
+     - **Pure HW Compute Latency**: Dropped from 93 cycles down to **37 clock cycles** ($0.74\ \mu\text{s}$ @ 50 MHz) — **60.2% reduction in core latency**!
+     - **Pure Compute Throughput**: **1,383.8 MOPS (1.38 GOPS)**.
+     - **End-to-End System Latency**: Dropped from 8,484 cycles down to **1,920 clock cycles** ($38.4\ \mu\text{s}$ @ 50 MHz) — **4.4x FASTER END-TO-END SPEEDUP**!
+     - **CPU Retired Instructions**: Dropped from 1,269 down to **275 instructions** (4.6x fewer CPU cycles spent on MMIO loops).
+     - **End-to-End Speedup vs Software**: **173.7x FASTER** than RV32I software loop (333,485 cycles).
+   - **Legacy Compatibility Mode (Single-Byte MMIO)**:
+     - Core Compute: 93 cycles (550.5 MOPS). End-to-End: 8,484 cycles (39.3x speedup vs SW).
    - **Cycle-Accurate Bus Profiler Breakdown (SoC Execution Window = 8,535 cycles)**:
      - CPU Instruction & Stack Fetch (BRAM over AXI crossbar): **4,919 cycles (57.6%)** (1,661 AXI transactions).
      - CPU Loop Execution & Arithmetic (load, mask, offset, store ~42 cyc/byte): **3,143 cycles (36.8%)**.
@@ -262,7 +265,7 @@ The project adheres to the **Three-Tier Hardware Verification Pyramid** spanning
                   /   AXI    \  UVM 1.1c (100% Coverage), GEMM Golden Model, AXI Backpressure
                  /------------\
                 /  Unit-Level  \ TIER 1: Individual RTL Module Verification (tb_unit_modules.sv)
-               / (Từng Module)  \ 52/52 Checks (PE, Skew, Quantize/ReLU, Buffers A/B/C, Ctrl, 7-Seg)
+               / (Từng Module)  \ 61/61 Checks (PE, Skew, Quantize/ReLU, Buffers A/B/C, Ctrl, Array Core, 7-Seg)
               /------------------\
 ```
 
@@ -275,7 +278,7 @@ Dedicated self-checking assertions validating all 7 fundamental hardware blocks 
 * **`gemm_controller.sv`**: FSM lifecycle (`IDLE` $\to$ `CLEAR` $\to$ `STREAM` $\to$ `DRAIN` $\to$ `READOUT` $\to$ `FLUSH` $\to$ `DONE`), hardware guardband rejecting invalid dimensions ($K=0, K > 16$), and 1-cycle `done` pulse generation.
 * **`systolic_array_core.sv`**: 2D mesh of 64 PEs verifying nearest-neighbor horizontal and vertical data propagation.
 * **`seven_seg_decoder.sv`**: Active-low truth table for all 16 hexadecimal digits (`0..F`) and display blanking.
-* **Result**: **52 / 52 Checks PASSED (100.0%, 0 Errors)**.
+* **Result**: **61 / 61 Checks PASSED (100.0%, 0 Errors)**.
 
 ### 2. Tier 2: AXI Protocol & UVM 1.1c Functional Coverage Closure
 * **AXI4-Lite Handshake & Backpressure (`tb_axi_backpressure.sv`)**: Exhaustive verification of `VALID`/`READY` handshakes across all slaves (`axi_ram`, `systolic_gemm_axi_lite`, `axi_uart`) under randomized multi-cycle wait states.

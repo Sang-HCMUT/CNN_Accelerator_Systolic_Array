@@ -13,10 +13,10 @@
 > 
 > Để giải quyết triệt để vấn đề này, đề tài của em đã nghiên cứu, thiết kế và hiện thực thành công một **Hệ thống trên Vi mạch (SoC) hoàn chỉnh tăng tốc mạng CNN** dựa trên **3 trụ cột công nghệ**:
 > 1. **Về Toán học**: Ứng dụng giải thuật **`im2col`** biến đổi phép chập nhiều tầng thành phép nhân ma trận tổng quát **GEMM ($C = A \times B$)**, kết hợp kỹ thuật **Lượng tử hóa INT8** giảm $75\%$ dung lượng bộ nhớ mà vẫn giữ vững độ chính xác **$97.06\%$** trên tập MNIST.
-> 2. **Về Kiến trúc Vi mạch**: Tự thiết kế từ đầu (from scratch) lõi **Mảng tâm thu 2D (Systolic Array) quy mô $8 \times 8$ (64 PEs song song)** theo cơ chế **Output-Stationary** với mạng trễ sóng **Wavefront Skewing ($0T..7T$)**, giúp dữ liệu được tái sử dụng tối đa (Data Reuse) giữa các PE, hoàn thành phép tính trong đúng **93 chu kỳ xung nhịp** ($K=8$).
+> 2. **Về Kiến trúc Vi mạch**: Tự thiết kế từ đầu (from scratch) lõi **Mảng tâm thu 2D (Systolic Array) quy mô $8 \times 8$ (64 PEs song song)** theo cơ chế **Output-Stationary** với mạng trễ sóng **Wavefront Skewing ($0T..7T$)**, giúp dữ liệu được tái sử dụng tối đa (Data Reuse) giữa các PE, hoàn thành phép tính trong đúng **37 chu kỳ xung nhịp** ($K=8$ ở chế độ Gen-2 đọc song song 8 hàng) hoặc 93 chu kỳ ở chế độ Legacy.
 > 3. **Về Tích hợp Hệ thống**: Tích hợp vi xử lý mã nguồn mở **RISC-V (PicoRV32)** qua trục bus chuẩn công nghiệp **AXI4-Lite 32-bit**, tổng hợp thành công bitstream trên **Altera Cyclone II (Kit DE2)** đạt tần số cực đại **$64.88\text{ MHz}$** và mở rộng trên **Intel Cyclone V (Kit DE10-Standard)** đạt **$62.24\text{ MHz}$**, cùng ứng dụng máy tính Host GUI vẽ số tay nhận dạng thời gian thực qua UART.
 > 
-> Toàn bộ hệ thống đã được kiểm chứng **100% Bit-True** qua 52/52 kiểm thử module đơn vị, bộ UVM 1.1c 88 bins chức năng, và chạy đồng mô phỏng SoC hoàn chỉnh. Sau đây em xin phép được trình bày chi tiết từng giai đoạn thực hiện."
+> Toàn bộ hệ thống đã được kiểm chứng **100% Bit-True** qua 61/61 kiểm thử module đơn vị độc lập, bộ UVM 1.1c 88 bins chức năng, và chạy đồng mô phỏng SoC hoàn chỉnh. Sau đây em xin phép được trình bày chi tiết từng giai đoạn thực hiện."
 
 ---
 
@@ -57,22 +57,18 @@
   > - Nếu dùng Weight-Stationary, mỗi PE phải có mạch định tuyến phức tạp và phải có một cây gom tổng (Adder Tree) ở ngõ ra rất cồng kềnh.
   > - Với **Output-Stationary**, thanh ghi tích lũy 32-bit nằm ngay trong PE, dữ liệu trung gian không bao giờ phải gửi ra ngoài cho đến khi hoàn tất. Thiết kế này giúp tiết kiệm tối đa diện tích cổng logic (chỉ tốn 17,230 LEs (51.9%) cho toàn bộ SoC mảng $8 \times 8$ trên DE2) và đường dây chạy ngắn nhất, giúp đạt Fmax cao hơn ạ."*
 
-### Câu 3: Con số 93 chu kỳ tính toán của mảng $8 \times 8$ ($K=8$) tính từ công thức toán học nào?
-* **Bản chất**: Công thức trễ mảng tâm thu lý thuyết + trễ đường ống nạp xả dữ liệu tuần tự.
+### Câu 3: Chu kỳ tính toán của mảng $8 \times 8$ ($K=8$) là bao nhiêu và tính từ công thức nào?
+* **Bản chất**: Kiến trúc Gen-1 (đọc tuần tự 64 phần tử qua 1 Quantizer = 93 chu kỳ) và Nâng cấp Gen-2 (đọc song song 8 hàng qua 8 Quantizers = 37 chu kỳ).
 * **Trả lời chuẩn**:
   > *"Dạ thưa Thầy/Cô:
   > 1. Thời gian tính toán thuần túy của mảng tâm thu kích thước $N \times N$ với chiều sâu nhân $K$ tuân theo công thức kinh điển: 
   >    $$T_{compute} = 3N + K - 2$$
   >    Với $N=8, K=8 \implies T_{compute} = 3(8) + 8 - 2 = 30\text{ chu kỳ}$.
-  > 2. Trong hiện thực phần cứng thực tế, FSM điều khiển `gemm_controller` thực hiện theo đường ống phân tầng:
-  >    - **1 chu kỳ**: Khởi tạo và bắt tay (`START` $\to$ `LOAD_BIAS`).
-  >    - **8 chu kỳ**: Bơm luồng dữ liệu $K=8$ từ Buffer A/B qua bộ Skewing (`STREAM_DATA`).
-  >    - **16 chu kỳ**: Chờ dữ liệu trôi hết qua đường chéo mảng PE và xả đường ống (`DRAIN_ARRAY`).
-  >    - **64 chu kỳ**: Đọc tuần tự $8 \times 8 = 64$ phần tử kết quả từ các PE qua bộ Quantizer/ReLU ghi vào Buffer C (`READOUT_C`).
-  >    - **2 chu kỳ**: Hoàn tất Quantization/ReLU và xuất cờ `done` (`WRITE_DONE` $\to$ `IDLE`).
-  >    - **2 chu kỳ**: Ghi nhận và đồng bộ trạng thái thanh ghi `REG_ACCEL_CYCLES`.
-  >    $$\implies \text{Tổng cộng: } 1 + 8 + 16 + 64 + 2 + 2 = \mathbf{93\text{ chu kỳ xung nhịp}}.$$
-  > Con số này đo được chính xác $100\%$ qua thanh ghi phần cứng `REG_ACCEL_CYCLES` (MMIO offset `0x00C`), hoàn toàn xác định và có độ trễ không đổi (zero jitter) ạ."*
+  > 2. Trong hiện thực phần cứng thực tế:
+  >    - **Ở phiên bản Gen-1 (Legacy)**: FSM nạp 1 chu kỳ, bơm luồng 8 chu kỳ, drain mảng 16 chu kỳ, đọc tuần tự từng phần tử qua 1 quantizer mất 64 chu kỳ, và kết thúc 2 chu kỳ $\implies$ Tổng cộng **93 chu kỳ**.
+  >    - **Ở phiên bản Gen-2 (Đột phá mới)**: Nhận thấy 64 chu kỳ readout chiếm tới $68.8\%$ thời gian tính toán của lõi, em đã tích hợp **8 bộ Quantizer/ReLU song song** và hỗ trợ ghi theo hàng (Parallel Row Writeback) vào Buffer C. Nhờ đó, pha `ST_READOUT` rút ngắn từ 64 chu kỳ xuống **chỉ còn đúng 8 chu kỳ**!
+  >    $$\implies T_{compute\_gen2} = 1\text{ (Clear)} + 8\text{ (Stream)} + 16\text{ (Drain)} + 8\text{ (Parallel Readout)} + 2\text{ (Flush)} + 2 = \mathbf{37\text{ chu kỳ xung nhịp}}!$$
+  >    Thời gian tính toán của lõi giảm tới $60.2\%$, nâng thông lượng tính toán thuần lên **1,383 MOPS (1.38 GOPS)**. Đồng thời kết hợp với cơ chế nạp/đọc đóng gói 4 byte (Packed 4-INT8 Word Transfer), thời gian trễ end-to-end của toàn hệ thống SoC trong Demo 1 giảm từ **8,484 chu kỳ xuống 1,920 chu kỳ (tăng tốc 4.4 lần, nhanh gấp 173.7 lần CPU phần mềm)** ạ!"*
 
 ### Câu 4: Mạch kẹp bão hòa (Saturation Clamping) hoạt động thế nào và tại sao lại sống còn đối với AI?
 * **Bản chất**: Chống hiện tượng tràn bit lật dấu (Wrap-around Overflow).
