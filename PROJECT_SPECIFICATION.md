@@ -66,15 +66,18 @@ Giao tiếp chuẩn hóa AMBA AXI4-Lite: Module đỉnh được đóng gói qua
 
 ### 1.3. Môi Trường & Nền Tảng Công Cụ
 
-Mô hình đối chứng toán học (Golden Model): Python 3.13 (kèm script tự động xuất test vector .hex).
-
-Ngôn ngữ mô tả phần cứng (RTL): SystemVerilog (IEEE 1800-2012).
-
-Môi trường mô phỏng & kiểm chứng: Mentor Graphics ModelSim-Altera 10.1d.
-
-Công cụ tổng hợp & phân tích thời gian: Altera Quartus II 64-Bit 13.0 SP1 & TimeQuest Timing Analyzer.
-
-Chip FPGA mục tiêu: Altera Cyclone II EP2C20F484C7 (Kit thí nghiệm Altera DE1).
+- **Mô hình đối chứng toán học (Golden Model)**: Python 3.13 (kèm bộ script `software_ref/` tự động xuất test vector `.hex`, mô phỏng Bit-True float/int8).
+- **Ngôn ngữ mô tả phần cứng (RTL)**: SystemVerilog (IEEE 1800-2012) tuân thủ nghiêm ngặt nguyên tắc thiết kế đồng bộ thuần túy (Pure Synchronous Design).
+- **Môi trường mô phỏng & kiểm chứng**:
+  * Unit Simulation: Mentor Graphics ModelSim-Altera 10.1d (52/52 Unit Checks, 100% Pass).
+  * SystemVerilog / UVM Verification: UVM 1.1c Class-based Architecture (88 Functional Coverage Bins).
+  * SoC Hardware/Software Co-Simulation: 7 Demo Suites với firmware C thật chạy trên CPU PicoRV32.
+- **Công cụ tổng hợp & phân tích thời gian vật lý**:
+  * Altera Quartus II 64-Bit 13.0 SP1 (TimeQuest Timing Analyzer cho nền tảng chính DE2).
+  * Intel Quartus Prime Lite 20.1 (Timing Analyzer cho nền tảng mở rộng DE10-Standard).
+- **Phần cứng mục tiêu chính (Primary Platform)**: Altera Cyclone II `EP2C35F672C6` (Kit Terasic DE2 - Đóng Timing Fmax **64.88 MHz**, Slack **+4.588 ns**, TNS = **0.000 ns**).
+- **Phần cứng mở rộng quy mô (Scale-Up Platform)**: Intel Cyclone V SoC `5CSXFC6D6F31C6N` (Kit Terasic DE10-Standard - Đóng Timing Fmax **62.24 MHz**, Slack **+3.932 ns**, TNS = **0.000 ns**).
+- **Nền tảng cơ sở đã lưu trữ (Archived Baseline)**: Altera Cyclone II `EP2C20F484C7` (Kit DE1 - Lưu trữ nghiên cứu ban đầu do giới hạn vật lý 52 bộ nhân DSP không đủ cho mảng $8 	imes 8$).
 
 ### 1.4. Kim Tự Tháp 5 Tầng Kiến Thức & Giá Trị Kỹ Thuật Đột Phá Của Đề Tài (Full-Stack Edge AI SoC)
 
@@ -859,6 +862,30 @@ Xét một tile tính toán kích thước $N \times N$ ($N=8$) với chiều s�
   1. **AXI4 Full Burst Master với DMA Engine**: Cho phép bộ gia tốc tự phát xung đọc Burst 256 beats liên tục từ BRAM/DRAM mà không cần CPU PicoRV32 can thiệp từng word. Khi đó, $T_{\text{comm}}$ sẽ giảm $8\times$, nâng hệ số tận dụng mảng $\eta$ lên $>75\%$.
   2. **Double Buffering (Ping-Pong Buffer)**: CPU nạp tile $(k+1)$ vào bộ đệm ngầm trong khi mảng PE đang tính toán tile $k$.
 
+### 6.5.1. Báo Cáo Phân Tích Vi Kiến Trúc & Định Lượng Nút Thắt (Cycle-Accurate Bus Profiler Telemetry)
+
+Để làm rõ bản chất chênh lệch giữa thời gian tính toán thuần của mảng tâm thu ($93\text{ chu kỳ}$) và tổng thời gian toàn hệ thống ($8,525\text{ chu kỳ}$ ở Demo 1), hệ thống đã được phân tích bằng công cụ Cycle-Accurate Bus Profiler chạy trực tiếp trên mô phỏng SoC trong đúng cửa sổ thực thi $8,535\text{ chu kỳ}$:
+
+| Phân Vùng Hoạt Động Của Hệ Thống | Số Giao Dịch AXI | Số Chu Kỳ Xung Nhịp | Tỷ Lệ Chiếm Dụng | Bản Chất Vi Kiến Trúc & Nguyên Nhân Kỹ Thuật |
+| :--- | :---: | :---: | :---: | :--- |
+| **CPU Instruction & Stack Fetch** | **1,661** | **4,919** | **57.6%** | CPU PicoRV32 fetch từng mã lệnh 32-bit và dữ liệu ngăn xếp từ BRAM qua AXI crossbar (mất trung bình $\approx 3$ chu kỳ/lệnh). |
+| **CPU Loop Execution (ALU Math)** | – | **3,143** | **36.8%** | CPU thực thi các chỉ lệnh nội tại trong lõi (vòng lặp for, tính offset 2D $r \times 8 + c$, dịch bit, nạp/lưu byte) — tiêu tốn tới **$\approx 42$ chu kỳ lệnh cho mỗi byte** dữ liệu. |
+| **Accelerator MMIO Transactions** | **201** | **~473** | **~5.5%** | Giao dịch bus thực tế tới bộ tăng tốc (ghi 64 bytes Buffer A, ghi 64 bytes Buffer B, đọc 64 bytes Buffer C, cấu hình Start và polling cờ `STATUS_DONE`). Mỗi giao dịch MMIO chỉ mất 2–3 chu kỳ. |
+| **Systolic Array Active Compute** | – | **93** | **~1.1%** | Toàn bộ 64 PE trong mảng tâm thu thực hiện xong 512 MACs ($1,024\text{ OPs}$) và đẩy kết quả qua bộ Quantizer/ReLU. |
+| **TỔNG CỬA SỔ THỰC THI DEMO 1** | **1,862** | **8,535** | **100.0%** | **Nút thắt thực sự: 94.4% thời gian ngốn bởi CPU điều phối, PE core chỉ chiếm 1.1%!** |
+
+#### Minh Bạch Hóa Baseline Phần Mềm CPU & Tốc Độ Tăng Tốc (Speedup Metrics):
+1. **End-to-End Speedup ($38.5\times$) — Chỉ số hệ thống chính (Primary System Benchmark)**:
+   - So sánh toàn diện giữa thời gian toàn bộ SoC thực hiện xong bài toán GEMM ($8,525\text{ chu kỳ}$, bao gồm mọi chi phí nạp/đọc dữ liệu) so với CPU PicoRV32 chạy vòng lặp phần mềm thuần túy ($328,257\text{ chu kỳ}$).
+   - Đây là con số thực tế phản ánh chính xác hiệu năng cải thiện của một hệ thống SoC hoàn chỉnh.
+2. **Pure Compute Speedup ($3,529.6\times$) — Chỉ số lõi toán học thuần (Inner Math Core Benchmark)**:
+   - Đo đạc độc lập thời gian mảng 64 PE tính toán qua thanh ghi phần cứng `REG_ACCEL_CYCLES` ($93\text{ chu kỳ}$) so với vòng lặp toán của CPU ($328,257\text{ chu kỳ}$).
+   - **Bản chất kỹ thuật của baseline**: CPU PicoRV32 được biên dịch ở cấu hình tập lệnh cơ bản `rv32i` (không bật bộ nhân phần cứng `ENABLE_MUL`), do đó mỗi phép nhân INT8 của CPU phải gọi hàm phần mềm `__mulsi3` của thư viện `libgcc` tiêu tốn trung bình $\approx 641\text{ chu kỳ/MAC}$. Mảng phần cứng 64 PE tính toán song song hoàn thành tương đương 512 MACs chỉ trong 93 chu kỳ, tạo nên mức tăng tốc toán học $3,529\times$.
+3. **Demo 2 Tiling ($16 \times 16$, K=16, 4 tiles)**:
+   - Thời gian phần mềm $3,032,928\text{ chu kỳ}$ được đo đạc chính xác trên Tile 0 ($758,232\text{ chu kỳ}$) và chiếu nhân 4 (`Projected 4x Tile 0`) nhằm tránh thời gian mô phỏng co-simulation kéo dài hàng chục phút, đạt End-to-End Speedup **$26.5\times$**.
+
+---
+
 ### 6.6. Bảng Phân Tích Thông Lượng Đỉnh vs Thông Lượng Thực Tế & Mô Hình Roofline (Peak vs Effective Throughput)
 
 Bảng tổng hợp đối chiếu toàn diện giữa thông lượng đỉnh lý thuyết, thông lượng tính toán thuần đo được qua `REG_ACCEL_CYCLES`, và thông lượng hiệu dụng toàn hệ thống đo được qua `rdcycle`:
@@ -882,6 +909,31 @@ Bảng tổng hợp đối chiếu toàn diện giữa thông lượng đỉnh l
 
 
 ---
+
+---
+
+### 6.7. Kế Hoạch & Lộ Trình Nâng Cấp Công Nghiệp 8 Bước (Industrial Gen-2 Roadmap)
+
+Dựa trên phân tích định lượng từ Bus Profiler, đề tài vạch ra lộ trình nâng cấp kiến trúc vi mạch chuyên sâu gồm 8 hạng mục chiến lược:
+
+| # | Hạng Mục Nâng Cấp | Cơ Chế Kỹ Thuật | Mục Tiêu Tối Ưu Hóa | Ước Tính Hiệu Quả | Mức Độ Rủi Ro & Đánh Đổi |
+| :-: | :--- | :--- | :--- | :--- | :--- |
+| **1** | **Tích hợp DMA Master trong Accelerator** | Accelerator tự phát xung đọc Burst A/B và ghi C trực tiếp về BRAM; CPU chỉ ghi Descriptor điều khiển. | Loại bỏ hoàn toàn CPU khỏi đường truyền dữ liệu ($94.4\%$ thời gian). | Giảm từ $8,500$ xuống chỉ còn **$500 \sim 700\text{ chu kỳ/tile}$** (**Tăng tốc $12 \sim 17\times$**). | Độ khó cao; cần thiết kế Interconnect 2-Master kèm bộ trọng tài ưu tiên (Arbiter). |
+| **2** | **Đóng gói 4 INT8/từ (Packed Word Transfer)** | Đóng gói 4 byte INT8 vào 1 từ AXI 32-bit `[b3, b2, b1, b0]`, kết hợp unroll vòng lặp trong firmware. | Giảm số lần lặp và số giao dịch bus của CPU đi 4 lần. | **Tăng tốc $3 \sim 4\times$ End-to-End** ngay trên kiến trúc hiện tại. | Rủi ro thấp; yêu cầu căn lề địa chỉ 4-byte kèm logic unpack ngõ vào. |
+| **3** | **Đọc ra song song theo hàng (8 Parallel Quantizers)** | Tích hợp 8 bộ Quantizer/ReLU song song, mỗi chu kỳ đọc ra trọn vẹn 1 hàng 8 phần tử thay vì đọc từng byte tuần tự. | Rút ngắn pha `READOUT_C` từ 64 chu kỳ xuống còn đúng 8 chu kỳ. | Giảm độ trễ tính toán lõi từ **$93\text{ chu kỳ}$ xuống $\approx 37\text{ chu kỳ}$**. | Rủi ro thấp; tiêu tốn thêm $\approx 8$ bộ dịch bit và MUX dồn kênh. |
+| **4** | **Giảm chi phí Instruction Fetch của CPU** | Kết nối CPU qua giao diện bộ nhớ trực tiếp `mem_valid` thay vì qua bus AXI, tích hợp I-Cache nhỏ, build firmware với cờ `-O2`. | Triệt tiêu $57.6\%$ thời gian CPU chờ nạp lệnh từ BRAM. | **Tăng tốc $1.5 \sim 2.0\times$** cho toàn bộ thời gian CPU điều phối. | Rủi ro trung bình; thay đổi cấu trúc cổng nhớ của SoC. |
+| **5** | **Chồng lấp theo Tile (Double-Buffering Ping-Pong)** | Thiết kế bộ đệm kép Bank 0 / Bank 1: nạp trước Tile $n+1$ vào Bank 1 trong khi mảng PE đang tính Tile $n$ ở Bank 0. | Ẩn hoàn toàn thời gian tính toán của mảng lõi trong các chuỗi đa tile (Demo 2, 3, 6). | Triệt tiêu $100\%$ thời gian trễ chờ của mảng PE. | Rủi ro trung bình; cần thêm logic quản lý cờ trạng thái tráo bank (Bank Ping-Pong FSM). |
+| **6** | **Seamless Streaming không xả mảng (Drainless Pipeline)** | Cho phép luồng nạp dữ liệu của Tile kế tiếp gối đầu trực tiếp lên pha Drain (16 chu kỳ) của Tile hiện tại. | Nâng cao hiệu suất PE Active Ratio từ $31\%$ ($K=8$) lên $>75\%$. | Mảng tính toán nhanh hơn **$1.5 \sim 2.0\times$**. | Rủi ro cao; yêu cầu tinh chỉnh sâu FSM điều khiển và mạch xóa Accumulator. |
+| **7** | **Chuyển bộ đệm A/B/C sang Multi-Bank Block RAM** | Phân rã Buffer A và B thành các Bank M4K/M10K độc lập theo từng hàng/cột, đọc đồng bộ trễ 1 chu kỳ clock. | Khắc phục hiện tượng tốn 17,230 LEs (51.9%) do dùng Flip-Flop, sẵn sàng mở rộng lên mảng $16 \times 16$. | Tiết kiệm hàng ngàn LEs trên FPGA, bảo tồn tài nguyên silicon. | Rủi ro trung bình; phải thay đổi lịch trình phát dữ liệu của bộ Skewing trễ 1 chu kỳ. |
+| **8** | **Chuẩn hóa Baseline công bằng & Minh bạch số liệu** | Đo đạc đối chứng thêm baseline có bật `ENABLE_FAST_MUL` hoặc nhân INT8 tối ưu hóa viết tay. | Bảo vệ tính khoa học và trung thực tuyệt đối của mọi con số công bố. | Định vị chính xác giá trị học thuật của đề tài trước Hội đồng. | **Đã hoàn thành 100% trong phiên bản hiện tại**. |
+
+#### Thứ Tự Thực Thi Chiến Lược Được Đề Xuất:
+1. **Bước 8 (Đã hoàn thành)**: Quyết định tính khách quan và uy tín của toàn bộ số liệu bảo vệ đồ án.
+2. **Đợt 2 (Bước 2 + Bước 3 + Bước 4 - Phần mềm & Đóng gói từ)**: Đem lại hiệu quả tăng tốc ngay $3 \sim 4\times$ với rủi ro thấp nhất, không làm biến động lớn cấu trúc vi mạch.
+3. **Đợt 3 (Bước 1 - Tích hợp DMA Master)**: Nâng cấp vi kiến trúc mang tính đột phá lớn nhất, biến bộ tăng tốc thành một IP độc lập chuẩn công nghiệp.
+4. **Đợt 4 (Bước 5 & Bước 6)**: Chỉ thực hiện sau khi đã có DMA, nhằm tối ưu hóa triệt để khi mảng tính toán đã trở thành nút thắt.
+5. **Đợt 5 (Bước 7)**: Áp dụng khi nâng cấp quy mô lên mảng $16 \times 16$ hoặc khi cần tiết kiệm diện tích logic trên các dòng chip FPGA nhỏ.
+
 
 ## 7. HIỆN THỰC GIAI ĐOẠN 2: THUẬT TOÁN IM2COL, BỘ CHIA KHỐI TILING & THỰC NGHIỆM SUY LUẬN MNIST
 

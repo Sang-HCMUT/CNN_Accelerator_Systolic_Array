@@ -136,7 +136,7 @@ The SoC uses a unified 32-bit flat memory-mapped architecture:
 
 | Offset | Register Name | Access | Bitfields & Descriptions |
 | :--- | :--- | :---: | :--- |
-| `0x000` | `REG_ACCEL_CTRL` | R/W | `[0]`: `START` (Pulse 1 to launch computation)<br/>`[1]`: `BYPASS_RELU` (1 = Linear bypass, 0 = Active ReLU)<br/>`[6:2]`: `SHIFT_BITS` (Arithmetic right-shift: $0 \dots 8$) |
+| `0x000` | `REG_ACCEL_CTRL` | R/W | `[0]`: `START` (Pulse 1 to launch computation)<br/>`[1]`: `BYPASS_RELU` (1 = Linear bypass, 0 = Active ReLU)<br/>`[6:2]`: `SHIFT_BITS` (Arithmetic right-shift: $0 \dots 31$, MNIST typical: 7–8) |
 | `0x004` | `REG_ACCEL_STATUS` | RO | `[0]`: `DONE` (1 = Computation finished or rejected by guardband)<br/>`[1]`: `BUSY` (1 = Core computation in progress)<br/>`[2]`: `ERROR` (1 = Invalid matrix dimensions rejected: $K=0$ or $K > \text{MAX\_K}$) |
 | `0x008` | `REG_ACCEL_KDIM` | R/W | `[7:0]`: Inner dot-product dimension $K$ ($1 \le K \le 16$) |
 | `0x00C` | `REG_ACCEL_CYCLES` | RO | `[31:0]`: **Hardware Execution Cycle Counter** (counts exact clock cycles from `core_start` to `core_done`) |
@@ -202,9 +202,12 @@ Available Scenarios:
      - Total Latency: **8,525 clock cycles** ($170.5\ \mu\text{s}$ @ 50 MHz, 1,274 CPU instructions).
      - End-to-End Speedup: **38.5x faster** than software execution.
      - End-to-End Throughput: **6.0 MOPS**.
-   - **Memory Wall / Roofline Breakdown**:
-     - Accelerator Hardware Computation: **93 cycles (1.1% of total time)**.
-     - AXI4-Lite Single-Word MMIO Communication Overhead: **8,432 cycles (98.9% of total time)**.
+   - **Cycle-Accurate Bus Profiler Breakdown (SoC Execution Window = 8,535 cycles)**:
+     - CPU Instruction & Stack Fetch (BRAM over AXI crossbar): **4,919 cycles (57.6%)** (1,661 AXI transactions).
+     - CPU Loop Execution & Arithmetic (load, mask, offset, store ~42 cyc/byte): **3,143 cycles (36.8%)**.
+     - Accelerator MMIO Transfers (Write A/B, Read C, Control & Polling): **~473 cycles (~5.5%)** (201 AXI transactions).
+     - Systolic Array Core Active Compute: **93 cycles (~1.1%)**.
+     - **Key Insight**: 94.4% of execution time is CPU orchestration overhead, while pure systolic array compute takes only 1.1%.
 
 2. **Demo 2: 16x16 Large Matrix GEMM Tiling Engine (4 Tiles x 8x8, $K=16$, 4,096 MACs = 8,192 OPs)**:
    - Hardware-aware 2D tiling engine partitioning a $16 \times 16$ GEMM into 4 sub-matrix tiles ($8 \times 8$, $K=16$).
