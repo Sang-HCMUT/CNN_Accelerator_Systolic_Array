@@ -120,6 +120,9 @@ module tb_unit_modules;
     logic                       buf_a_wr_en;
     logic [6:0]                 buf_a_wr_addr;
     logic signed [7:0]          buf_a_wr_data;
+    logic                       buf_a_wr_packed_en;
+    logic [4:0]                 buf_a_wr_packed_addr;
+    logic [31:0]                buf_a_wr_packed_data;
     logic                       buf_a_stream_en;
     logic [7:0]                 buf_a_k_step, buf_a_k_dim;
     logic signed [7:0]          buf_a_row_out [N];
@@ -129,20 +132,26 @@ module tb_unit_modules;
         .MAX_K(16),
         .DATA_WIDTH(8)
     ) u_buf_a (
-        .clk         (clk),
-        .rst_n       (rst_n),
-        .wr_en       (buf_a_wr_en),
-        .wr_addr     (buf_a_wr_addr),
-        .wr_data     (buf_a_wr_data),
-        .stream_en   (buf_a_stream_en),
-        .k_step      (buf_a_k_step),
-        .k_dim       (buf_a_k_dim),
-        .row_data_out(buf_a_row_out)
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .wr_en          (buf_a_wr_en),
+        .wr_addr        (buf_a_wr_addr),
+        .wr_data        (buf_a_wr_data),
+        .wr_packed_en   (buf_a_wr_packed_en),
+        .wr_packed_addr (buf_a_wr_packed_addr),
+        .wr_packed_data (buf_a_wr_packed_data),
+        .stream_en      (buf_a_stream_en),
+        .k_step         (buf_a_k_step),
+        .k_dim          (buf_a_k_dim),
+        .row_data_out   (buf_a_row_out)
     );
 
     logic                       buf_b_wr_en;
     logic [6:0]                 buf_b_wr_addr;
     logic signed [7:0]          buf_b_wr_data;
+    logic                       buf_b_wr_packed_en;
+    logic [4:0]                 buf_b_wr_packed_addr;
+    logic [31:0]                buf_b_wr_packed_data;
     logic                       buf_b_stream_en;
     logic [7:0]                 buf_b_k_step, buf_b_k_dim;
     logic signed [7:0]          buf_b_col_out [N];
@@ -152,15 +161,18 @@ module tb_unit_modules;
         .MAX_K(16),
         .DATA_WIDTH(8)
     ) u_buf_b (
-        .clk         (clk),
-        .rst_n       (rst_n),
-        .wr_en       (buf_b_wr_en),
-        .wr_addr     (buf_b_wr_addr),
-        .wr_data     (buf_b_wr_data),
-        .stream_en   (buf_b_stream_en),
-        .k_step      (buf_b_k_step),
-        .k_dim       (buf_b_k_dim),
-        .col_data_out(buf_b_col_out)
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .wr_en          (buf_b_wr_en),
+        .wr_addr        (buf_b_wr_addr),
+        .wr_data        (buf_b_wr_data),
+        .wr_packed_en   (buf_b_wr_packed_en),
+        .wr_packed_addr (buf_b_wr_packed_addr),
+        .wr_packed_data (buf_b_wr_packed_data),
+        .stream_en      (buf_b_stream_en),
+        .k_step         (buf_b_k_step),
+        .k_dim          (buf_b_k_dim),
+        .col_data_out   (buf_b_col_out)
     );
 
     logic                       buf_c_wr_acc_en;
@@ -169,26 +181,38 @@ module tb_unit_modules;
     logic                       buf_c_wr_int8_en;
     logic [5:0]                 buf_c_wr_int8_addr;
     logic signed [7:0]          buf_c_wr_int8_data;
+    logic                       buf_c_wr_row_en;
+    logic [$clog2(N)-1:0]       buf_c_wr_row_idx;
+    logic signed [7:0]          buf_c_wr_row_data_int8 [N];
+    logic signed [31:0]         buf_c_wr_row_data_acc  [N];
     logic [5:0]                 buf_c_rd_addr;
     logic signed [7:0]          buf_c_rd_data_int8;
     logic signed [31:0]         buf_c_rd_data_acc32;
+    logic [3:0]                 buf_c_rd_packed_addr;
+    logic [31:0]                buf_c_rd_data_packed_int8;
 
     matrix_buffer_c #(
         .ARRAY_SIZE(N),
         .DATA_WIDTH(8),
         .ACC_WIDTH(32)
     ) u_buf_c (
-        .clk          (clk),
-        .rst_n        (rst_n),
-        .wr_acc_en    (buf_c_wr_acc_en),
-        .wr_acc_addr  (buf_c_wr_acc_addr),
-        .wr_acc_data  (buf_c_wr_acc_data),
-        .wr_int8_en   (buf_c_wr_int8_en),
-        .wr_int8_addr (buf_c_wr_int8_addr),
-        .wr_int8_data (buf_c_wr_int8_data),
-        .rd_addr      (buf_c_rd_addr),
-        .rd_data_int8 (buf_c_rd_data_int8),
-        .rd_data_acc32(buf_c_rd_data_acc32)
+        .clk                 (clk),
+        .rst_n               (rst_n),
+        .wr_acc_en           (buf_c_wr_acc_en),
+        .wr_acc_addr         (buf_c_wr_acc_addr),
+        .wr_acc_data         (buf_c_wr_acc_data),
+        .wr_int8_en          (buf_c_wr_int8_en),
+        .wr_int8_addr        (buf_c_wr_int8_addr),
+        .wr_int8_data        (buf_c_wr_int8_data),
+        .wr_row_en           (buf_c_wr_row_en),
+        .wr_row_idx          (buf_c_wr_row_idx),
+        .wr_row_data_int8    (buf_c_wr_row_data_int8),
+        .wr_row_data_acc     (buf_c_wr_row_data_acc),
+        .rd_addr             (buf_c_rd_addr),
+        .rd_data_int8        (buf_c_rd_data_int8),
+        .rd_data_acc32       (buf_c_rd_data_acc32),
+        .rd_packed_addr      (buf_c_rd_packed_addr),
+        .rd_data_packed_int8 (buf_c_rd_data_packed_int8)
     );
 
     // ==========================================================================
@@ -221,6 +245,8 @@ module tb_unit_modules;
     logic [$clog2(N*N)-1:0]     ctrl_readout_idx;
     logic                       ctrl_wr_acc_en;
     logic [$clog2(N*N)-1:0]     ctrl_wr_acc_addr;
+    logic                       ctrl_wr_row_en;
+    logic [$clog2(N)-1:0]       ctrl_wr_row_idx;
     logic                       ctrl_quant_out_valid;
     logic                       ctrl_wr_int8_en;
     logic [$clog2(N*N)-1:0]     ctrl_wr_int8_addr;
@@ -246,6 +272,8 @@ module tb_unit_modules;
         .readout_idx     (ctrl_readout_idx),
         .wr_acc_en       (ctrl_wr_acc_en),
         .wr_acc_addr     (ctrl_wr_acc_addr),
+        .wr_row_en       (ctrl_wr_row_en),
+        .wr_row_idx      (ctrl_wr_row_idx),
         .quant_out_valid (ctrl_quant_out_valid),
         .wr_int8_en      (ctrl_wr_int8_en),
         .wr_int8_addr    (ctrl_wr_int8_addr)
@@ -269,8 +297,8 @@ module tb_unit_modules;
         .rst_n       (rst_n),
         .en          (core_en),
         .clear_acc   (core_clear_acc),
-        .a_row_skew  (core_a_row_skew),
-        .b_col_skew  (core_b_col_skew),
+        .a_row_skew  (skew_a_out),
+        .b_col_skew  (skew_b_out),
         .c_matrix_out(core_c_matrix_out)
     );
 
@@ -296,12 +324,19 @@ module tb_unit_modules;
         end
         q_en = 0; q_bypass_relu = 0; q_shift_bits = 0; q_din = 0;
         buf_a_wr_en = 0; buf_a_wr_addr = 0; buf_a_wr_data = 0;
+        buf_a_wr_packed_en = 0; buf_a_wr_packed_addr = 0; buf_a_wr_packed_data = 0;
         buf_a_stream_en = 0; buf_a_k_step = 0; buf_a_k_dim = 8;
         buf_b_wr_en = 0; buf_b_wr_addr = 0; buf_b_wr_data = 0;
+        buf_b_wr_packed_en = 0; buf_b_wr_packed_addr = 0; buf_b_wr_packed_data = 0;
         buf_b_stream_en = 0; buf_b_k_step = 0; buf_b_k_dim = 8;
         buf_c_wr_acc_en = 0; buf_c_wr_acc_addr = 0; buf_c_wr_acc_data = 0;
         buf_c_wr_int8_en = 0; buf_c_wr_int8_addr = 0; buf_c_wr_int8_data = 0;
-        buf_c_rd_addr = 0;
+        buf_c_wr_row_en = 0; buf_c_wr_row_idx = 0;
+        for (int k = 0; k < N; k++) begin
+            buf_c_wr_row_data_int8[k] = 0;
+            buf_c_wr_row_data_acc[k]  = 0;
+        end
+        buf_c_rd_addr = 0; buf_c_rd_packed_addr = 0;
         dec_digit = 0; dec_blank = 0;
         ctrl_start = 0; ctrl_k_dim = 8; ctrl_quant_out_valid = 0;
         core_en = 0; core_clear_acc = 0;
@@ -438,7 +473,7 @@ module tb_unit_modules;
         // ----------------------------------------------------------------------
         $display("\n>>> [UNIT 4] On-Chip Matrix Storage Buffers (A, B, C) Unit Tests...");
 
-        // Buffer A: Write row 0..7 for K=0
+        // 4.1: Buffer A Legacy Byte Write
         for (int r = 0; r < N; r++) begin
             @(negedge clk);
             buf_a_wr_en = 1;
@@ -456,7 +491,29 @@ module tb_unit_modules;
             `CHECK(buf_a_row_out[r] == 20 + r, $sformatf("Buffer A Parallel Readout Row %0d", r));
         end
 
-        // Buffer B: Write col 0..7 for K=0
+        // 4.2: Buffer A Gen-2 Packed 4-INT8 Write
+        @(negedge clk);
+        buf_a_stream_en = 0;
+        buf_a_wr_packed_en   = 1;
+        buf_a_wr_packed_addr = 5'd0; // Writes to entries [3:0]
+        buf_a_wr_packed_data = {8'sd40, 8'sd30, 8'sd20, 8'sd10}; // [b3, b2, b1, b0]
+        @(posedge clk); #1;
+        @(negedge clk);
+        buf_a_wr_packed_en = 0;
+
+        buf_a_stream_en = 1;
+        buf_a_k_dim  = 8;
+        buf_a_k_step = 0; #1;
+        `CHECK(buf_a_row_out[0] == 10, "Buffer A Packed Write [Byte 0] Verified");
+        buf_a_k_step = 1; #1;
+        `CHECK(buf_a_row_out[0] == 20, "Buffer A Packed Write [Byte 1] Verified");
+        buf_a_k_step = 2; #1;
+        `CHECK(buf_a_row_out[0] == 30, "Buffer A Packed Write [Byte 2] Verified");
+        buf_a_k_step = 3; #1;
+        `CHECK(buf_a_row_out[0] == 40, "Buffer A Packed Write [Byte 3] Verified");
+        buf_a_stream_en = 0;
+
+        // 4.3: Buffer B Legacy Byte Write
         for (int c = 0; c < N; c++) begin
             @(negedge clk);
             buf_b_wr_en = 1;
@@ -474,7 +531,27 @@ module tb_unit_modules;
             `CHECK(buf_b_col_out[c] == 30 + c, $sformatf("Buffer B Parallel Readout Col %0d", c));
         end
 
-        // Buffer C dual write/read (INT8 and INT32 accumulated)
+        // 4.4: Buffer B Gen-2 Packed 4-INT8 Write
+        @(negedge clk);
+        buf_b_stream_en = 0;
+        buf_b_wr_packed_en   = 1;
+        buf_b_wr_packed_addr = 5'd0; // Writes to entries [3:0] (col 0..3 of row 0)
+        buf_b_wr_packed_data = {8'sd88, 8'sd77, 8'sd66, 8'sd55}; // [b3, b2, b1, b0]
+        @(posedge clk); #1;
+        @(negedge clk);
+        buf_b_wr_packed_en = 0;
+
+        buf_b_stream_en = 1;
+        buf_b_k_step = 0;
+        buf_b_k_dim  = 8;
+        #1;
+        `CHECK(buf_b_col_out[0] == 55, "Buffer B Packed Write [Col 0] Verified");
+        `CHECK(buf_b_col_out[1] == 66, "Buffer B Packed Write [Col 1] Verified");
+        `CHECK(buf_b_col_out[2] == 77, "Buffer B Packed Write [Col 2] Verified");
+        `CHECK(buf_b_col_out[3] == 88, "Buffer B Packed Write [Col 3] Verified");
+        buf_b_stream_en = 0;
+
+        // 4.5: Buffer C Legacy Dual Write/Read (INT8 and INT32 accumulated)
         @(negedge clk);
         buf_c_wr_acc_en = 1;
         buf_c_wr_acc_addr = 6'd15;
@@ -491,6 +568,27 @@ module tb_unit_modules;
         #1;
         `CHECK(buf_c_rd_data_int8 == 8'sd77, "Buffer C INT8 Readout at addr 15");
         `CHECK(buf_c_rd_data_acc32 == 32'sd999999, "Buffer C INT32 Accumulator Readout at addr 15");
+
+        // 4.6: Buffer C Gen-2 Parallel Row Write & Packed 4-INT8 Readout
+        @(negedge clk);
+        buf_c_wr_row_en  = 1;
+        buf_c_wr_row_idx = 0;
+        for (int c = 0; c < N; c++) begin
+            buf_c_wr_row_data_int8[c] = 8'sd1 + c;
+            buf_c_wr_row_data_acc[c]  = 32'sd1000 + c;
+        end
+        @(posedge clk); #1;
+        @(negedge clk);
+        buf_c_wr_row_en = 0;
+
+        // Verify packed readout: Word 0 contains col 3,2,1,0 -> {4, 3, 2, 1}
+        buf_c_rd_packed_addr = 4'd0;
+        #1;
+        `CHECK(buf_c_rd_data_packed_int8 == 32'h04030201, "Buffer C Parallel Row Write -> Packed Word 0 Readout (0x04030201)");
+        // Word 1 contains col 7,6,5,4 -> {8, 7, 6, 5}
+        buf_c_rd_packed_addr = 4'd1;
+        #1;
+        `CHECK(buf_c_rd_data_packed_int8 == 32'h08070605, "Buffer C Parallel Row Write -> Packed Word 1 Readout (0x08070605)");
 
         // ----------------------------------------------------------------------
         // [UNIT 5] 7-SEGMENT DECODER VERIFICATION
@@ -539,7 +637,7 @@ module tb_unit_modules;
         ctrl_start = 0;
         @(posedge clk); #1;
 
-        // Test 6.3: Valid FSM lifecycle execution (K=8)
+        // Test 6.3: Valid FSM lifecycle execution (K=8) & 8-cycle row readout
         @(negedge clk);
         ctrl_k_dim = 8'd8;
         ctrl_start = 1;
@@ -549,18 +647,25 @@ module tb_unit_modules;
 
         `CHECK(ctrl_busy == 1 && ctrl_error == 0, "Controller FSM Transition to BUSY state");
 
-        // Wait until controller completes full cycle and pulses done
-        fork : wait_ctrl_done
-            begin
-                @(posedge ctrl_done); #1;
-                `CHECK(ctrl_done == 1 && ctrl_busy == 0, "Controller FSM Full Cycle to DONE state");
-            end
-            begin
-                repeat (200) @(posedge clk);
-                `CHECK(1'b0, "Controller FSM Timeout waiting for done");
-            end
-        join_any
-        disable wait_ctrl_done;
+        begin
+            int row_en_count;
+            row_en_count = 0;
+            fork : wait_ctrl_done
+                begin
+                    while (!ctrl_done) begin
+                        @(posedge clk);
+                        if (ctrl_wr_row_en) row_en_count++;
+                    end
+                    `CHECK(ctrl_busy == 0, "Controller FSM Full Cycle to DONE state");
+                    `CHECK(row_en_count == 8, "Controller Gen-2 Parallel Readout: wr_row_en active for exactly 8 cycles");
+                end
+                begin
+                    repeat (200) @(posedge clk);
+                    `CHECK(1'b0, "Controller FSM Timeout waiting for done");
+                end
+            join_any
+            disable wait_ctrl_done;
+        end
 
         // ----------------------------------------------------------------------
         // [UNIT 7] 2D SYSTOLIC ARRAY CORE VERIFICATION (8x8 = 64 PEs)
@@ -570,9 +675,18 @@ module tb_unit_modules;
         @(negedge clk);
         core_clear_acc = 1;
         core_en = 0;
+        skew_clear = 1;
+        skew_en = 0;
+        for (int k = 0; k < N; k++) begin
+            skew_a_in[k] = 8'sd0;
+            skew_b_in[k] = 8'sd0;
+            core_a_row_skew[k] = 8'sd0;
+            core_b_col_skew[k] = 8'sd0;
+        end
         @(posedge clk); #1;
         @(negedge clk);
         core_clear_acc = 0;
+        skew_clear = 0;
 
         // Verify all 64 accumulators are zero
         begin
@@ -586,23 +700,46 @@ module tb_unit_modules;
             `CHECK(zero_cnt == 64, "Systolic Array Core: All 64 PEs cleared to 0");
         end
 
-        // Step 1: Feed input A=[1..1] across all rows, B=[2..2] across all cols
+        // Full 8x8 Matrix Multiply Test: A = 2 * I_ones, B = 3 * I_ones
+        // Golden Output: C = 8 * (2 * 3) = 48 across all 64 PEs!
         @(negedge clk);
         core_en = 1;
-        for (int k = 0; k < N; k++) begin
-            core_a_row_skew[k] = 8'sd1;
-            core_b_col_skew[k] = 8'sd2;
+        skew_en = 1;
+
+        // Stream phase: feed A=2 and B=3 for K=8 cycles into skew unit
+        for (int step = 0; step < N; step++) begin
+            for (int k = 0; k < N; k++) begin
+                skew_a_in[k] = 8'sd2;
+                skew_b_in[k] = 8'sd3;
+            end
+            @(posedge clk); #1;
+            @(negedge clk);
         end
-        @(posedge clk); #1;
 
-        // PE(0,0) receives a_row_skew[0]=1 and b_col_skew[0]=2 immediately!
-        // At 1st posedge clk, PE(0,0) accumulator becomes: 0 + 1 * 2 = 2
-        `CHECK(core_c_matrix_out[0][0] == 2, "Systolic Core PE(0,0) First Cycle Compute: 1 * 2 = 2");
+        // Drain phase: feed 0s for 24 cycles to allow all skewed wavefronts to complete across 8x8 mesh
+        for (int drain = 0; drain < 24; drain++) begin
+            for (int k = 0; k < N; k++) begin
+                skew_a_in[k] = 8'sd0;
+                skew_b_in[k] = 8'sd0;
+            end
+            @(posedge clk); #1;
+            @(negedge clk);
+        end
 
-        // Clock cycle 2: a_out from PE(0,0) propagates to PE(0,1), b_out propagates to PE(1,0)
-        @(posedge clk); #1;
-        `CHECK(core_c_matrix_out[0][1] == 2, "Systolic Core PE(0,1) Horizontal Propagation");
-        `CHECK(core_c_matrix_out[1][0] == 2, "Systolic Core PE(1,0) Vertical Propagation");
+        core_en = 0;
+        skew_en = 0;
+
+        // Verify all 64 PEs computed exactly 48!
+        begin
+            int correct_mac_cnt;
+            correct_mac_cnt = 0;
+            for (int r = 0; r < N; r++) begin
+                for (int c = 0; c < N; c++) begin
+                    if (core_c_matrix_out[r][c] == 48) correct_mac_cnt++;
+                end
+            end
+            `CHECK(correct_mac_cnt == 64, "Systolic Core 8x8 Full GEMM: All 64 PEs verified C[r][c] == 48 (Bit-True!)");
+        end
 
         // ----------------------------------------------------------------------
         // FINAL SUMMARY REPORT

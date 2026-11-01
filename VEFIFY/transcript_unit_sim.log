@@ -106,6 +106,10 @@
 # [PASS] Buffer A Parallel Readout Row 5
 # [PASS] Buffer A Parallel Readout Row 6
 # [PASS] Buffer A Parallel Readout Row 7
+# [PASS] Buffer A Packed Write [Byte 0] Verified
+# [PASS] Buffer A Packed Write [Byte 1] Verified
+# [PASS] Buffer A Packed Write [Byte 2] Verified
+# [PASS] Buffer A Packed Write [Byte 3] Verified
 # [PASS] Buffer B Parallel Readout Col 0
 # [PASS] Buffer B Parallel Readout Col 1
 # [PASS] Buffer B Parallel Readout Col 2
@@ -114,8 +118,14 @@
 # [PASS] Buffer B Parallel Readout Col 5
 # [PASS] Buffer B Parallel Readout Col 6
 # [PASS] Buffer B Parallel Readout Col 7
+# [PASS] Buffer B Packed Write [Col 0] Verified
+# [PASS] Buffer B Packed Write [Col 1] Verified
+# [PASS] Buffer B Packed Write [Col 2] Verified
+# [PASS] Buffer B Packed Write [Col 3] Verified
 # [PASS] Buffer C INT8 Readout at addr 15
 # [PASS] Buffer C INT32 Accumulator Readout at addr 15
+# [PASS] Buffer C Parallel Row Write -> Packed Word 0 Readout (0x04030201)
+# [PASS] Buffer C Parallel Row Write -> Packed Word 1 Readout (0x08070605)
 # 
 # >>> [UNIT 5] Active-Low 7-Segment Display Decoder Unit Tests...
 # [PASS] Decoder Blanking (All Segments OFF)
@@ -129,21 +139,20 @@
 # [PASS] Controller Guardband: Reject K > MAX_K
 # [PASS] Controller FSM Transition to BUSY state
 # [PASS] Controller FSM Full Cycle to DONE state
+# [PASS] Controller Gen-2 Parallel Readout: wr_row_en active for exactly 8 cycles
 # 
 # >>> [UNIT 7] 2D Systolic Array Core (systolic_array_core.sv - 64 PEs) Unit Tests...
 # [PASS] Systolic Array Core: All 64 PEs cleared to 0
-# [PASS] Systolic Core PE(0,0) First Cycle Compute: 1 * 2 = 2
-# [PASS] Systolic Core PE(0,1) Horizontal Propagation
-# [PASS] Systolic Core PE(1,0) Vertical Propagation
+# [PASS] Systolic Core 8x8 Full GEMM: All 64 PEs verified C[r][c] == 48 (Bit-True!)
 # 
 # ================================================================================
 #   UNIT-LEVEL HARDWARE VERIFICATION SUMMARY REPORT
 # ================================================================================
-#   Total Unit Checks Executed : 52
-#   Passed Checks              : 52
+#   Total Unit Checks Executed : 61
+#   Passed Checks              : 61
 #   Failed Checks              : 0
 #   VERIFICATION RESULT        : >>> 100% PASSED (0 ERRORS) <<<
 # ================================================================================
 # 
-# ** Note: $finish    : tb_unit_modules.sv(624)
-#    Time: 3130 ns  Iteration: 1  Instance: /tb_unit_modules
+# ** Note: $finish    : tb_unit_modules.sv(761)
+#    Time: 2750 ns  Iteration: 1  Instance: /tb_unit_modules

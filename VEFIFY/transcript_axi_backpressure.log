@@ -84,10 +84,10 @@
 # Loading work.matrix_buffer_b
 # Loading work.systolic_skew_unit
 # Loading work.systolic_array_core
-# Loading work.quantize_relu_unit
 # Loading work.matrix_buffer_c
 # Loading work.axi_uart
 # Loading work.pe_gemm
+# Loading work.quantize_relu_unit
 # 
 # ========================================================
 #   STARTING AXI4-LITE BACKPRESSURE COMPLIANCE VERIFICATION
@@ -95,7 +95,7 @@
 # [TEST 1] Testing AXI RAM with 1..8 cycles BREADY & RREADY delays...
 # [TEST 1] RAM backpressure tests completed.
 # [TEST 2] Testing Systolic Accelerator MMIO with backpressure...
-#          IP Version 0x01080820 confirmed stable over 6 delay cycles.
+#          IP Version 0x02080820 confirmed stable over 6 delay cycles.
 # [TEST 3] Testing UART MMIO with backpressure...
 # 
 # ========================================================

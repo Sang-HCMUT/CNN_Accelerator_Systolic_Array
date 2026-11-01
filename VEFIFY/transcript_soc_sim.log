@@ -112,11 +112,11 @@
 # Loading work.matrix_buffer_b
 # Loading work.systolic_skew_unit
 # Loading work.systolic_array_core
-# Loading work.quantize_relu_unit
 # Loading work.matrix_buffer_c
 # Loading work.seven_seg_decoder
 # Loading work.axi_uart
 # Loading work.pe_gemm
+# Loading work.quantize_relu_unit
 # 
 # Starting RISC-V SoC Hardware-Software Co-Simulation
 # PicoRV32 (RV32I) + AXI4-Lite + 8x8 Systolic Array Accelerator (64 PEs, DE2)
@@ -172,9 +172,13 @@
 # 
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 554614!
+# [TB-ACCEL] core_start pulsed at cycle 560019!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 554707!
+# [TB-ACCEL] core_done pulsed at cycle 560056!
+# 
+# [TB-ACCEL] core_start pulsed at cycle 566386!
+# 
+# [TB-ACCEL] core_done pulsed at cycle 566423!
 # Matrix A (Weights: 8x8 INT8):
 # 
 #   [   12    -8    25    10    15   -20    18     7 ]
@@ -251,43 +255,49 @@
 # 
 # ====================================================================
 # 
-# Performance Telemetry & Roofline Analysis (@ 50 MHz):
+# Performance Telemetry & Architectural Speedup Analysis (@ 50 MHz):
 # 
 # ====================================================================
 # 
-# [1] Pure Compute-Only Telemetry (Systolic Math Core vs CPU Math Loop):
+# [1] Gen-2 Phase 2 Optimization Results (Packed 4-INT8 + 8 Parallel Quantizers):
+# 
+#   Legacy End-to-End Time : 8484 cycles (1269 instrs, 169 us)
+# 
+#   Gen-2 End-to-End Time  : 1920 cycles (275 instrs, 38 us)
+# 
+#   Gen-2 Speedup vs Legacy: 4.4x faster (Throughput boosted ~3-4x!)
+# 
+#   Total Speedup vs CPU SW: 173.7x faster end-to-end
+# 
+# 
+# 
+# [2] Inner Math Core Benchmark (Pure Compute Telemetry):
 # 
 #   Workload Size         : 8x8 x 8x8 (K=8) -> 512 MACs (1,024 Operations)
 # 
-#   CPU Software Math     : 328257 cycles (56258 instrs, 6565 us)
+#   CPU Software Math Loop: 333647 cycles (57336 instrs, 6672 us, RV32I libgcc __mulsi3 @ ~641 cyc/MAC)
 # 
-#   Systolic Array Core   : 93 cycles (1860 ns, via REG_ACCEL_CYCLES)
+#   Legacy Pure HW Cycles : 37 cycles
 # 
-#   Pure Compute Speedup  : 3529x faster than CPU math loop
+#   Gen-2 Pure HW Latency : 37 cycles (740 ns, via REG_ACCEL_CYCLES)
 # 
-#   Compute Throughput    : 550 MOPS (Peak 8x8 Array: 6,400 MOPS)
+#   Pure Compute Speedup  : 9017x faster (Math Core vs SW Loop)
 # 
-# 
-# 
-# [2] End-to-End System Telemetry (Full SoC: MMIO Load + Compute + Readout):
-# 
-#   Total End-to-End Time : 8525 cycles (1274 instrs, 170 us)
-# 
-#   End-to-End Speedup    : 38.5x faster
-# 
-#   End-to-End Throughput : 6 MOPS
+#   Compute Throughput    : 1383 MOPS (Peak 8x8 Array: 6,400 MOPS)
 # 
 # 
 # 
-# [3] Memory & Bus Overhead Decomposition:
+# [3] Microarchitectural Cycle Decomposition (SoC Bus Profiler Telemetry):
 # 
-#   MMIO Transfer Overhead: 8432 cycles (98% time spent on AXI-Lite MMIO)
+#   Legacy Single-Byte MMIO: 1,661 I-fetch (57.6%) + 3,143 Loop (36.8%) + 473 MMIO (5.5%) + 93 HW (1.1%)
 # 
-#   Pure Compute Portion  : 93 cycles (2% time in hardware PE array)
+#   Gen-2 Packed 4-INT8    : 4x reduction in CPU memory loops & AXI transactions!
+# 
+#   Gen-2 Parallel Readout : 8 Quantizers read out entire row in 1T (Latency 93 -> ~35 cycles)
 # 
 # ====================================================================
 # 
-#   Bit-True Parity       : VERIFIED MATCH (0 errors across 64 elements)
+#   Bit-True Parity       : VERIFIED MATCH (0 errors across both Legacy and Gen-2 Packed!)
 # 
 # 
 # 
@@ -304,42 +314,42 @@
 # 
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 1650318!
+# [TB-ACCEL] core_start pulsed at cycle 1734984!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 1650419!
+# [TB-ACCEL] core_done pulsed at cycle 1735029!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 1680755!
+# [TB-ACCEL] core_start pulsed at cycle 1765375!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 1680856!
+# [TB-ACCEL] core_done pulsed at cycle 1765420!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 1708632!
+# [TB-ACCEL] core_start pulsed at cycle 1793206!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 1708733!
+# [TB-ACCEL] core_done pulsed at cycle 1793251!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 1736443!
+# [TB-ACCEL] core_start pulsed at cycle 1820971!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 1736544!
+# [TB-ACCEL] core_done pulsed at cycle 1821016!
 # Tiling Telemetry & Roofline Analysis (4 Tiles of 8x8, K=16):
 # 
 #   Total Tiles Processed : 4 tiles (8x8 submatrices, K=16)
 # 
 #   Total Workload        : 4,096 INT8 MACs (8,192 Operations)
 # 
-#   Pure HW Compute Time  : 404 cycles (8 us @ 50MHz, sum of 4 tiles)
+#   Total End-to-End Time : 113862 cycles (2277 us @ 50MHz)
 # 
-#   Pure Compute Speedup  : 7507x faster than CPU math loop
+#   Software CPU GEMM Time: 3032928 cycles (Projected 4x Tile 0, 60658 us @ 50MHz, RV32I __mulsi3)
 # 
-#   Compute Throughput    : 1013 MOPS (1.0 GOPS)
-# 
-#   Total End-to-End Time : 114046 cycles (2280 us @ 50MHz)
-# 
-#   Software CPU GEMM Time: 3032928 cycles (60658 us @ 50MHz)
-# 
-#   End-to-End Speedup    : 26.5x faster
+#   End-to-End Speedup    : 26.6x faster (Primary System Benchmark)
 # 
 #   End-to-End Throughput : 3 MOPS
 # 
-#   MMIO Comm Overhead    : 113642 cycles (99% bus overhead)
+#   Pure HW Compute Time  : 180 cycles (3 us @ 50MHz, sum of 4 tiles)
+# 
+#   Pure Compute Speedup  : 16849x faster (Math Core vs SW Loop)
+# 
+#   Compute Throughput    : 2275 MOPS (2.2 GOPS)
+# 
+#   CPU Orchestration     : 113682 cycles (99% time in CPU loops & instruction fetch)
 # 
 #   Accumulated Checksum  : 25
 # 
@@ -364,21 +374,21 @@
 # 
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 2792012!
+# [TB-ACCEL] core_start pulsed at cycle 2896171!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 2792106!
+# [TB-ACCEL] core_done pulsed at cycle 2896209!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 2814618!
+# [TB-ACCEL] core_start pulsed at cycle 2918731!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 2814712!
+# [TB-ACCEL] core_done pulsed at cycle 2918769!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 2837413!
+# [TB-ACCEL] core_start pulsed at cycle 2941480!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 2837507!
+# [TB-ACCEL] core_done pulsed at cycle 2941518!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 2860099!
+# [TB-ACCEL] core_start pulsed at cycle 2964120!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 2860193!
+# [TB-ACCEL] core_done pulsed at cycle 2964158!
 # Conv1 Layer Verification & Telemetry:
 # 
 #   Total Outputs Verified: 256 / 256 Elements (16 Filters x 16 Patches)
@@ -387,11 +397,11 @@
 # 
 #   Output Feature Checksum: 3865
 # 
-#   Pure HW Compute Time  : 376 cycles (7 us @ 50MHz, 4 tiles)
+#   Pure HW Compute Time  : 152 cycles (3 us @ 50MHz, 4 tiles)
 # 
-#   Compute Throughput    : 612 MOPS
+#   Compute Throughput    : 1515 MOPS
 # 
-#   End-to-End Latency    : 90787 cycles (1815 us @ 50MHz, im2col+MMIO+bias/ReLU)
+#   End-to-End Latency    : 90603 cycles (1812 us @ 50MHz, im2col+MMIO+bias/ReLU)
 # 
 #   End-to-End Throughput : 2 MOPS
 # 
@@ -414,13 +424,13 @@
 # 
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3067910!
+# [TB-ACCEL] core_start pulsed at cycle 3172434!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3068011!
+# [TB-ACCEL] core_done pulsed at cycle 3172479!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3093515!
+# [TB-ACCEL] core_start pulsed at cycle 3197993!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3093608!
+# [TB-ACCEL] core_done pulsed at cycle 3198030!
 # Hidden Layer Activations [8] (Post-ReLU):
 # 
 #   [    0    0    0   12    0    0   12    9 ]
@@ -447,7 +457,7 @@
 # 
 # 
 # 
-# Inference Result: Predicted Class = 6 | Total Latency: 39998 cycles (799 us @ 50MHz)
+# Inference Result: Predicted Class = 6 | Total Latency: 39906 cycles (798 us @ 50MHz)
 # 
 # 
 # 
@@ -460,51 +470,51 @@
 # 
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3219073!
+# [TB-ACCEL] core_start pulsed at cycle 3323475!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3219166!
+# [TB-ACCEL] core_done pulsed at cycle 3323512!
 #   [5A] Positive Saturation Clamping (+127) : PASS (All 64 PEs clamped to 127)
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3245876!
+# [TB-ACCEL] core_start pulsed at cycle 3350232!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3245969!
+# [TB-ACCEL] core_done pulsed at cycle 3350269!
 #   [5B] (-128) x (-128) Arithmetic Precision: PASS (Acc=16384, Clamped=127)
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3274406!
+# [TB-ACCEL] core_start pulsed at cycle 3378716!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3274499!
+# [TB-ACCEL] core_done pulsed at cycle 3378753!
 #   [5C] ReLU Negative Clamping to Zero      : PASS (Acc=-20000 clamped to 0)
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3300539!
+# [TB-ACCEL] core_start pulsed at cycle 3404803!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3300632!
+# [TB-ACCEL] core_done pulsed at cycle 3404840!
 #   [5D] ReLU Bypass Mode Pass-Through       : PASS (Preserved negative: -79)
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3327368!
+# [TB-ACCEL] core_start pulsed at cycle 3431586!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3327461!
+# [TB-ACCEL] core_done pulsed at cycle 3431623!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3335878!
+# [TB-ACCEL] core_start pulsed at cycle 3440050!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3335971!
+# [TB-ACCEL] core_done pulsed at cycle 3440087!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3344388!
+# [TB-ACCEL] core_start pulsed at cycle 3448514!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3344481!
+# [TB-ACCEL] core_done pulsed at cycle 3448551!
 #   [5E] Multi-Scale Arithmetic Right Shift  : PASS (s=5: 64, s=7: 16, s=9: 4)
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3362139!
+# [TB-ACCEL] core_start pulsed at cycle 3466219!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3362140!
+# [TB-ACCEL] core_done pulsed at cycle 3466220!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3362281!
+# [TB-ACCEL] core_start pulsed at cycle 3466361!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3362282!
+# [TB-ACCEL] core_done pulsed at cycle 3466362!
 #   [5F] Guardband Dimension Error (K=0, 17) : PASS (Verified STATUS_ERROR on AXI bus)
 # 
 # 
@@ -562,37 +572,37 @@
 # Executing Hardware Inference across 8 Systolic Tiles...
 # 
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3526484!
+# [TB-ACCEL] core_start pulsed at cycle 3630564!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3526585!
+# [TB-ACCEL] core_done pulsed at cycle 3630609!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3552295!
+# [TB-ACCEL] core_start pulsed at cycle 3656329!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3552396!
+# [TB-ACCEL] core_done pulsed at cycle 3656374!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3578106!
+# [TB-ACCEL] core_start pulsed at cycle 3682094!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3578207!
+# [TB-ACCEL] core_done pulsed at cycle 3682139!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3603917!
+# [TB-ACCEL] core_start pulsed at cycle 3707859!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3604018!
+# [TB-ACCEL] core_done pulsed at cycle 3707904!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3629288!
+# [TB-ACCEL] core_start pulsed at cycle 3733184!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3629389!
+# [TB-ACCEL] core_done pulsed at cycle 3733229!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3654457!
+# [TB-ACCEL] core_start pulsed at cycle 3758307!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3654558!
+# [TB-ACCEL] core_done pulsed at cycle 3758352!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3679626!
+# [TB-ACCEL] core_start pulsed at cycle 3783430!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3679727!
+# [TB-ACCEL] core_done pulsed at cycle 3783475!
 # 
-# [TB-ACCEL] core_start pulsed at cycle 3704795!
+# [TB-ACCEL] core_start pulsed at cycle 3808553!
 # 
-# [TB-ACCEL] core_done pulsed at cycle 3704896!
+# [TB-ACCEL] core_done pulsed at cycle 3808598!
 # Logits Computed by 8x8 Systolic Array PE Accumulators (INT32):
 # 
 #   Class 0:     1224
@@ -623,9 +633,9 @@
 # 
 #   Confidence Score  : 69%
 # 
-#   Inference Latency : 205908 cycles (4118 us @ 50MHz)
+#   Inference Latency : 205540 cycles (4110 us @ 50MHz)
 # 
-#   Pure HW Compute   : 808 cycles (16 us across 8 systolic tiles)
+#   Pure HW Compute   : 360 cycles (7 us across 8 systolic tiles)
 # 
 #   Compute vs MMIO   : 0% pure compute, 100% feature extraction & MMIO
 # 
@@ -635,9 +645,9 @@
 # 
 # 
 # [TB] All Targeted Demonstration Scenarios Verified Successfully!
-# [TB] Total Simulation Cycles: 3870403
-# [TB] CPU Retired Instructions: 606843
-# [TB] UART Characters Transmitted: 8414
+# [TB] Total Simulation Cycles: 3973248
+# [TB] CPU Retired Instructions: 621761
+# [TB] UART Characters Transmitted: 8886
 # 
 # ** Note: $finish    : tb_soc_top.sv(161)
-#    Time: 77408070 ns  Iteration: 0  Instance: /tb_soc_top
+#    Time: 79464970 ns  Iteration: 0  Instance: /tb_soc_top

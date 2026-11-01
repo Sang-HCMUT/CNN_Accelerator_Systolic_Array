@@ -35,6 +35,10 @@ module gemm_controller #(
     output logic                                          wr_acc_en,
     output logic [$clog2(ARRAY_SIZE*ARRAY_SIZE)-1:0]      wr_acc_addr,
     
+    // Gen-2 Parallel Row Readout Controls (8 parallel quantizers)
+    output logic                                          wr_row_en,
+    output logic [$clog2(ARRAY_SIZE)-1:0]                 wr_row_idx,
+    
     // Quantizer writeback tracker
     input  logic                                          quant_out_valid,
     output logic                                          wr_int8_en,
@@ -70,12 +74,8 @@ module gemm_controller #(
     assign readout_idx = read_cnt[ADDR_C_WIDTH-1:0];
 
     // Combinational coordinates during ST_READOUT (with explicit slicing to eliminate lint truncation warnings)
-    logic [31:0] readout_r_full;
-    logic [31:0] readout_c_full;
-    assign readout_r_full = read_cnt / ARRAY_SIZE;
-    assign readout_c_full = read_cnt % ARRAY_SIZE;
-    assign readout_r      = readout_r_full[ADDR_RC_WIDTH-1:0];
-    assign readout_c      = readout_c_full[ADDR_RC_WIDTH-1:0];
+    assign readout_r   = read_cnt[ADDR_RC_WIDTH-1:0];
+    assign readout_c   = '0;
     assign quant_in_en = (state == ST_READOUT);
     assign wr_acc_en   = (state == ST_READOUT);
     assign wr_acc_addr = read_cnt[ADDR_C_WIDTH-1:0];
@@ -157,7 +157,7 @@ module gemm_controller #(
                 ST_READOUT: begin
                     sys_en    <= 1'b0;
                     stream_en <= 1'b0;
-                    if (read_cnt < TOTAL_C - 1) begin
+                    if (read_cnt < ARRAY_SIZE - 1) begin
                         read_cnt <= read_cnt + 1'b1;
                     end else begin
                         state    <= ST_FLUSH; // 1-cycle pipeline flush for last quantizer stage
@@ -178,7 +178,24 @@ module gemm_controller #(
         end
     end
 
-    // Quantized Output Writeback Address Tracking
+    // Gen-2 Parallel Row Writeback Generation (8 parallel quantizers)
+    logic [$clog2(ARRAY_SIZE)-1:0] wr_row_idx_reg;
+    logic                          wr_row_en_reg;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            wr_row_en_reg  <= 1'b0;
+            wr_row_idx_reg <= '0;
+        end else begin
+            wr_row_en_reg  <= (state == ST_READOUT);
+            wr_row_idx_reg <= readout_r;
+        end
+    end
+
+    assign wr_row_en  = wr_row_en_reg;
+    assign wr_row_idx = wr_row_idx_reg;
+
+    // Quantized Output Writeback Address Tracking (Legacy Single-Element)
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             write_int8_cnt <= '0;

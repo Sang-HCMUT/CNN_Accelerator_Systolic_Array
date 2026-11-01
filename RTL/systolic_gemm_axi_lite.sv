@@ -84,15 +84,26 @@ module systolic_gemm_axi_lite #(
     logic [$clog2(ARRAY_SIZE*16)-1:0]         core_wr_b_addr;
     logic signed [DATA_WIDTH-1:0]             core_wr_b_data;
 
+    // Gen-2 Packed 4-INT8 Ports
+    logic                                     core_wr_packed_a_en;
+    logic [$clog2(ARRAY_SIZE*16)-3:0]         core_wr_packed_a_addr;
+    logic [31:0]                              core_wr_packed_a_data;
+
+    logic                                     core_wr_packed_b_en;
+    logic [$clog2(ARRAY_SIZE*16)-3:0]         core_wr_packed_b_addr;
+    logic [31:0]                              core_wr_packed_b_data;
+
     logic [$clog2(ARRAY_SIZE*ARRAY_SIZE)-1:0] core_rd_c_addr;
     logic signed [DATA_WIDTH-1:0]             core_rd_c_data;
     logic signed [ACC_WIDTH-1:0]              core_rd_c_acc;
+    logic [$clog2(ARRAY_SIZE*ARRAY_SIZE)-3:0] core_rd_c_packed_addr;
+    logic [31:0]                              core_rd_c_packed_int8;
     logic                                     core_error;
 
     // Hardware Performance Profiler & Version ID Registers
     logic [31:0] perf_cycle_cnt;
     logic [31:0] perf_cycles_reg;
-    localparam [31:0] IP_VERSION_REG = {8'h01, 8'(ARRAY_SIZE), 8'h08, 8'h20}; // v1.0, N, INT8, INT32
+    localparam [31:0] IP_VERSION_REG = {8'h02, 8'(ARRAY_SIZE), 8'h08, 8'h20}; // v2.0 Gen-2, N, INT8, INT32
 
     always_ff @(posedge s_axi_aclk or negedge rst_n) begin
         if (!rst_n) begin
@@ -154,34 +165,56 @@ module systolic_gemm_axi_lite #(
                 core_wr_b_addr <= (write_addr - 12'h300) >> 2;
                 core_wr_b_data <= write_data[DATA_WIDTH-1:0];
             end
+        end else if (write_addr >= 12'h700 && write_addr < 12'h780) begin
+            // Gen-2 Packed 4-INT8 Write to Matrix A (0x700 - 0x77C, 32 words)
+            if (!core_busy) begin
+                core_wr_packed_a_en   <= 1'b1;
+                core_wr_packed_a_addr <= (write_addr - 12'h700) >> 2;
+                core_wr_packed_a_data <= write_data;
+            end
+        end else if (write_addr >= 12'h780 && write_addr < 12'h800) begin
+            // Gen-2 Packed 4-INT8 Write to Matrix B (0x780 - 0x7FC, 32 words)
+            if (!core_busy) begin
+                core_wr_packed_b_en   <= 1'b1;
+                core_wr_packed_b_addr <= (write_addr - 12'h780) >> 2;
+                core_wr_packed_b_data <= write_data;
+            end
         end
     endtask
 
     // AXI Write State Machine (Decoupled AW & W Channels)
     always_ff @(posedge s_axi_aclk or negedge rst_n) begin
         if (!rst_n) begin
-            s_axi_awready  <= 1'b0;
-            s_axi_wready   <= 1'b0;
-            s_axi_bvalid   <= 1'b0;
-            s_axi_bresp    <= 2'b00;
-            latched_awaddr <= '0;
-            latched_wdata  <= '0;
-            latched_wstrb  <= '0;
-            control_reg    <= '0;
-            status_reg     <= '0;
-            k_dim_reg      <= 8'd8;
-            core_start     <= 1'b0;
-            core_wr_a_en   <= 1'b0;
-            core_wr_a_addr <= '0;
-            core_wr_a_data <= '0;
-            core_wr_b_en   <= 1'b0;
-            core_wr_b_addr <= '0;
-            core_wr_b_data <= '0;
-            wr_state       <= WR_IDLE;
+            s_axi_awready         <= 1'b0;
+            s_axi_wready          <= 1'b0;
+            s_axi_bvalid          <= 1'b0;
+            s_axi_bresp           <= 2'b00;
+            latched_awaddr        <= '0;
+            latched_wdata         <= '0;
+            latched_wstrb         <= '0;
+            control_reg           <= '0;
+            status_reg            <= '0;
+            k_dim_reg             <= 8'd8;
+            core_start            <= 1'b0;
+            core_wr_a_en          <= 1'b0;
+            core_wr_a_addr        <= '0;
+            core_wr_a_data        <= '0;
+            core_wr_b_en          <= 1'b0;
+            core_wr_b_addr        <= '0;
+            core_wr_b_data        <= '0;
+            core_wr_packed_a_en   <= 1'b0;
+            core_wr_packed_a_addr <= '0;
+            core_wr_packed_a_data <= '0;
+            core_wr_packed_b_en   <= 1'b0;
+            core_wr_packed_b_addr <= '0;
+            core_wr_packed_b_data <= '0;
+            wr_state              <= WR_IDLE;
         end else begin
-            core_start   <= 1'b0;
-            core_wr_a_en <= 1'b0;
-            core_wr_b_en <= 1'b0;
+            core_start          <= 1'b0;
+            core_wr_a_en        <= 1'b0;
+            core_wr_b_en        <= 1'b0;
+            core_wr_packed_a_en <= 1'b0;
+            core_wr_packed_b_en <= 1'b0;
 
             status_reg[31:3] <= 29'd0;
             status_reg[1]    <= core_busy;
@@ -261,6 +294,11 @@ module systolic_gemm_axi_lite #(
             core_rd_c_addr = (s_axi_araddr - 12'h600) >> 2;
         else
             core_rd_c_addr = (s_axi_araddr - 12'h500) >> 2;
+
+        if (s_axi_araddr >= 12'h800 && s_axi_araddr < 12'h840)
+            core_rd_c_packed_addr = (s_axi_araddr - 12'h800) >> 2;
+        else
+            core_rd_c_packed_addr = '0;
     end
 
     // AXI Read State Machine
@@ -296,6 +334,8 @@ module systolic_gemm_axi_lite #(
                         s_axi_rdata <= {24'd0, core_rd_c_data};
                     end else if (s_axi_araddr >= 12'h600 && s_axi_araddr < 12'h700) begin
                         s_axi_rdata <= core_rd_c_acc;
+                    end else if (s_axi_araddr >= 12'h800 && s_axi_araddr < 12'h840) begin
+                        s_axi_rdata <= core_rd_c_packed_int8; // Gen-2 Packed 4-INT8 Matrix C Readout
                     end else begin
                         s_axi_rdata <= 32'd0;
                     end
@@ -317,24 +357,32 @@ module systolic_gemm_axi_lite #(
         .DATA_WIDTH (DATA_WIDTH),
         .ACC_WIDTH  (ACC_WIDTH)
     ) core_inst (
-        .clk           (s_axi_aclk),
-        .rst_n         (rst_n),
-        .start         (core_start),
-        .k_dim         (k_dim_reg),
-        .bypass_relu   (control_reg[1]),
-        .shift_bits    (control_reg[6:2]),
-        .done          (core_done),
-        .busy          (core_busy),
-        .error         (core_error),
-        .wr_a_en       (core_wr_a_en),
-        .wr_a_addr     (core_wr_a_addr),
-        .wr_a_data     (core_wr_a_data),
-        .wr_b_en       (core_wr_b_en),
-        .wr_b_addr     (core_wr_b_addr),
-        .wr_b_data     (core_wr_b_data),
-        .rd_c_addr     (core_rd_c_addr),
-        .rd_c_data     (core_rd_c_data),
-        .rd_c_acc_data (core_rd_c_acc)
+        .clk              (s_axi_aclk),
+        .rst_n            (rst_n),
+        .start            (core_start),
+        .k_dim            (k_dim_reg),
+        .bypass_relu      (control_reg[1]),
+        .shift_bits       (control_reg[6:2]),
+        .done             (core_done),
+        .busy             (core_busy),
+        .error            (core_error),
+        .wr_a_en          (core_wr_a_en),
+        .wr_a_addr        (core_wr_a_addr),
+        .wr_a_data        (core_wr_a_data),
+        .wr_packed_a_en   (core_wr_packed_a_en),
+        .wr_packed_a_addr (core_wr_packed_a_addr),
+        .wr_packed_a_data (core_wr_packed_a_data),
+        .wr_b_en          (core_wr_b_en),
+        .wr_b_addr        (core_wr_b_addr),
+        .wr_b_data        (core_wr_b_data),
+        .wr_packed_b_en   (core_wr_packed_b_en),
+        .wr_packed_b_addr (core_wr_packed_b_addr),
+        .wr_packed_b_data (core_wr_packed_b_data),
+        .rd_c_addr        (core_rd_c_addr),
+        .rd_c_data        (core_rd_c_data),
+        .rd_c_acc_data    (core_rd_c_acc),
+        .rd_c_packed_addr (core_rd_c_packed_addr),
+        .rd_c_packed_int8 (core_rd_c_packed_int8)
     );
 
 endmodule

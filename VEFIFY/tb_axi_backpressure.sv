@@ -445,11 +445,11 @@ module tb_axi_backpressure;
         $display("[TEST 2] Testing Systolic Accelerator MMIO with backpressure...");
         // Read IP Version (0x1000_0010) with 6 cycles RREADY delay
         axi_read_backpressure(32'h1000_0010, read_val, 6);
-        if (read_val !== 32'h01080820) begin
-            $display("[ERROR] Accel IP Version mismatch! Exp=0x01080820, Got=0x%08x", read_val);
+        if (read_val !== 32'h01080820 && read_val !== 32'h02080820) begin
+            $display("[ERROR] Accel IP Version mismatch! Exp=0x01080820 or 0x02080820, Got=0x%08x", read_val);
             test_errors++;
         end else begin
-            $display("         IP Version 0x01080820 confirmed stable over 6 delay cycles.");
+            $display("         IP Version 0x%08x confirmed stable over 6 delay cycles.", read_val);
         end
 
         // Configure K_DIM = 8 (0x1000_0008) with 5 cycles BREADY delay

@@ -31,6 +31,16 @@
 // Matrix C (INT32 Raw Accumulators): 64 words (8 rows x 8 cols, word-aligned, 0x600 to 0x6FC)
 #define REG_ACCEL_C_ACC(idx) (*(volatile uint32_t*)(ACCEL_BASE + 0x600 + ((idx) << 2)))
 
+// Gen-2 Packed 4-INT8 Buffers (32-bit words packing 4 signed bytes)
+// Matrix A: up to 32 words (8 rows x 16 cols / 4 bytes, 0x700 to 0x77C)
+#define REG_ACCEL_PACKED_A(w_idx)  (*(volatile uint32_t*)(ACCEL_BASE + 0x700 + ((w_idx) << 2)))
+
+// Matrix B: up to 32 words (16 rows x 8 cols / 4 bytes, 0x780 to 0x7FC)
+#define REG_ACCEL_PACKED_B(w_idx)  (*(volatile uint32_t*)(ACCEL_BASE + 0x780 + ((w_idx) << 2)))
+
+// Matrix C (INT8 Post-ReLU): 16 words (8 rows x 8 cols / 4 bytes, 0x800 to 0x83C)
+#define REG_ACCEL_PACKED_C(w_idx)  (*(volatile uint32_t*)(ACCEL_BASE + 0x800 + ((w_idx) << 2)))
+
 // Control Register Bit Masks
 #define CTRL_START         (1 << 0)
 #define CTRL_BYPASS_RELU   (1 << 1)
@@ -211,10 +221,65 @@ static __attribute__((noinline)) int run_accelerator_gemm(const int8_t *A, const
     return 0; // Success
 }
 
+// Gen-2 Packed 4-INT8 GEMM Accelerator Execution
+// Feeds 4 signed INT8 bytes per 32-bit word, reducing MMIO transactions and loop overhead by 4x!
+static inline int run_accelerator_gemm_packed(
+    const int8_t *A,
+    const int8_t *B,
+    int k_dim,
+    int shift,
+    int bypass_relu
+) {
+    if (k_dim < 1 || k_dim > 16) {
+        REG_ACCEL_KDIM = (uint32_t)k_dim;
+        REG_ACCEL_CTRL = CTRL_START;
+        while (REG_ACCEL_STATUS & STATUS_BUSY);
+        if (REG_ACCEL_STATUS & STATUS_ERROR) return -1;
+        return -2;
+    }
+
+    REG_ACCEL_KDIM = (uint32_t)k_dim;
+
+    // Stream Matrix A packed: total_words = (8 * k_dim) / 4 = 2 * k_dim words
+    const uint32_t *a_words = (const uint32_t *)A;
+    int words_a = (8 * k_dim) >> 2;
+    for (int w = 0; w < words_a; w++) {
+        REG_ACCEL_PACKED_A(w) = a_words[w];
+    }
+
+    // Stream Matrix B packed: total_words = (k_dim * 8) / 4 = 2 * k_dim words
+    const uint32_t *b_words = (const uint32_t *)B;
+    int words_b = (k_dim * 8) >> 2;
+    for (int w = 0; w < words_b; w++) {
+        REG_ACCEL_PACKED_B(w) = b_words[w];
+    }
+
+    uint32_t ctrl = CTRL_START | CTRL_SHIFT_BITS(shift);
+    if (bypass_relu) {
+        ctrl |= CTRL_BYPASS_RELU;
+    }
+    REG_ACCEL_CTRL = ctrl;
+
+    while (!(REG_ACCEL_STATUS & STATUS_DONE));
+
+    if (REG_ACCEL_STATUS & STATUS_ERROR) {
+        return -1;
+    }
+    return 0;
+}
+
 // Read back quantized INT8 results (64 elements: 8x8)
 static __attribute__((noinline)) void read_accelerator_c_int8(int8_t *out_c) {
     for (int i = 0; i < 64; i++) {
         out_c[i] = (int8_t)(REG_ACCEL_C(i) & 0xFF);
+    }
+}
+
+// Gen-2 Packed Readout: reads 64 INT8 elements as 16 words (4 bytes/word)
+static inline void read_accelerator_c_packed_int8(int8_t *out_c) {
+    uint32_t *c_words = (uint32_t *)out_c;
+    for (int w = 0; w < 16; w++) {
+        c_words[w] = REG_ACCEL_PACKED_C(w);
     }
 }
 
