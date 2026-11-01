@@ -1,0 +1,41 @@
+================================================================================
+  HARDWARE-IN-THE-LOOP (HIL) PRE-FLIGHT VERIFICATION SPECIFICATION
+  Generated: 2026-11-01 11:41:31
+  Targets: Terasic DE2 (Cyclone II) / Terasic DE10-Standard (Cyclone V)
+  Firmware: 8x8 Systolic Accelerator Gen-2 (RV32I PicoRV32 SoC)
+================================================================================
+
+1. PHYSICAL HARDWARE SETUP:
+   - DE2 Platform:
+     * Bitstream: synthesis_soc_de2/soc_top_de2.sof (19,107 LEs, +4.626 ns slack)
+     * UART: DB9 RS-232 onboard port connected via USB-RS232 adapter.
+     * Reset: Pushbutton KEY[0] (PIN_G26).
+   - DE10-Standard Platform:
+     * Bitstream: synthesis_soc_de10/soc_top_de10.sof (8,290 ALMs, +5.609 ns slack)
+     * UART: USB-UART adapter connected to GPIO_0:
+       - Adapter TX -> GPIO_0[1] (PIN_AK2, uart_rx)
+       - Adapter RX -> GPIO_0[0] (PIN_W15, uart_tx)
+       - Adapter GND -> GPIO_0 GND (PIN_AH4 or PIN_AH2)
+     * Reset: Pushbutton KEY[0] (PIN_AJ4).
+
+2. EXPECTED TELEMETRY & ACCEPTANCE CRITERIA:
+   [A] Scenario 7 (REG_ACCEL_VERSION):
+       - Expected IP Version: 0x02080820 (Major: 2, Size: 8x8, Data: INT8, Acc: INT32).
+   [B] Scenario 1 (GEMM Benchmark K=8):
+       - Gen-2 Pure Compute Latency: 37 clock cycles (0.74 us @ 50 MHz).
+       - Gen-2 Pure Throughput: 1,383.8 MOPS (1.38 GOPS).
+       - Gen-2 End-to-End Latency: 1,920 clock cycles (38.4 us @ 50 MHz).
+       - Instructions: 275 CPU instructions (down from 1,269).
+       - End-to-End Speedup vs RV32I Software: 173.7x faster.
+       - Bit-True Parity: 0 errors across all 64 elements.
+   [C] Scenario 3 (Real MNIST Conv1 im2col):
+       - Bit-True Parity: 256/256 activations match PyTorch golden reference (0 mismatches).
+   [D] Scenario 5 (Arithmetic Diagnostics):
+       - 6/6 tests passed (Saturation clamp +127, (-128)x(-128)=+16384, ReLU bypass, Shift sweep, Guardband rejection).
+   [E] Scenario 6 (MNIST Inference):
+       - Predicted Digit: '7' (Confidence: 69%, displayed on HEX0).
+
+3. TO EXECUTE ON CONNECTED HARDWARE:
+   - Run: python software_ref/hil_test_board.py --port <COM_PORT>
+   - Or double-click: synthesis_soc_de10/run_hil_test.bat (or synthesis_soc_de2/run_hil_test.bat)
+================================================================================

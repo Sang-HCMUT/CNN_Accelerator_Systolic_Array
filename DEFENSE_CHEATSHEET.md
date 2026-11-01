@@ -55,7 +55,7 @@
   > *"Dạ thưa Thầy/Cô, Google TPU chọn Weight-Stationary vì chip của họ là ASIC cực lớn (hàng trăm triệu cổng), bộ nhớ đệm SRAM khổng lồ, họ muốn giữ nguyên trọng số để xử lý các lô ảnh Batch Size rất lớn.
   > Trong đề tài của em, mục tiêu là hướng tới thiết bị biên (Edge AI) chạy trên chip FPGA giá rẻ (Cyclone II chỉ có 18,752 LEs):
   > - Nếu dùng Weight-Stationary, mỗi PE phải có mạch định tuyến phức tạp và phải có một cây gom tổng (Adder Tree) ở ngõ ra rất cồng kềnh.
-  > - Với **Output-Stationary**, thanh ghi tích lũy 32-bit nằm ngay trong PE, dữ liệu trung gian không bao giờ phải gửi ra ngoài cho đến khi hoàn tất. Thiết kế này giúp tiết kiệm tối đa diện tích cổng logic (chỉ tốn 17,230 LEs (51.9%) cho toàn bộ SoC mảng $8 \times 8$ trên DE2) và đường dây chạy ngắn nhất, giúp đạt Fmax cao hơn ạ."*
+  > - Với **Output-Stationary**, thanh ghi tích lũy 32-bit nằm ngay trong PE, dữ liệu trung gian không bao giờ phải gửi ra ngoài cho đến khi hoàn tất. Thiết kế này giúp tiết kiệm tối đa diện tích cổng logic (chỉ tốn 19,107 LEs (57.5%) cho toàn bộ SoC mảng $8 \times 8$ Gen-2 trên DE2) và đường dây chạy ngắn nhất, giúp đạt Fmax cao hơn ạ."*
 
 ### Câu 3: Chu kỳ tính toán của mảng $8 \times 8$ ($K=8$) là bao nhiêu và tính từ công thức nào?
 * **Bản chất**: Kiến trúc Gen-1 (đọc tuần tự 64 phần tử qua 1 Quantizer = 93 chu kỳ) và Nâng cấp Gen-2 (đọc song song 8 hàng qua 8 Quantizers = 37 chu kỳ).
@@ -82,7 +82,7 @@
 * **Trả lời chuẩn**:
   > *"Dạ thưa Thầy/Cô, theo báo cáo Timing Analyzer trong Quartus II:
   > - Đường trễ Critical Path dài nhất nằm ở tuyến từ ngõ ra bộ nhân Embedded Multiplier 9-bit đi qua bộ cộng tích lũy 32-bit và nạp vào thanh ghi `c_acc` trong phần tử `pe_gemm`.
-  > - Thiết kế đạt Fmax **$64.88\text{ MHz}$** trên DE2 (Worst-Case Setup Slack đạt dương **$+4.588\text{ ns}$**, Hold Slack **$+0.391\text{ ns}$**, TNS = **$0.000\text{ ns}$** ở 50 MHz) và **$62.24\text{ MHz}$** trên DE10 (Setup Slack **$+3.932\text{ ns}$**) là nhờ:
+  > - Thiết kế đạt Fmax **$65.04\text{ MHz}$** trên DE2 (Worst-Case Setup Slack đạt dương **$+4.626\text{ ns}$**, Hold Slack **$+0.391\text{ ns}$**, TNS = **$0.000\text{ ns}$** ở 50 MHz) và **$69.49\text{ MHz}$** trên DE10 (Setup Slack **$+5.609\text{ ns}$**, Hold Slack **$+0.128\text{ ns}$**) là nhờ:
   >   1. Toàn bộ thiết kế tuân thủ nguyên tắc thiết kế đồng bộ thuần túy (Pure Synchronous Design), không dùng chốt (No Latches), không dùng xung clock tự chế (No Gated Clocks).
   >   2. Chèn các thanh ghi đệm đường ống (Pipeline Registers) phân tầng giữa Buffer, Skew Unit và Quantization Unit, giúp chia nhỏ đường trễ tổ hợp ạ."*
 
@@ -296,13 +296,13 @@
 * **Bản chất**: Báo cáo tổng hợp vật lý thực nghiệm trích xuất từ Quartus Prime Lite 20.1.
 * **Trả lời chuẩn**:
   > *"Dạ thưa Thầy/Cô, toàn bộ số liệu của cấu hình $8 \times 8$ trên Kit Terasic DE10-Standard (chip Cyclone V `5CSXFC6D6F31C6`) là **số liệu tổng hợp vật lý thực tế 100% từ Quartus Prime Lite 20.1** (trong thư mục `synthesis_soc_de10/output_files/` của dự án):
-  > - **Tài nguyên Logic**: Sử dụng đúng **6,308 ALMs / 41,910 (chiếm 15.1%)**.
-  > - **Thanh ghi nội**: **7,062 registers**.
-  > - **Bộ nhớ Block RAM**: **266,752 bits (chiếm 4.7%)** tương đương 32.5 KB cho bộ nhớ CPU SoC.
+  > - **Tài nguyên Logic**: Sử dụng đúng **8,290 ALMs / 41,910 (chiếm 19.8%)** sau khi tích hợp 8 Quantizers song song và Packed MMIO.
+  > - **Thanh ghi nội**: **9,982 registers (chiếm 23.8%)**.
+  > - **Bộ nhớ Block RAM**: **264,192 bits (chiếm 4.7%)** tương đương 32 KB cho bộ nhớ CPU SoC.
   > - **Khối nhân phần cứng DSP**: Sử dụng đúng **64 / 112 DSP Blocks (57.1%)** cho 64 PE của mảng $8 \times 8$.
-  > - **Thời gian và Fmax (theo báo cáo TimeQuest `soc_top_de10.sta.summary`)**:
-  >   * Ở điều kiện xấu nhất Slow Model 1100mV 85°C: Worst-Case Setup Slack đạt dương **`+3.932 ns`** ở 50 MHz, Hold Slack **`+0.206 ns`**, TNS = **`0.000 ns`**, tương đương $F_{max} = \mathbf{62.24\text{ MHz}}$.
-  >   * Ở điều kiện Fast Model 1100mV 0°C: Setup Slack đạt **`+10.140 ns`**, tương đương $F_{max} = \mathbf{101.4\text{ MHz}}$.
+  > - **Thời gian và Fmax (theo báo cáo Timing Analyzer `soc_top_de10.sta.summary`)**:
+  >   * Ở điều kiện xấu nhất Slow Model 1100mV 85°C: Worst-Case Setup Slack đạt dương **`+5.609 ns`** ở 50 MHz, Hold Slack **`+0.128 ns`**, TNS = **`0.000 ns`**, tương đương $F_{max} = \mathbf{69.49\text{ MHz}}$.
+  >   * Ở điều kiện Fast Model 1100mV 0°C: Setup Slack đạt **`+12.085 ns`**, tương đương $F_{max} = \mathbf{126.3\text{ MHz}}$.
   > 
   > Điểm nổi bật nhất về mặt khoa học: Khi nâng quy mô tính toán lên gấp 4 lần ($16 \to 64$ PEs), $F_{max}$ trên tiến trình 28nm hầu như được bảo toàn ($64.14 \to 62.18\text{ MHz}$, chỉ giảm $3\%$). Điều này chứng minh tính ưu việt của kiến trúc định tuyến lân cận (Nearest-Neighbor) của mảng tâm thu ạ!"*
 
@@ -355,7 +355,7 @@
   > *"Dạ thưa Thầy/Cô, đây là một bài toán đánh đổi kiến trúc rất sâu sắc:
   > 1. **Nguyên nhân kỹ thuật**: Khối Block RAM nhúng M4K trên Cyclone II hay M10K trên Cyclone V chỉ là bộ nhớ Dual-Port (tối đa 2 cổng truy xuất độc lập cùng lúc). Trong khi đó, để duy trì nhịp sóng mảng tâm thu $8 \times 8$ chạy mượt mà, tại mỗi chu kỳ clock bộ Skewing đòi hỏi phải **đọc đồng thời 8 phần tử của 8 hàng Buffer A và 8 phần tử của 8 cột Buffer B**.
   > 2. **Hệ quả tổng hợp (Synthesis Result)**: Do không thể nhét 8 cổng đọc đồng thời vào 1 khối M4K đơn lẻ, trình biên dịch Quartus Fitter buộc phải phân rã ma trận đệm thành các thanh ghi Flip-Flops phân tán kết hợp với các cây MUX dồn kênh lớn.
-  >    - Điều này giải thích tại sao trên chip Cyclone II DE2, thiết kế tiêu thụ **17,230 LEs (51.9%)** và **9,038 registers**, trong khi bộ nhớ Block RAM chỉ ghi nhận **264,192 bits** (dành trọn vẹn cho 32 KB RAM chương trình của CPU PicoRV32 và 2 khối register file).
+  >    - Điều này giải thích tại sao trên chip Cyclone II DE2, thiết kế tiêu thụ **19,107 LEs (57.5%)** và **9,423 registers** (Gen-2) hoặc **17,230 LEs (51.9%)** (Gen-1), trong khi bộ nhớ Block RAM chỉ ghi nhận **264,192 bits** (dành trọn vẹn cho 32 KB RAM chương trình của CPU PicoRV32 và 2 khối register file).
   > 3. **Giải pháp mở rộng cho mảng $16 \times 16$ (Gen-2 Roadmap)**: Khi nâng lên mảng $16 \times 16$, nếu tiếp tục dùng Flip-Flop thì số lượng LEs sẽ bùng nổ vượt quá diện tích FPGA. Giải pháp kiến trúc của em là **Phân mảnh bộ đệm thành cấu trúc Multi-Bank RAM**: chia Buffer A thành 16 bank M4K độc lập (mỗi hàng một bank riêng), nạp dữ liệu đồng bộ qua thanh ghi đọc 1 chu kỳ trễ, giúp tiết kiệm tới hơn $60\%$ diện tích logic ạ."*
 
 ### Câu 28: Bộ Lượng tử hóa Quantizer dùng dịch bit số học (Arithmetic Right Shift - Truncation) hay làm tròn đối xứng (Symmetric Rounding)? Vì sao độ chính xác 97.06% vẫn được bảo toàn?

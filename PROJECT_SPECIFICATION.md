@@ -75,8 +75,8 @@ Giao tiếp chuẩn hóa AMBA AXI4-Lite: Module đỉnh được đóng gói qua
 - **Công cụ tổng hợp & phân tích thời gian vật lý**:
   * Altera Quartus II 64-Bit 13.0 SP1 (TimeQuest Timing Analyzer cho nền tảng chính DE2).
   * Intel Quartus Prime Lite 20.1 (Timing Analyzer cho nền tảng mở rộng DE10-Standard).
-- **Phần cứng mục tiêu chính (Primary Platform)**: Altera Cyclone II `EP2C35F672C6` (Kit Terasic DE2 - Đóng Timing Fmax **64.88 MHz**, Slack **+4.588 ns**, TNS = **0.000 ns**).
-- **Phần cứng mở rộng quy mô (Scale-Up Platform)**: Intel Cyclone V SoC `5CSXFC6D6F31C6N` (Kit Terasic DE10-Standard - Đóng Timing Fmax **62.24 MHz**, Slack **+3.932 ns**, TNS = **0.000 ns**).
+- **Phần cứng mục tiêu chính (Primary Platform)**: Altera Cyclone II `EP2C35F672C6` (Kit Terasic DE2 - Đóng Timing Fmax **65.04 MHz**, Slack **+4.626 ns**, TNS = **0.000 ns**).
+- **Phần cứng mở rộng quy mô (Scale-Up Platform)**: Intel Cyclone V SoC `5CSXFC6D6F31C6N` (Kit Terasic DE10-Standard - Đóng Timing Fmax **69.49 MHz**, Slack **+5.609 ns**, TNS = **0.000 ns**).
 - **Nền tảng cơ sở đã lưu trữ (Archived Baseline)**: Altera Cyclone II `EP2C20F484C7` (Kit DE1 - Lưu trữ nghiên cứu ban đầu do giới hạn vật lý 52 bộ nhân DSP không đủ cho mảng $8 	imes 8$).
 
 ### 1.4. Kim Tự Tháp 5 Tầng Kiến Thức & Giá Trị Kỹ Thuật Đột Phá Của Đề Tài (Full-Stack Edge AI SoC)
@@ -826,7 +826,7 @@ Cấu hình $8 \times 8$ ($F_{max} = 67.60 \text{ MHz}$): $\frac{128 \times 67.6
 | **Tần Số Cực Đại ($F_{max}$)** | **65.04 MHz** | **69.49 MHz** | Vượt tần số danh định 50 MHz |
 | **Năng Lực Tính Toán Đỉnh** | **128 OPs / cycle** | **128 OPs / cycle** | 64 PEs $\times$ 2 OPs/cycle (1 Mult + 1 Acc) |
 | **Thông Lượng Đỉnh (@ 50MHz)**| **6.40 GOPS** (3.20 GMAC/s) | **6.40 GOPS** (3.20 GMAC/s) | Đồng nhất tuyệt đối giữa hai nền tảng |
-| **File Bitstream Đóng Gói** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` | Bitstream hoàn chỉnh sẵn sàng nạp xuống kit |
+| **File Bitstream Đóng Gói** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/soc_top_de10.sof` | Bitstream hoàn chỉnh sẵn sàng nạp xuống kit |
 
 ### 6.5. Phân Tích Cổ Chai Băng Thông Bus & Mô Hình Roofline (Roofline & Bottleneck Analysis: Pure Compute vs. MMIO Overhead)
 
@@ -924,7 +924,7 @@ Dựa trên phân tích định lượng từ Bus Profiler, đề tài vạch ra
 | **4** | **Giảm chi phí Instruction Fetch của CPU** | Kết nối CPU qua giao diện bộ nhớ trực tiếp `mem_valid` thay vì qua bus AXI, tích hợp I-Cache nhỏ, build firmware với cờ `-O2`. | Triệt tiêu $57.6\%$ thời gian CPU chờ nạp lệnh từ BRAM. | **Tăng tốc $1.5 \sim 2.0\times$** cho toàn bộ thời gian CPU điều phối. | Rủi ro trung bình; thay đổi cấu trúc cổng nhớ của SoC. |
 | **5** | **Chồng lấp theo Tile (Double-Buffering Ping-Pong)** | Thiết kế bộ đệm kép Bank 0 / Bank 1: nạp trước Tile $n+1$ vào Bank 1 trong khi mảng PE đang tính Tile $n$ ở Bank 0. | Ẩn hoàn toàn thời gian tính toán của mảng lõi trong các chuỗi đa tile (Demo 2, 3, 6). | Triệt tiêu $100\%$ thời gian trễ chờ của mảng PE. | Rủi ro trung bình; cần thêm logic quản lý cờ trạng thái tráo bank (Bank Ping-Pong FSM). |
 | **6** | **Seamless Streaming không xả mảng (Drainless Pipeline)** | Cho phép luồng nạp dữ liệu của Tile kế tiếp gối đầu trực tiếp lên pha Drain (16 chu kỳ) của Tile hiện tại. | Nâng cao hiệu suất PE Active Ratio từ $31\%$ ($K=8$) lên $>75\%$. | Mảng tính toán nhanh hơn **$1.5 \sim 2.0\times$**. | Rủi ro cao; yêu cầu tinh chỉnh sâu FSM điều khiển và mạch xóa Accumulator. |
-| **7** | **Chuyển bộ đệm A/B/C sang Multi-Bank Block RAM** | Phân rã Buffer A và B thành các Bank M4K/M10K độc lập theo từng hàng/cột, đọc đồng bộ trễ 1 chu kỳ clock. | Khắc phục hiện tượng tốn 17,230 LEs (51.9%) do dùng Flip-Flop, sẵn sàng mở rộng lên mảng $16 \times 16$. | Tiết kiệm hàng ngàn LEs trên FPGA, bảo tồn tài nguyên silicon. | Rủi ro trung bình; phải thay đổi lịch trình phát dữ liệu của bộ Skewing trễ 1 chu kỳ. |
+| **7** | **Chuyển bộ đệm A/B/C sang Multi-Bank Block RAM** | Phân rã Buffer A và B thành các Bank M4K/M10K độc lập theo từng hàng/cột, đọc đồng bộ trễ 1 chu kỳ clock. | Khắc phục hiện tượng tốn 19,107 LEs (57.5%) do dùng Flip-Flop, sẵn sàng mở rộng lên mảng $16 \times 16$. | Tiết kiệm hàng ngàn LEs trên FPGA, bảo tồn tài nguyên silicon. | Rủi ro trung bình; phải thay đổi lịch trình phát dữ liệu của bộ Skewing trễ 1 chu kỳ. |
 | **8** | **Chuẩn hóa Baseline công bằng & Minh bạch số liệu** | Đo đạc đối chứng thêm baseline có bật `ENABLE_FAST_MUL` hoặc nhân INT8 tối ưu hóa viết tay. | Bảo vệ tính khoa học và trung thực tuyệt đối của mọi con số công bố. | Định vị chính xác giá trị học thuật của đề tài trước Hội đồng. | **Đã hoàn thành 100% trong phiên bản hiện tại**. |
 
 #### Thứ Tự Thực Thi Chiến Lược Được Đề Xuất:
@@ -2177,13 +2177,13 @@ Bảng thông số thực tế trích xuất trực tiếp từ báo cáo Quartu
 
 | Thông Số Phần Cứng Thực Nghiệm | Giá Trị Thực Đo | Giới Hạn Chip EP2C35 | Tỷ Lệ Sử Dụng (%) | Đánh Giá Kỹ Thuật |
 | :--- | :---: | :---: | :---: | :--- |
-| **Total Logic Elements (LEs)** | **17,230** | 33,216 | **51.9%** | Sử dụng khoảng một nửa chip, định tuyến tối ưu |
-| **Dedicated Logic Registers** | **9,038** | 33,216 | **27.2%** | Cân bằng hoàn hảo logic tổ hợp và thanh ghi |
+| **Total Logic Elements (LEs)** | **19,107** | 33,216 | **57.5%** | Tích hợp 8 Quantizers song song + Packed MMIO |
+| **Dedicated Logic Registers** | **9,423** | 33,216 | **28.4%** | Cân bằng hoàn hảo logic tổ hợp và thanh ghi |
 | **Embedded Multipliers (9-bit)** | **64** | 70 | **91.4%** | Khai thác tối đa 64 bộ nhân phần cứng cho 64 PEs |
-| **Total Block RAM (M4K)** | **264,192 bits** | 483,840 bits | **54.6%** | 32 KB Main BRAM + Dual-channel Output Buffers |
-| **Worst-Case Setup Slack (@ 50MHz)**| **+4.588 ns** | -- | -- | Đóng thời gian an toàn, không có vi phạm |
+| **Total Block RAM (M4K)** | **264,192 bits** | 483,840 bits | **54.6%** | 32 KB Main BRAM cho PicoRV32 |
+| **Worst-Case Setup Slack (@ 50MHz)**| **+4.626 ns** | -- | -- | Đóng thời gian an toàn, không có vi phạm |
 | **Worst-Case Hold Slack** | **+0.391 ns** | -- | -- | TNS = 0.000 ns, THNS = 0.000 ns |
-| **Tần Số Cực Đại ($F_{max}$)** | **64.88 MHz** | -- | -- | Vượt trần 50 MHz danh định |
+| **Tần Số Cực Đại ($F_{max}$)** | **65.04 MHz** | -- | -- | Vượt trần 50 MHz danh định |
 | **Peak Throughput (@ 50MHz)** | **6.40 GOPS** | -- | -- | 3.20 GMAC/s (64 PEs nhân-cộng song song) |
 | **File Bitstream Đóng Gói** | `soc_top_de2.sof` | -- | -- | 841,430 bytes, nạp qua USB-Blaster |
 
@@ -2288,7 +2288,7 @@ Biên dịch toàn diện dự án SoC DE10:
 cd synthesis_soc_de10compile_soc_de10.bat
 `
 
-(Chu trình tự động gọi quartus_map $\to$ quartus_fit $\to$ quartus_asm $\to$ quartus_sta, sinh file bitstream chuẩn output_files/soc_top_de10.sof).
+(Chu trình tự động gọi quartus_map $\to$ quartus_fit $\to$ quartus_asm $\to$ quartus_sta, sinh file bitstream chuẩn output_files/soc_top_de10.sof và tự động đồng bộ sang synthesis_soc_de10/soc_top_de10.sof).
 
 Nạp Bitstream tự động xuống Kit DE10-Standard:
 

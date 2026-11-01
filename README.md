@@ -166,7 +166,7 @@ The design is synthesized, fully placed-and-routed, and timing-closed across two
 | **Max Frequency ($F_{max}$)** | **65.04 MHz** | **69.49 MHz** | 63.07 MHz |
 | **Timing Violations (TNS)** | **0.000 ns (Closure Met)** | **0.000 ns (Closure Met)** | 0.000 ns |
 | **Peak Throughput (@ 50MHz)** | **6.40 GOPS** (3.20 GMAC/s) | **6.40 GOPS** (3.20 GMAC/s) | 1.60 GOPS (4x4 legacy) |
-| **Programming Bitstream** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/output_files/soc_top_de10.sof` | `synthesis_soc/soc_top.sof` *(Archived 4x4)* |
+| **Programming Bitstream** | `synthesis_soc_de2/soc_top_de2.sof` | `synthesis_soc_de10/soc_top_de10.sof` | `synthesis_soc/soc_top.sof` *(Archived 4x4)* |
 
 ---
 
@@ -443,13 +443,13 @@ python run_regression.py --seeds 10 --test gemm_random_test
 - **Terasic DE2** ($8 \times 8$ Array, Cyclone II `EP2C35F672C6` — **Primary Platform**):
   ```powershell
   cd synthesis_soc_de2
-  .\compile_soc_de2.bat     # Generates soc_top_de2.sof (Slack: +4.588 ns)
+  .\compile_soc_de2.bat     # Generates soc_top_de2.sof (Slack: +4.626 ns)
   ```
 
 - **Terasic DE10-Standard** ($8 \times 8$ Array, Cyclone V `5CSXFC6D6F31C6N` — **Scale-Up Platform**):
   ```powershell
   cd synthesis_soc_de10
-  .\compile_soc_de10.bat    # Generates soc_top_de10.sof (Slack: +3.932 ns)
+  .\compile_soc_de10.bat    # Generates soc_top_de10.sof (Slack: +5.609 ns)
   ```
 
 - **Terasic DE1** ($4 \times 4$ Legacy Array, Cyclone II `EP2C20F484C7` — **Deprecated & Archived**):

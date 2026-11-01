@@ -77,12 +77,12 @@ rem 3. Kết quả: soc_top_de10.sof (bitstream nạp vào DE10-Standard)
 
 | Tài Nguyên Phần Cứng | Số Lượng Sử Dụng | Giới Hạn Cyclone V | Tỉ Lệ Chiếm Dụng |
 |---|:---:|:---:|:---:|
-| **Logic ALMs** | **6,308** | 41,910 | **15.1%** |
-| **Dedicated Logic Registers** | **7,062** | -- | -- |
+| **Logic ALMs** | **8,290** | 41,910 | **19.8%** |
+| **Dedicated Logic Registers** | **9,982** | -- | **23.8%** |
 | **DSP Blocks** | **64** | 112 | **57.1%** |
-| **Block RAM (M10K)** | **266,752 bits** (32.5 KB BRAM) | 5,662,720 bits | **4.7%** |
+| **Block RAM (M10K)** | **264,192 bits** (32 KB BRAM) | 5,662,720 bits | **4.7%** |
 | **Clock Danh Định** | **50.00 MHz** (20.0 ns) | -- | CLOCK_50[0] |
-| **Worst-Case Setup Slack** | **+3.932 ns** | -- | Timing Closure Met |
-| **Worst-Case Hold Slack** | **+0.206 ns** | -- | TNS = 0.000 ns |
-| **Tần Số Cực Đại ($F_{max}$)**| **62.24 MHz** | -- | Vượt trần 50 MHz |
+| **Worst-Case Setup Slack** | **+5.609 ns** | -- | Timing Closure Met (Slack dương an toàn) |
+| **Worst-Case Hold Slack** | **+0.128 ns** | -- | TNS = 0.000 ns, THNS = 0.000 ns |
+| **Tần Số Cực Đại ($F_{max}$)**| **69.49 MHz** | -- | Vượt trần 50 MHz danh định |
 | **Peak Throughput** | **6.40 GOPS** (3.20 GMAC/s) | -- | Đồng nhất với DE2 8x8 |

@@ -58,7 +58,11 @@ if %errorlevel% neq 0 (
     pause
     exit /b %errorlevel%
 )
-echo [OK] Bitstream generated: %PROJECT%.sof
+echo [OK] Bitstream generated: output_files\%PROJECT%.sof
+if exist "output_files\%PROJECT%.sof" (
+    copy /y "output_files\%PROJECT%.sof" "%PROJECT%.sof" >nul
+    echo [OK] Bitstream synchronized to: synthesis_soc_de10\%PROJECT%.sof
+)
 echo.
 
 echo [4/4] Running TimeQuest Static Timing Analysis (quartus_sta)...

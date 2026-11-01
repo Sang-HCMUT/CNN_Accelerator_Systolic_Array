@@ -7,24 +7,30 @@ cd /d "%~dp0"
 
 SET QUARTUS_BIN=C:\intelFPGA_lite\20.1\quartus\bin64
 
-if not exist output_files\soc_top_de10.sof (
-    echo [ERROR] output_files\soc_top_de10.sof not found! Please run compile_soc_de10.bat first.
-    pause
-    exit /b 1
+SET SOF_FILE=output_files\soc_top_de10.sof
+if not exist "%SOF_FILE%" (
+    if exist "soc_top_de10.sof" (
+        SET SOF_FILE=soc_top_de10.sof
+    ) else (
+        echo [ERROR] Neither output_files\soc_top_de10.sof nor soc_top_de10.sof found!
+        echo         Please run compile_soc_de10.bat first.
+        pause
+        exit /b 1
+    )
 )
 
 echo Checking Altera / Intel USB-Blaster cables...
 "%QUARTUS_BIN%\jtagconfig.exe"
 
 echo.
-echo Attempting to program soc_top_de10.sof to FPGA...
+echo Attempting to program %SOF_FILE% to FPGA...
 echo Note: On DE10-Standard SoC, FPGA is typically device index @2 on JTAG chain.
-"%QUARTUS_BIN%\quartus_pgm.exe" -m JTAG -o "p;output_files\soc_top_de10.sof@2"
+"%QUARTUS_BIN%\quartus_pgm.exe" -m JTAG -o "p;%SOF_FILE%@2"
 
 if %errorlevel% neq 0 (
     echo.
     echo Trying device index @1 in case of direct JTAG chain...
-    "%QUARTUS_BIN%\quartus_pgm.exe" -m JTAG -o "p;output_files\soc_top_de10.sof@1"
+    "%QUARTUS_BIN%\quartus_pgm.exe" -m JTAG -o "p;%SOF_FILE%@1"
 )
 
 if %errorlevel% neq 0 (
