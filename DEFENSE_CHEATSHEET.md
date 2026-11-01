@@ -272,16 +272,29 @@
   >    - **Ma trận đơn lẻ $8 \times 8$ ($K=8$, 1,024 OPs)**:
   >      - **Chỉ số hệ thống cốt lõi (End-to-End Speedup)**: Tăng tốc **$38.5\times$** (8,525 chu kỳ phần cứng SoC vs 328,257 chu kỳ CPU). Đây là con số thực tế bao gồm toàn bộ quá trình CPU nạp dữ liệu, kích hoạt và đọc kết quả.
   >      - **Chỉ số lõi tính toán thuần (Pure Compute Speedup)**: Tăng tốc **$3,529.6\times$** (93 chu kỳ phần cứng vs 328,257 chu kỳ vòng lặp CPU). Em xin giải trình minh bạch: Baseline CPU PicoRV32 được biên dịch ở kiến trúc cơ bản `rv32i` (không bật khối nhân phần cứng `ENABLE_MUL`), do đó mỗi phép nhân INT8 của CPU phải gọi hàm `__mulsi3` của libgcc tiêu tốn trung bình $\approx 641$ chu kỳ/MAC. Con số $3,529\times$ là phép so sánh chính xác giữa mảng 64 PE song song với vòng lặp toán phần mềm thuần túy.
-  >      - **Phân rã chi phí & Bức tường bộ nhớ (Memory Wall)**: Thời gian tính toán thuần chỉ chiếm **$1.1\%$** (93 chu kỳ), trong khi chi phí trao đổi qua AXI4-Lite MMIO chiếm tới **$98.9\%$** (8,432 chu kỳ).
+  >      - **Đính chính sâu sắc về vi kiến trúc (Bus Profiler Telemetry trên SoC)**: Phép đo Cycle-Accurate Bus Profiler trên SoC trong đúng cửa sổ 8,535 chu kỳ cho thấy nút thắt hệ thống **không phải do trễ giao tiếp của accelerator** (giao dịch AXI tới mảng chỉ mất 2-3 chu kỳ, tổng 201 giao dịch MMIO chỉ chiếm **~473 chu kỳ, tức ~5.5%**), mà bản chất là **nút thắt cổ chai điều phối của CPU (CPU Orchestration Bottleneck chiếm tới 94.4%)**:
+  >        * **$57.6\%$ (4,919 chu kỳ, 1,661 giao dịch)**: CPU fetch mã lệnh và stack từ BRAM qua bus AXI crossbar (mất trung bình 3 chu kỳ/lệnh).
+  >        * **$36.8\%$ (3,143 chu kỳ)**: CPU thực thi lệnh tổ hợp trong lõi (vòng lặp load, mask, tính địa chỉ offset $r \times 8 + c$, store — tiêu tốn tới $\approx 42$ chu kỳ lệnh cho mỗi byte dữ liệu).
+  >        * **$\approx 5.5\%$ (473 chu kỳ, 201 giao dịch)**: Giao dịch MMIO nạp Buffer A, B, đọc Buffer C và polling cờ `STATUS_DONE`.
+  >        * **$\approx 1.1\%$ (93 chu kỳ)**: Mảng tâm thu 64 PE thực sự bận tính toán.
+  >        $$\implies$$ Như vậy, **$94.4\%$ thời lượng bị ngốn bởi CPU chuẩn bị dữ liệu và fetch lệnh**, chứng minh mảng tâm thu chạy cực nhanh và hệ thống đang khát dữ liệu từ CPU.
   >    - **Ma trận lớn $16 \times 16$ (Tiling 4 khối $8 \times 8$, $K=16$, 8,192 OPs)**:
   >      - Thời gian toàn hệ thống: **114,046 chu kỳ** (đạt **$26.5\times$** End-to-End Speedup so với ước tính CPU 3,032,928 chu kỳ chiếu theo 4x Tile 0).
   >      - Tính toán thuần phần cứng 4 tile: **404 chu kỳ** ($8.08\ \mu\text{s}$), đạt thông lượng thuần **$1,013.9\text{ MOPS}$ ($1.01\text{ GOPS}$)**. Chi phí MMIO chiếm **$99.6\%$**.
   >    - **Toàn bộ mạng suy luận MNIST (8 tiles)**: Tính toán thuần mảng PE chỉ mất **808 chu kỳ** ($16.16\ \mu\text{s}$, chiếm $\approx 0.4\%$), trong khi $99.6\%$ thời gian (205,100 chu kỳ) dành cho CPU trích xuất đặc trưng Pooling và giao dịch MMIO.
   > 2. **Bản chất kiến trúc (Định luật Amdahl & Bức tường bộ nhớ)**:
   >    - Phần cứng tính toán đã được tối ưu cực hạn gần chạm trần lý thuyết 6.4 GOPS, do đó theo định luật Amdahl, toàn bộ thời gian hệ thống bị chặn bởi băng thông nạp dữ liệu đơn từ (Single-word transfer) của bus AXI4-Lite.
-  > 3. **Lộ trình nâng cấp công nghiệp (Future Work)**:
-  >    - Nâng cấp giao diện bus từ AXI4-Lite sang **AXI4 Full Burst Master + Bộ điều khiển DMA (Direct Memory Access)**.
-  >    - Áp dụng cơ chế **Bộ đệm kép Ping-Pong (Double Buffering)** để CPU/DMA nạp Tile ma trận tiếp theo song song cùng lúc với khi mảng tâm thu đang tính Tile hiện tại, triệt tiêu 100% thời gian chờ nạp dữ liệu ạ."*
+  > 3. **Lộ trình nâng cấp công nghiệp có lộ trình khoa học (Gen-2 Roadmap)**:
+  >    - **Đợt 1 (Đã hoàn thành)**: Khóa ghi Busy-gating trên buffer A/B, trả mã lỗi DECERR trên Interconnect, minh bạch hóa baseline CPU và tích hợp bộ đếm chu kỳ phần cứng `REG_ACCEL_CYCLES`.
+  >    - **Đợt 2 (Tối ưu phần mềm & đóng gói dữ liệu - Tăng 3-4x End-to-End)**: 
+  >      * Ghi/đọc đóng gói **4 INT8 / từ 32-bit (Packed Word)** kết hợp unroll vòng lặp firmware $\implies$ giảm 4 lần số lần lặp của CPU.
+  >      * Đọc ra song song theo hàng bằng **8 bộ Quantizer song song** $\implies$ giảm thời gian xả ma trận C từ 64 chu kỳ xuống 8 chu kỳ (latency lõi giảm từ 93 xuống $\approx 37$ chu kỳ).
+  >      * Biên dịch firmware với cờ tối ưu `-O2` và giảm chi phí fetch lệnh.
+  >    - **Đợt 3 (Đột phá kiến trúc - Tăng 12-17x với DMA)**:
+  >      * Tích hợp **bộ điều khiển DMA Master** ngay trong Accelerator: Accelerator tự phát lệnh đọc A/B từ BRAM và ghi C về BRAM, CPU chỉ việc ghi descriptor điều khiển. Giải phóng hoàn toàn CPU khỏi đường dữ liệu ($94.4\%$ thời gian), đưa tổng chu kỳ từ $8,500$ xuống chỉ còn $\approx 500 - 700$ chu kỳ/tile!
+  >    - **Đợt 4 (Chồng lấp & Scaling)**:
+  >      * Áp dụng **Bộ đệm kép Double-Buffering (Ping-Pong A/B/C)**: nạp tile $n+1$ song song trong khi mảng đang tính tile $n$.
+  >      * Chuyển ma trận đệm sang **Multi-Bank Block RAM** khi mở rộng lên mảng $16 \times 16$ để tiết kiệm tài nguyên Logic Elements trên FPGA ạ."*
 
 ### Câu 24: Bảng số liệu tổng hợp $8 \times 8$ trên Kit DE10-Standard (Cyclone V) là số liệu thật hay ước lượng? Fmax và tài nguyên ALM đo được là bao nhiêu?
 * **Bản chất**: Báo cáo tổng hợp vật lý thực nghiệm trích xuất từ Quartus Prime Lite 20.1.

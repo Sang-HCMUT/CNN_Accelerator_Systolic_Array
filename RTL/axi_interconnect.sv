@@ -121,7 +121,7 @@ module axi_interconnect (
             4'h0:    return 2'd0; // RAM
             4'h1:    return 2'd1; // Accelerator
             4'h2:    return 2'd2; // UART
-            default: return 2'd0; // Default fallback to RAM
+            default: return 2'd3; // Unmapped -> Decode Error (DECERR)
         endcase
     endfunction
 
@@ -191,11 +191,17 @@ module axi_interconnect (
                 s_axi_bvalid  = m2_axi_bvalid;
                 s_axi_bresp   = m2_axi_bresp;
             end
+            2'd3: begin
+                s_axi_awready = s_axi_awvalid;
+                s_axi_wready  = s_axi_wvalid;
+                s_axi_bvalid  = s_axi_awvalid & s_axi_wvalid;
+                s_axi_bresp   = 2'b11; // DECERR: Decode Error for unmapped address
+            end
             default: begin
                 s_axi_awready = 1'b0;
                 s_axi_wready  = 1'b0;
                 s_axi_bvalid  = 1'b0;
-                s_axi_bresp   = 2'b00;
+                s_axi_bresp   = 2'b11;
             end
         endcase
     end
@@ -258,6 +264,12 @@ module axi_interconnect (
                 s_axi_rvalid  = m2_axi_rvalid;
                 s_axi_rdata   = m2_axi_rdata;
                 s_axi_rresp   = m2_axi_rresp;
+            end
+            2'd3: begin
+                s_axi_arready = s_axi_arvalid;
+                s_axi_rvalid  = s_axi_arvalid;
+                s_axi_rdata   = 32'hDEAD_BEEF;
+                s_axi_rresp   = 2'b11; // DECERR: Decode Error for unmapped address
             end
             default: begin
                 s_axi_arready = 1'b0;
