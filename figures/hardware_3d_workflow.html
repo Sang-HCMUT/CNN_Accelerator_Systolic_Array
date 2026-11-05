@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Hardware Architecture & End-to-End Workflow — CNN Systolic SoC</title>
+  <title>VLSI Silicon Die & 3D Hardware Architecture Explorer — CNN Systolic SoC</title>
 
   <!-- Google Fonts: Inter & Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,11 +14,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- KaTeX for Mathematics -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-
-  <!-- Three.js 3D Engine & OrbitControls (Local offline with CDN fallback) -->
+  <!-- Three.js 3D Engine & OrbitControls (Offline local with CDN fallback) -->
   <script src="libs/three.min.js"></script>
   <script src="libs/OrbitControls.js"></script>
   <script>
@@ -30,22 +26,25 @@
 
   <style>
     :root {
-      --surface-app: #09090b;
-      --surface-panel: #121215;
-      --surface-card: #18181b;
-      --border-subtle: #27272a;
-      --accent-blue: #2563eb;
+      --eda-bg: #07090e;
+      --eda-panel: #0d1117;
+      --eda-card: #161b22;
+      --eda-border: #30363d;
+      --eda-hairline: rgba(240, 246, 252, 0.1);
+      --gold-trace: #d29922;
+      --copper-trace: #b45309;
+      --silicon-die: #1f2937;
+      --accent-cyan: #38bdf8;
       --accent-emerald: #10b981;
       --accent-amber: #f59e0b;
       --accent-rose: #f43f5e;
-      --accent-cyan: #06b6d4;
-      --accent-purple: #8b5cf6;
+      --accent-purple: #a855f7;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--surface-app);
-      color: #f4f4f5;
+      background: var(--eda-bg);
+      color: #e6edf3;
       font-family: 'Inter', -apple-system, sans-serif;
       overflow: hidden;
       width: 100vw;
@@ -57,239 +56,291 @@
       width: 100vw;
       height: 100vh;
       display: block;
+      cursor: grab;
     }
+    #webgl-canvas:active { cursor: grabbing; }
 
-    /* Top Navigation HUD */
-    .top-hud {
+    /* CAD / EDA Engineering HUD Top Bar */
+    .eda-top-hud {
       position: absolute;
-      top: 16px;
-      left: 20px;
-      right: 20px;
+      top: 14px;
+      left: 18px;
+      right: 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       pointer-events: none;
-      z-index: 10;
+      z-index: 20;
     }
-    .hud-card {
-      background: rgba(18, 18, 21, 0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 10px 16px;
+    .eda-panel-box {
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--eda-border);
+      border-radius: 8px;
+      padding: 9px 15px;
       pointer-events: auto;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
-    .hud-title {
-      font-size: 0.95rem;
+    .eda-title {
+      font-size: 0.92rem;
       font-weight: 700;
       letter-spacing: -0.01em;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
     }
-    .hud-subtitle {
-      font-size: 0.75rem;
-      color: #a1a1aa;
+    .eda-chip-tag {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.7rem;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 600;
     }
 
-    /* Stage Banner Overlay */
+    /* Crosshair Center Cursor Guide */
+    .crosshair-reticle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      pointer-events: none;
+      opacity: 0.25;
+      z-index: 5;
+    }
+    .crosshair-reticle::before, .crosshair-reticle::after {
+      content: '';
+      position: absolute;
+      background: #58a6ff;
+    }
+    .crosshair-reticle::before { top: 11px; left: 0; width: 24px; height: 1px; }
+    .crosshair-reticle::after { top: 0; left: 11px; width: 1px; height: 24px; }
+
+    /* Technical Stage Banner (Top Center) */
     .stage-banner {
       position: absolute;
-      top: 80px;
+      top: 72px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(18, 18, 21, 0.92);
+      background: rgba(13, 17, 23, 0.94);
       backdrop-filter: blur(16px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 14px 24px;
-      min-width: 580px;
-      max-width: 780px;
+      border: 1px solid var(--eda-border);
+      border-radius: 10px;
+      padding: 12px 22px;
+      min-width: 620px;
+      max-width: 820px;
       text-align: center;
-      z-index: 10;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      transition: all 0.3s ease;
+      z-index: 20;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.7);
+      transition: all 0.25s ease;
     }
-    .stage-badge {
-      display: inline-block;
-      font-size: 0.7rem;
+    .stage-step-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
       font-family: 'Fira Code', monospace;
       font-weight: 600;
-      padding: 2px 10px;
-      border-radius: 999px;
-      margin-bottom: 6px;
+      padding: 2px 9px;
+      border-radius: 4px;
+      margin-bottom: 5px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
-    .stage-name {
-      font-size: 1.15rem;
+    .stage-heading {
+      font-size: 1.05rem;
       font-weight: 700;
-      margin-bottom: 4px;
-      color: #fff;
+      margin-bottom: 3px;
+      color: #f0f6fc;
+      letter-spacing: -0.01em;
     }
     .stage-desc {
-      font-size: 0.82rem;
-      color: #d4d4d8;
-      line-height: 1.45;
-    }
-    .stage-formula {
-      font-family: 'Fira Code', monospace;
       font-size: 0.8rem;
-      color: var(--accent-cyan);
-      margin-top: 6px;
-      background: rgba(0,0,0,0.3);
-      padding: 4px 10px;
-      border-radius: 6px;
+      color: #8b949e;
+      line-height: 1.45;
+      margin-bottom: 0;
+    }
+    .stage-math {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      color: #58a6ff;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 3px 10px;
+      border-radius: 5px;
       display: inline-block;
+      margin-top: 6px;
     }
 
-    /* Bottom Control Bar */
-    .bottom-hud {
+    /* Left CAD Camera View Controls */
+    .eda-cam-toolbar {
       position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(18, 18, 21, 0.92);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 10px 20px;
+      top: 72px;
+      left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 20;
+    }
+    .cad-tool-btn {
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid var(--eda-border);
+      color: #8b949e;
+      font-size: 0.74rem;
+      font-family: 'Fira Code', monospace;
+      padding: 6px 11px;
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 16px;
-      z-index: 10;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      gap: 7px;
+      transition: all 0.15s ease;
     }
-    .timeline-steps {
+    .cad-tool-btn:hover, .cad-tool-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #f0f6fc;
+    }
+
+    /* Right Telemetry / Die Spec Sidebar */
+    .eda-spec-sidebar {
+      position: absolute;
+      top: 72px;
+      right: 18px;
+      width: 290px;
+      background: rgba(13, 17, 23, 0.94);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--eda-border);
+      border-radius: 10px;
+      padding: 14px;
+      z-index: 20;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      font-size: 0.78rem;
+    }
+    .spec-header {
+      font-size: 0.68rem;
+      font-family: 'Fira Code', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #8b949e;
+      margin-bottom: 8px;
       display: flex;
-      gap: 6px;
+      justify-content: space-between;
+      align-items: center;
     }
-    .step-dot {
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .spec-label { color: #8b949e; }
+    .spec-val {
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+
+    /* Bottom Engineering Timeline Stepper */
+    .eda-bottom-hud {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(13, 17, 23, 0.94);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--eda-border);
+      border-radius: 10px;
+      padding: 9px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 20;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.7);
+    }
+    .timeline-dot {
       width: 28px;
       height: 28px;
       border-radius: 6px;
-      background: #27272a;
-      border: 1px solid #3f3f46;
-      color: #a1a1aa;
-      font-size: 0.75rem;
+      background: #161b22;
+      border: 1px solid var(--eda-border);
+      color: #8b949e;
+      font-size: 0.72rem;
       font-family: 'Fira Code', monospace;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
-    .step-dot:hover {
-      background: #3f3f46;
-      color: #fff;
+    .timeline-dot:hover {
+      background: #21262d;
+      color: #f0f6fc;
     }
-    .step-dot.active {
-      background: var(--accent-blue);
-      border-color: var(--accent-blue);
+    .timeline-dot.active {
+      background: #1f6feb;
+      border-color: #58a6ff;
       color: #fff;
       font-weight: 700;
-      box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+      box-shadow: 0 0 10px rgba(31, 111, 235, 0.7);
     }
 
-    /* Right Telemetry Sidebar */
-    .telemetry-sidebar {
+    /* Engineering HUD Coordinates Indicator (Bottom Left) */
+    .eda-coords-hud {
       position: absolute;
-      top: 80px;
-      right: 20px;
-      width: 280px;
-      background: rgba(18, 18, 21, 0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 16px;
-      z-index: 10;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      max-height: calc(100vh - 120px);
-      overflow-y: auto;
-    }
-    .telem-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      font-size: 0.8rem;
-    }
-    .telem-label { color: #a1a1aa; }
-    .telem-value {
+      bottom: 18px;
+      left: 18px;
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid var(--eda-border);
+      border-radius: 6px;
+      padding: 6px 12px;
       font-family: 'Fira Code', monospace;
-      font-weight: 600;
-    }
-
-    /* Camera View Selector Buttons */
-    .camera-hud {
-      position: absolute;
-      top: 80px;
-      left: 20px;
+      font-size: 0.68rem;
+      color: #8b949e;
+      z-index: 20;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      z-index: 10;
-    }
-    .cam-btn {
-      background: rgba(18, 18, 21, 0.85);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border-subtle);
-      color: #a1a1aa;
-      font-size: 0.75rem;
-      padding: 6px 12px;
-      border-radius: 8px;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-    .cam-btn:hover, .cam-btn.active {
-      background: rgba(37, 99, 235, 0.2);
-      border-color: var(--accent-blue);
-      color: #fff;
+      gap: 2px;
     }
 
-    /* Floating Tooltip */
-    #tooltip-3d {
+    /* Real-Time Hover Tooltip */
+    #cad-tooltip {
       position: absolute;
       display: none;
-      background: rgba(18, 18, 21, 0.95);
-      border: 1px solid var(--accent-cyan);
-      box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
-      border-radius: 8px;
+      background: rgba(13, 17, 23, 0.97);
+      border: 1px solid #58a6ff;
+      box-shadow: 0 0 20px rgba(88, 166, 255, 0.35);
+      border-radius: 6px;
       padding: 8px 12px;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       pointer-events: none;
       z-index: 100;
-      min-width: 180px;
+      min-width: 200px;
     }
 
-    /* Legend Overlay */
-    .legend-box {
+    /* Toggle Layer Stack Bar (Bottom Right) */
+    .layer-stack-bar {
       position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(18, 18, 21, 0.85);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 10px 14px;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid var(--eda-border);
+      border-radius: 6px;
+      padding: 6px 10px;
       font-size: 0.7rem;
-      z-index: 10;
-    }
-    .legend-item {
+      font-family: 'Fira Code', monospace;
+      z-index: 20;
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 4px;
-    }
-    .legend-color {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
+      color: #8b949e;
     }
   </style>
 </head>
@@ -298,505 +349,654 @@
   <!-- WebGL Render Canvas -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Top HUD -->
-  <div class="top-hud">
-    <div class="hud-card d-flex align-items-center gap-3">
-      <div class="hud-title text-primary">
-        <i class="bi bi-cpu-fill fs-5 text-primary"></i>
-        <span>CNN SYSTOLIC SOC</span>
-        <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">3D Hardware Architecture</span>
+  <!-- Crosshair CAD Reticle -->
+  <div class="crosshair-reticle"></div>
+
+  <!-- Top Engineering HUD Bar -->
+  <div class="eda-top-hud">
+    <div class="eda-panel-box d-flex align-items-center gap-3">
+      <div class="eda-title text-light">
+        <i class="bi bi-motherboard text-primary fs-5"></i>
+        <span>VLSI SILICON FLOORPLAN & WORKFLOW</span>
+        <span class="eda-chip-tag">TSMC 28nm / CYCLONE V</span>
       </div>
-      <div class="vr bg-secondary opacity-50 d-none d-md-block" style="height: 20px;"></div>
-      <div class="hud-subtitle d-none d-md-block">
-        End-to-End Cycle-Accurate Hardware Dataflow (Cyclone V FPGA)
-      </div>
+      <div class="vr bg-secondary opacity-50 d-none d-md-block" style="height: 18px;"></div>
+      <span class="small font-monospace text-muted d-none d-md-block" style="font-size: 0.75rem;">
+        64-PE Systolic Core • Dual SRAM Buffers • 8-Row SIMD Drain
+      </span>
     </div>
 
-    <div class="hud-card d-flex align-items-center gap-2">
-      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1" onclick="window.location.href='../index.html'" title="Return to Portal">
-        <i class="bi bi-house-door-fill me-1"></i>Portal Hub
+    <div class="eda-panel-box d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="window.location.href='../index.html'" title="Return to Flagship Portal">
+        <i class="bi bi-box-arrow-left me-1"></i>Portal
       </button>
-      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1" onclick="toggleHelpModal()" title="Help & Navigation Controls">
-        <i class="bi bi-question-circle"></i>
+      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="resetCameraView()" title="Reset Camera">
+        <i class="bi bi-arrow-clockwise me-1"></i>Reset CAD View
       </button>
     </div>
   </div>
 
-  <!-- Camera Preset Buttons (Left) -->
-  <div class="camera-hud">
-    <button class="cam-btn active" onclick="setCameraPreset('isometric')"><i class="bi bi-box"></i>Isometric 3D</button>
-    <button class="cam-btn" onclick="setCameraPreset('top')"><i class="bi bi-grid-3x3"></i>Top Floorplan</button>
-    <button class="cam-btn" onclick="setCameraPreset('input')"><i class="bi bi-box-arrow-in-right"></i>1. Im2Col & Buffers</button>
-    <button class="cam-btn" onclick="setCameraPreset('skew')"><i class="bi bi-bar-chart-steps"></i>2. Skew Delay Unit</button>
-    <button class="cam-btn" onclick="setCameraPreset('systolic')"><i class="bi bi-cpu"></i>3. 64-PE Core Mesh</button>
-    <button class="cam-btn" onclick="setCameraPreset('output')"><i class="bi bi-diagram-3"></i>4. Drain & Quant ReLU</button>
+  <!-- Left Camera CAD Toolbar -->
+  <div class="eda-cam-toolbar">
+    <button class="cad-tool-btn active" onclick="setCamAngle('iso')"><i class="bi bi-box"></i>3D Isometric</button>
+    <button class="cad-tool-btn" onclick="setCamAngle('top')"><i class="bi bi-grid-3x3"></i>Die Floorplan</button>
+    <button class="cad-tool-btn" onclick="setCamAngle('im2col')"><i class="bi bi-memory"></i>1. Im2Col & SRAM</button>
+    <button class="cad-tool-btn" onclick="setCamAngle('skew')"><i class="bi bi-bar-chart-steps"></i>2. Skew Delay</button>
+    <button class="cad-tool-btn" onclick="setCamAngle('array')"><i class="bi bi-cpu"></i>3. 64-PE Array</button>
+    <button class="cad-tool-btn" onclick="setCamAngle('drain')"><i class="bi bi-diagram-3"></i>4. SIMD & ReLU</button>
+    <button class="cad-tool-btn" onclick="setCamAngle('soc')"><i class="bi bi-hdd-network"></i>5. SoC & HEX0</button>
   </div>
 
-  <!-- Current Stage Interactive Banner (Top Center) -->
+  <!-- Stage Workflow Banner (Top Center) -->
   <div class="stage-banner" id="stageBanner">
-    <span class="stage-badge bg-primary-subtle text-primary" id="stageBadge">Stage 1 / 7</span>
-    <h2 class="stage-name" id="stageTitle">Input Tensor & Im2Col Matrix Unrolling</h2>
+    <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+      <span class="stage-step-tag bg-primary bg-opacity-25 text-primary border-primary" id="stageTag">STAGE 1 / 7</span>
+      <span class="badge bg-secondary-subtle text-secondary font-monospace" style="font-size: 0.65rem;" id="stageModuleTag">RTL: im2col_address_gen.sv</span>
+    </div>
+    <h3 class="stage-heading" id="stageTitle">Tensor Ingestion & Im2Col Matrix Unfolding</h3>
     <p class="stage-desc" id="stageDesc">
-      The 28×28 INT8 input image tensor is sampled with 3×3 receptive fields. Im2Col transforms spatial patches into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].
+      The 28×28 INT8 handwritten digit tensor arrives via AXI Master. 196 overlapping 3×3 convolution windows are flattened into column vectors of Matrix B [9×196]. 16 filter kernels form Matrix A [16×9].
     </p>
-    <div class="stage-formula" id="stageFormula">
-      Im2Col: Tensor [28×28] → Matrix B [9×196] | Weights: 16×[3×3] → Matrix A [16×9]
+    <div class="stage-math" id="stageMath">
+      C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]
     </div>
   </div>
 
-  <!-- Right Telemetry Sidebar -->
-  <div class="telemetry-sidebar">
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <span class="fw-bold small text-uppercase text-muted"><i class="bi bi-speedometer2 me-1"></i>Hardware Telemetry</span>
-      <span class="badge bg-success-subtle text-success font-monospace" style="font-size: 0.65rem;">LIVE CO-SIM</span>
+  <!-- Right Technical Spec Sidebar -->
+  <div class="eda-spec-sidebar">
+    <div class="spec-header">
+      <span><i class="bi bi-activity me-1 text-primary"></i>Die Telemetry (STA)</span>
+      <span class="text-success font-monospace">TIMING MET</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Synthesized FMAX:</span>
+      <span class="spec-val text-success">69.49 MHz</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Worst Setup Slack:</span>
+      <span class="spec-val text-primary">+1.815 ns @ 50MHz</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Core Dimensions:</span>
+      <span class="spec-val">3.82 mm × 3.15 mm</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">PE Cell Mesh:</span>
+      <span class="spec-val text-light">8×8 (64 MAC PEs)</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">Arithmetic Standard:</span>
+      <span class="spec-val text-warning">INT8 MAC / INT32 ACC</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">DRAM Bandwidth Saved:</span>
+      <span class="spec-val text-success" style="color: #2ea043;">98× (In-Situ Buffer A)</span>
+    </div>
+    <div class="spec-row">
+      <span class="spec-label">SIMD Drain Speedup:</span>
+      <span class="spec-val text-info">8.0× (8 Cycles Drain)</span>
     </div>
 
-    <div class="telem-row">
-      <span class="telem-label">Target Clock (FMAX):</span>
-      <span class="telem-value text-success">69.49 MHz</span>
+    <div class="spec-header mt-3">
+      <span><i class="bi bi-layers me-1 text-info"></i>Active Micro-Blocks</span>
     </div>
-    <div class="telem-row">
-      <span class="telem-label">Setup Slack:</span>
-      <span class="telem-value text-primary">+1.815 ns (MET)</span>
-    </div>
-    <div class="telem-row">
-      <span class="telem-label">PE Core Count:</span>
-      <span class="telem-value text-light">64 PEs (8×8 Mesh)</span>
-    </div>
-    <div class="telem-row">
-      <span class="telem-label">Arithmetic Mode:</span>
-      <span class="telem-value text-warning">INT8 MAC / INT32 ACC</span>
-    </div>
-    <div class="telem-row">
-      <span class="telem-label">DRAM Savings:</span>
-      <span class="telem-value text-emerald" style="color: #10b981;">98× (In-Situ SRAM)</span>
-    </div>
-    <div class="telem-row">
-      <span class="telem-label">SIMD Drain Speedup:</span>
-      <span class="telem-value text-info">8.0× (8 Cycles Drain)</span>
-    </div>
-    <div class="telem-row">
-      <span class="telem-label">Total Inference Latency:</span>
-      <span class="telem-value text-purple" style="color: #8b5cf6;">145.04 µs @ 50MHz</span>
-    </div>
-
-    <hr class="my-2 border-secondary opacity-25">
-
-    <div class="small fw-semibold text-muted mb-1">Active Stage Modules:</div>
-    <div class="p-2 rounded bg-black bg-opacity-50 font-monospace small" id="activeModulesBox" style="font-size: 0.7rem; color: #a1a1aa;">
-      • RTL: im2col_address_gen.sv<br>
-      • Memory: sram_buffer_a_72b.sv<br>
-      • Memory: sram_buffer_b_pingpong.sv
+    <div class="p-2 rounded bg-black font-monospace small" id="activeRtlList" style="font-size: 0.68rem; color: #8b949e; line-height: 1.5;">
+      • rtl/im2col_address_gen.sv<br>
+      • rtl/sram_buffer_a_72b.sv<br>
+      • rtl/sram_buffer_b_pingpong.sv
     </div>
   </div>
 
-  <!-- Legend Overlay (Bottom Left) -->
-  <div class="legend-box">
-    <div class="fw-bold mb-1.5 text-muted text-uppercase" style="font-size: 0.65rem;">Subsystem Legend</div>
-    <div class="legend-item"><div class="legend-color" style="background: #06b6d4;"></div><span>Weight Buffer A & Rows</span></div>
-    <div class="legend-item"><div class="legend-color" style="background: #f59e0b;"></div><span>Input Buffer B & Cols</span></div>
-    <div class="legend-item"><div class="legend-color" style="background: #8b5cf6;"></div><span>D-FF Skew Units (56 D-FFs)</span></div>
-    <div class="legend-item"><div class="legend-color" style="background: #10b981;"></div><span>64-PE Systolic Array Mesh</span></div>
-    <div class="legend-item"><div class="legend-color" style="background: #ec4899;"></div><span>SIMD Drain Bus & Quant ReLU</span></div>
+  <!-- Bottom Coordinates Indicator (Left) -->
+  <div class="eda-coords-hud">
+    <div><strong>CAD CURSOR:</strong> <span id="hudCoords" class="text-light">X: +0.00 mm, Y: +0.00 mm</span></div>
+    <div><strong>DIE TEMP:</strong> <span class="text-success">38.4 °C</span> • <strong>VDD:</strong> <span class="text-warning">1.10 V</span></div>
   </div>
 
-  <!-- Bottom Control Bar (Timeline Stepper) -->
-  <div class="bottom-hud">
+  <!-- Bottom Timeline Stepper Bar (Center) -->
+  <div class="eda-bottom-hud">
     <div class="d-flex align-items-center gap-2">
-      <button class="btn btn-sm btn-primary px-3 fw-semibold" id="btnPlayPause" onclick="toggleAutoPlay()">
-        <i class="bi bi-play-fill me-1" id="playIcon"></i><span id="playText">Auto Tour</span>
+      <button class="btn btn-sm btn-primary px-3 fw-semibold font-monospace" style="font-size: 0.75rem;" id="btnAutoTour" onclick="toggleTour()">
+        <i class="bi bi-play-fill me-1" id="tourIcon"></i><span id="tourText">Auto Tour</span>
       </button>
-      <button class="btn btn-sm btn-outline-secondary" onclick="stepStage(-1)" title="Previous Stage">
+      <button class="btn btn-sm btn-outline-secondary font-monospace" onclick="stepStage(-1)" title="Previous Step">
         <i class="bi bi-chevron-left"></i>
       </button>
-      <button class="btn btn-sm btn-outline-secondary" onclick="stepStage(1)" title="Next Stage">
+      <button class="btn btn-sm btn-outline-secondary font-monospace" onclick="stepStage(1)" title="Next Step">
         <i class="bi bi-chevron-right"></i>
       </button>
     </div>
 
-    <div class="vr bg-secondary opacity-50" style="height: 24px;"></div>
+    <div class="vr bg-secondary opacity-50" style="height: 20px;"></div>
 
     <!-- 7 Stage Dots -->
-    <div class="timeline-steps">
-      <div class="step-dot active" onclick="goToStage(0)" title="1. Im2Col Decomposition">1</div>
-      <div class="step-dot" onclick="goToStage(1)" title="2. SRAM Buffers & Tiling">2</div>
-      <div class="step-dot" onclick="goToStage(2)" title="3. Staggered Delay Skew Unit">3</div>
-      <div class="step-dot" onclick="goToStage(3)" title="4. 64-PE Systolic Array Mesh">4</div>
-      <div class="step-dot" onclick="goToStage(4)" title="5. SIMD 8-Row Parallel Drain">5</div>
-      <div class="step-dot" onclick="goToStage(5)" title="6. Quantized ReLU & MaxPool">6</div>
-      <div class="step-dot" onclick="goToStage(6)" title="7. Dense FC & SoC Output">7</div>
+    <div class="d-flex gap-1.5">
+      <div class="timeline-dot active" onclick="selectStage(0)" title="1. Im2Col Unrolling">01</div>
+      <div class="timeline-dot" onclick="selectStage(1)" title="2. Dual SRAM Buffers">02</div>
+      <div class="timeline-dot" onclick="selectStage(2)" title="3. Wavefront Skew D-FFs">03</div>
+      <div class="timeline-dot" onclick="selectStage(3)" title="4. 64-PE Systolic Mesh">04</div>
+      <div class="timeline-dot" onclick="selectStage(4)" title="5. SIMD 8-Row Drain">05</div>
+      <div class="timeline-dot" onclick="selectStage(5)" title="6. Quantized ReLU & MaxPool">06</div>
+      <div class="timeline-dot" onclick="selectStage(6)" title="7. Dense FC & Physical SoC">07</div>
     </div>
 
-    <div class="vr bg-secondary opacity-50" style="height: 24px;"></div>
+    <div class="vr bg-secondary opacity-50" style="height: 20px;"></div>
 
     <div class="d-flex align-items-center gap-2">
-      <span class="small text-muted font-monospace" style="font-size: 0.75rem;">Tour Speed:</span>
-      <select class="form-select form-select-sm bg-dark text-light border-secondary font-monospace" style="font-size: 0.75rem; width: 90px;" id="tourSpeed" onchange="updateTourSpeed()">
-        <option value="7000">Slow</option>
-        <option value="4500" selected>Normal</option>
-        <option value="2500">Fast</option>
+      <span class="text-muted font-monospace" style="font-size: 0.7rem;">Tour Delay:</span>
+      <select class="form-select form-select-sm bg-black text-light border-secondary font-monospace" style="font-size: 0.7rem; width: 85px;" id="tourSpeed" onchange="changeTourSpeed()">
+        <option value="6500">6.5s</option>
+        <option value="4500" selected>4.5s</option>
+        <option value="2500">2.5s</option>
       </select>
     </div>
   </div>
 
-  <!-- Floating 3D Hover Tooltip -->
-  <div id="tooltip-3d">
-    <div class="fw-bold text-light" id="tt-title">PE(0, 0)</div>
-    <div class="text-secondary small" id="tt-desc">Processing Element (Output-Stationary)</div>
-    <div class="font-monospace text-cyan small mt-1" id="tt-status">ACC: 14,250 | MAC Active</div>
+  <!-- Layer Stack Status (Bottom Right) -->
+  <div class="layer-stack-bar">
+    <span>LAYERS:</span>
+    <span class="badge bg-success bg-opacity-25 text-success border border-success">M1..M4 Cu</span>
+    <span class="badge bg-info bg-opacity-25 text-info border border-info">Poly Si</span>
+    <span class="badge bg-warning bg-opacity-25 text-warning border border-warning">ENIG Au</span>
   </div>
 
-  <!-- Help Modal -->
-  <div class="modal fade" id="helpModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bg-dark text-light border-secondary">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title"><i class="bi bi-info-circle me-2 text-primary"></i>3D Navigation Controls</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body small">
-          <p><strong>Mouse / Trackpad Controls:</strong></p>
-          <ul>
-            <li><strong>Left-Click + Drag:</strong> Rotate 3D camera 360° around the chip.</li>
-            <li><strong>Right-Click + Drag:</strong> Pan camera position across the floorplan.</li>
-            <li><strong>Scroll Wheel:</strong> Zoom in / zoom out smoothly.</li>
-            <li><strong>Hover over any module:</strong> Inspect instant microarchitectural specifications.</li>
-          </ul>
-          <p><strong>Interactive Workflow:</strong></p>
-          <p>Use the bottom number buttons (1 to 7) or the <strong>"Auto Tour"</strong> button to trace how input tensors flow through the hardware until the final digit prediction is generated!</p>
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Got it</button>
-        </div>
-      </div>
-    </div>
+  <!-- CAD Hover Tooltip -->
+  <div id="cad-tooltip">
+    <div class="fw-bold font-monospace text-light" id="tt-title">PE_MAC(0, 0)</div>
+    <div class="text-secondary small" id="tt-type">Standard Cell VLSI Macro</div>
+    <div class="font-monospace text-primary small mt-1" id="tt-status">Timing: Slack +1.815 ns (MET)</div>
   </div>
-
-  <!-- Bootstrap JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- =========================================================================
-       THREE.JS 3D SCENE & HARDWARE WORKFLOW ANIMATION SCRIPT
+       PHOTOREALISTIC VLSI SILICON DIE 3D JAVASCRIPT ENGINE
        ========================================================================= -->
   <script>
     // --- STAGE DEFINITIONS & METADATA ---
     const STAGES = [
       {
         id: 0,
-        badge: "Stage 1 / 7 • Data Decomposition",
-        title: "Input Tensor & Im2Col Matrix Unrolling",
-        desc: "The 28×28 INT8 input image is unrolled using Im2Col: 196 overlapping 3×3 receptive fields are flattened into column vectors of Matrix B [9×196]. Filter weights [16 filters × 3×3] form Matrix A [16×9].",
-        formula: "GEMM Formulation: C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]",
-        camPos: { x: -35, y: 32, z: -30 },
-        camLook: { x: -18, y: 0, z: -18 },
-        modules: "• RTL: im2col_address_gen.sv<br>• Buffer: input_tensor_sram.sv<br>• Format: Signed INT8 [-128..+127]"
+        tag: "STAGE 01 / 07 • FRONT-END DATA UNROLLING",
+        module: "RTL: im2col_address_gen.sv",
+        title: "Tensor Ingestion & Im2Col Matrix Unfolding",
+        desc: "The 28×28 INT8 image tensor arrives from external memory via AXI master. The Im2Col hardware address generator flattens 196 overlapping 3×3 receptive fields into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].",
+        math: "Im2Col: Tensor [28×28] → Matrix B [9×196] | Weights: 16×[3×3] → Matrix A [16×9]",
+        camPos: { x: -36, y: 30, z: -26 },
+        camLook: { x: -18, y: 0, z: -16 },
+        modules: "• rtl/im2col_address_gen.sv<br>• rtl/input_tensor_sram.sv<br>• Format: Signed INT8 [-128..+127]"
       },
       {
         id: 1,
-        badge: "Stage 2 / 7 • Memory Stationarity",
+        tag: "STAGE 02 / 07 • ON-CHIP STORAGE & STATIONARITY",
+        module: "RTL: gemm_controller.sv",
         title: "Dual On-Chip SRAM Buffers & Matrix Tiling",
-        desc: "Large matrices are tiled into 8×8 sub-matrices. Sub-tile A0 [8×9] is locked inside SRAM Buffer A and reused 98 consecutive times with streaming Sub-tiles B0..B24, reducing external DRAM traffic by 98×.",
-        formula: "Tiling: 16×9 = 2 Sub-tiles A [8×9] | 9×196 = 25 Sub-tiles B [9×8] | 98× DRAM Savings",
-        camPos: { x: -25, y: 28, z: -20 },
-        camLook: { x: -12, y: 0, z: -10 },
-        modules: "• Module: gemm_controller.sv<br>• SRAM A: 72 Bytes (Buffer A Locked)<br>• SRAM B: Double-Buffer Ping-Pong (72B)"
+        desc: "Matrices are partitioned into 8×8 sub-tiles. Sub-tile A0 [8×9] (72 Bytes) is loaded into SRAM Buffer A and locked for 98 consecutive cycles. Buffer B streams Sub-tiles B0..B24 [9×8] using ping-pong banks, slashing external DRAM read traffic by 98×.",
+        math: "Tiling: 16×9 = 2 Sub-tiles A [8×9] | 9×196 = 25 Sub-tiles B [9×8] | 98× DRAM Savings",
+        camPos: { x: -26, y: 26, z: -18 },
+        camLook: { x: -12, y: 0, z: -8 },
+        modules: "• rtl/gemm_controller.sv<br>• SRAM A: 72 Bytes (Stationary Weight Buffer)<br>• SRAM B: Double-Buffer Ping-Pong (72 Bytes)"
       },
       {
         id: 2,
-        badge: "Stage 3 / 7 • Spatial Staggering",
+        tag: "STAGE 03 / 07 • SPATIAL DELAY SYNCHRONIZATION",
+        module: "RTL: systolic_skew_unit.sv",
         title: "Wavefront Skew Unit (56 D-Flip-Flops)",
-        desc: "Row A inputs are delayed by 0T..7T clock cycles through 28 D-FF shift registers on the West edge. Column B inputs are delayed by 0T..7T through 28 D-FFs on the North edge to synchronize the 45° wavefront.",
-        formula: "Spatial Alignment Condition: Delay_A[i] = i·Tclk | Delay_B[j] = j·Tclk | Arrival: T = i + j",
-        camPos: { x: -18, y: 26, z: -12 },
-        camLook: { x: -6, y: 0, z: -6 },
-        modules: "• Module: systolic_skew_unit.sv<br>• Registers: 56 D-Flip-Flops (28 Row + 28 Col)<br>• Zero Bus Collision (100% Local Routing)"
+        desc: "Because horizontal and vertical systolic inter-PE routing costs 1 clock cycle (z⁻¹), input rows A are delayed by 0T..7T clock cycles through 28 D-FF shift registers on the West edge, and columns B are delayed by 0T..7T through 28 D-FFs on the North edge.",
+        math: "Alignment Condition: Delay_A[i] = i·Tclk | Delay_B[j] = j·Tclk | Arrival: T = i + j",
+        camPos: { x: -18, y: 24, z: -10 },
+        camLook: { x: -4, y: 0, z: -4 },
+        modules: "• rtl/systolic_skew_unit.sv<br>• Registers: 56 D-Flip-Flops (28 Row + 28 Col)<br>• 100% Nearest-Neighbor Interconnect"
       },
       {
         id: 3,
-        badge: "Stage 4 / 7 • Systolic Compute Core",
-        title: "2D Spatial 64-PE Mesh (8×8 Output-Stationary)",
-        desc: "Matrix A streams East, Matrix B streams South. Each PE performs an 8×8 signed multiplication and accumulates partial sums into local 32-bit register C_acc. Diagonal wavefront propagates across 14 clock cycles.",
-        formula: "PE Operation: C_acc[i,j] += A[i,k] × B[k,j] | 64 Parallel MACs / Cycle",
-        camPos: { x: 0, y: 35, z: 28 },
+        tag: "STAGE 04 / 07 • 2D SPATIAL COMPUTE CORE",
+        module: "RTL: systolic_array_core.sv",
+        title: "2D Spatial 64-PE Systolic Core (8×8 Output-Stationary)",
+        desc: "Matrix A streams East, Matrix B streams South. Each PE houses an INT8 signed Booth multiplier, a 32-bit CLA adder, and an accumulator C_acc. A 45° diagonal wavefront sweeps across the mesh over 14 clock cycles, computing 64 concurrent MAC operations.",
+        math: "PE Operation: C_acc[i,j] += A[i,k] × B[k,j] | 64 Parallel MACs / Cycle",
+        camPos: { x: 0, y: 34, z: 28 },
         camLook: { x: 4, y: 0, z: 4 },
-        modules: "• Module: systolic_array_core.sv<br>• 64× pe_gemm.sv (INT8 Mult + 32-bit Adder)<br>• Accumulator: 32-bit Signed C_acc Register"
+        modules: "• rtl/systolic_array_core.sv<br>• 64× rtl/pe_gemm.sv (Output-Stationary)<br>• FMAX: 69.49 MHz | Slack: +1.815 ns (MET)"
       },
       {
         id: 4,
-        badge: "Stage 5 / 7 • Gen-2 Fast Drain",
+        tag: "STAGE 05 / 07 • GEN-2 PARALLEL DRAIN BREAKTHROUGH",
+        module: "RTL: systolic_accelerator_top.sv",
         title: "SIMD 8-Row Parallel Drain Bus",
-        desc: "Upon completing K=9 accumulation cycles, Gen-2 drains all 8 rows simultaneously via parallel 32-bit buses into the output register file in just 8 clock cycles (8.0× faster than Gen-1 serial drain of 64 cycles).",
-        formula: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
+        desc: "Upon completing K=9 accumulation cycles, Gen-2 drains all 8 rows simultaneously via parallel 32-bit buses into the output register file in just 8 clock cycles (8.0× faster than the Gen-1 baseline serial drain of 64 cycles).",
+        math: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
         camPos: { x: 22, y: 24, z: 18 },
         camLook: { x: 14, y: 0, z: 8 },
-        modules: "• Module: systolic_accelerator_top.sv<br>• 8× Parallel 32-bit Row Drain Buses<br>• Bubble-Free Ping-Pong Pipeline Transfer"
+        modules: "• rtl/systolic_accelerator_top.sv<br>• 8× Parallel 32-bit Row Drain Buses<br>• Bubble-Free Pipeline Data Transfer"
       },
       {
         id: 5,
-        badge: "Stage 6 / 7 • Activation & Pooling",
+        tag: "STAGE 06 / 07 • POST-PROCESSING & QUANTIZATION",
+        module: "RTL: quantize_relu_unit.sv",
         title: "Parallel Quantized ReLU & Max-Pooling",
-        desc: "The 32-bit accumulated sums are quantized to INT8 using an arithmetic right-shift (>>8) and clamped to [0, 127] with zero overflow risk. Spatial 2×2 Max-Pooling then downsamples the feature map 4×.",
-        formula: "ReLU: Output = clamp(acc >> 8, 0, 127) | MaxPool [2×2]: 28×28 → 14×14",
+        desc: "The 32-bit accumulated partial sums are quantized to INT8 using an arithmetic right-shift (>>8) and clamped to [0, 127] with zero overflow risk. Spatial 2×2 Max-Pooling then downsamples the feature map 4× (28×28 → 14×14).",
+        math: "ReLU: Output = clamp(acc >> 8, 0, 127) | MaxPool [2×2]: 28×28 → 14×14",
         camPos: { x: 30, y: 22, z: 6 },
         camLook: { x: 20, y: 0, z: 2 },
-        modules: "• Module: quantize_relu_unit.sv (8 Channels)<br>• Module: maxpool_unit.sv (Stride 2)<br>• Bit-True Golden Model Matched"
+        modules: "• rtl/quantize_relu_unit.sv (8 Channels)<br>• rtl/maxpool_unit.sv (Stride 2)<br>• 100% Bit-True Golden Model Matched"
       },
       {
         id: 6,
-        badge: "Stage 7 / 7 • Output Classification",
-        title: "Dense FC Layer & Physical SoC Dispatch",
-        desc: "Pooled features pass through the Dense FC layer on the 64-PE core to calculate 10 class logits. Argmax selects the winning digit, written via AXI4-Lite to HEX0 (7-segment OLED) and LEDR[9:0] on DE10-Standard.",
-        formula: "Argmax(Softmax(Logits)) → Predicted Digit (0..9) | AXI MMIO @ 0x1000_0000",
+        tag: "STAGE 07 / 07 • CLASSIFICATION & SOC DISPATCH",
+        module: "RTL: soc_top.sv & MMIO",
+        title: "Dense FC Layer & Physical SoC Output Dispatch",
+        desc: "Pooled features pass through the Dense FC layer on the 64-PE core to calculate 10 class logits. Argmax selects the winning digit, written via AXI4-Lite to MMIO 0x1000_0000, lighting up the OLED 7-segment display (HEX0) and LEDR[9:0] on DE10-Standard.",
+        math: "Argmax(Softmax(Logits)) → Predicted Digit (0..9) | MMIO @ 0x1000_0000",
         camPos: { x: 38, y: 24, z: -10 },
         camLook: { x: 24, y: 0, z: -4 },
-        modules: "• Module: soc_top.sv & axi_interconnect.sv<br>• Output: HEX0 OLED + LEDR[9:0] Indicators<br>• Firmware: PicoRV32 systolic.h Driver"
+        modules: "• rtl/soc_top.sv & rtl/axi_interconnect.sv<br>• Physical Output: HEX0 OLED + LEDR[9:0]<br>• Firmware: PicoRV32 systolic.h Driver"
       }
     ];
 
     let currentStage = 0;
-    let isAutoPlaying = false;
-    let autoPlayTimer = null;
-    let tourIntervalMs = 4500;
+    let isTouring = false;
+    let tourTimer = null;
+    let tourInterval = 4500;
 
-    // --- THREE.JS INITIALIZATION ---
+    // --- PROCEDURAL TEXTURE GENERATION FOR PHOTOREALISTIC VLSI ---
+    function generatePcbTexture() {
+      const c = document.createElement('canvas');
+      c.width = 1024; c.height = 1024;
+      const ctx = c.getContext('2d');
+
+      // Dark Matte FR4 / Interposer
+      ctx.fillStyle = '#0c1017';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // Micro crosshatch ground plane
+      ctx.strokeStyle = '#141b24';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < 1024; x += 16) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1024); ctx.stroke();
+      }
+      for (let y = 0; y < 1024; y += 16) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke();
+      }
+
+      // VDD / VSS Power Distribution Rings
+      ctx.strokeStyle = '#d29922'; // Gold ENIG trace
+      ctx.lineWidth = 6;
+      ctx.strokeRect(30, 30, 964, 964);
+      ctx.strokeStyle = '#58a6ff';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(42, 42, 940, 940);
+
+      // Silkscreen technical markings
+      ctx.fillStyle = '#8b949e';
+      ctx.font = 'bold 16px Fira Code, monospace';
+      ctx.fillText("ALTERA CYCLONE V SoC • 64-PE SYSTOLIC ARRAY ACCELERATOR", 60, 80);
+      ctx.fillText("DIE ID: TSMC-28HPC-GEN2 • REVISION: 2.4B", 60, 105);
+      ctx.fillText("CLK: 69.49 MHz • SLACK: +1.815 ns (MET)", 60, 130);
+
+      ctx.fillText("PIN 1 (A1) ▶", 60, 980);
+      ctx.fillText("AXI4-LITE MMIO @ 0x1000_0000", 680, 980);
+
+      // Alignment crosshairs
+      function drawFiducial(x, y) {
+        ctx.strokeStyle = '#d29922';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - 16, y); ctx.lineTo(x + 16, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, y - 16); ctx.lineTo(x, y + 16); ctx.stroke();
+      }
+      drawFiducial(60, 60);
+      drawFiducial(964, 60);
+      drawFiducial(60, 964);
+      drawFiducial(964, 964);
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    function generatePeMacroTexture() {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext('2d');
+
+      // Dark Silicon substrate
+      ctx.fillStyle = '#161b22';
+      ctx.fillRect(0, 0, 256, 256);
+
+      // Micro standard-cell rows
+      ctx.fillStyle = '#1f2937';
+      for (let y = 16; y < 240; y += 12) {
+        ctx.fillRect(16, y, 224, 7);
+      }
+
+      // Internal functional partition boundaries
+      ctx.strokeStyle = '#30363d';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(20, 20, 100, 100); // 8x8 Mult Array
+      ctx.strokeRect(136, 20, 100, 100); // 32-bit CLA Adder
+      ctx.strokeRect(20, 136, 216, 100); // C_acc Accumulator Register Bank
+
+      // Labels
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '10px Fira Code, monospace';
+      ctx.fillText("MULT 8×8", 32, 60);
+      ctx.fillText("ADD 32B", 148, 60);
+      ctx.fillText("ACCUMULATOR C_acc [31:0]", 32, 180);
+
+      // Gold contact pads along edges
+      ctx.fillStyle = '#d29922';
+      for (let p = 30; p < 240; p += 32) {
+        ctx.fillRect(4, p, 8, 14); // West input
+        ctx.fillRect(244, p, 8, 14); // East forward
+        ctx.fillRect(p, 4, 14, 8); // North input
+        ctx.fillRect(p, 244, 14, 8); // South forward
+      }
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    function generateSramCoreTexture(title, colorHex) {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 256;
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, 512, 256);
+
+      // Dense memory storage mat grid
+      ctx.fillStyle = '#18202c';
+      for (let x = 16; x < 496; x += 8) {
+        ctx.fillRect(x, 20, 4, 216);
+      }
+
+      ctx.strokeStyle = colorHex;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(10, 10, 492, 236);
+
+      // Decoders
+      ctx.fillStyle = colorHex;
+      ctx.fillRect(10, 10, 50, 236);
+
+      ctx.fillStyle = '#f0f6fc';
+      ctx.font = 'bold 18px Fira Code, monospace';
+      ctx.fillText(title, 80, 50);
+      ctx.font = '12px Fira Code, monospace';
+      ctx.fillStyle = '#8b949e';
+      ctx.fillText("SRAM MEMORY COMPILER MACRO • DUAL-PORT PING-PONG", 80, 80);
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    // --- THREE.JS SCENE SETUP ---
     const canvas = document.getElementById('webgl-canvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x09090b);
-    scene.fog = new THREE.FogExp2(0x09090b, 0.009);
+    scene.background = new THREE.Color(0x07090e);
+    scene.fog = new THREE.FogExp2(0x07090e, 0.008);
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(-35, 32, -30);
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(-36, 30, -26);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.maxPolarAngle = Math.PI / 2 - 0.02; // Don't go below floor
-    controls.minDistance = 10;
-    controls.maxDistance = 160;
+    controls.dampingFactor = 0.06;
+    controls.maxPolarAngle = Math.PI / 2 - 0.03;
+    controls.minDistance = 8;
+    controls.maxDistance = 150;
 
-    // --- LIGHTING ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    // --- CAD CLINICAL LIGHTING ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(40, 60, 30);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 150;
-    const d = 50;
-    dirLight.shadow.camera.left = -d;
-    dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;
-    dirLight.shadow.camera.bottom = -d;
-    scene.add(dirLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    keyLight.position.set(45, 65, 35);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 160;
+    const d = 55;
+    keyLight.shadow.camera.left = -d; keyLight.shadow.camera.right = d;
+    keyLight.shadow.camera.top = d; keyLight.shadow.camera.bottom = -d;
+    scene.add(keyLight);
 
-    const cyanPointLight = new THREE.PointLight(0x06b6d4, 1.5, 45);
-    cyanPointLight.position.set(-15, 8, 4);
-    scene.add(cyanPointLight);
+    const cyanFillLight = new THREE.PointLight(0x38bdf8, 1.8, 55);
+    cyanFillLight.position.set(-18, 12, -4);
+    scene.add(cyanFillLight);
 
-    const emeraldPointLight = new THREE.PointLight(0x10b981, 2.0, 50);
-    emeraldPointLight.position.set(4, 10, 4);
-    scene.add(emeraldPointLight);
+    const goldAccentLight = new THREE.PointLight(0xd29922, 1.6, 50);
+    goldAccentLight.position.set(10, 14, 10);
+    scene.add(goldAccentLight);
 
-    const amberPointLight = new THREE.PointLight(0xf59e0b, 1.5, 45);
-    amberPointLight.position.set(4, 8, -15);
-    scene.add(amberPointLight);
-
-    // --- GROUND SUBSTRATE (SILICON WAFER / INTERPOSER) ---
-    const waferGeo = new THREE.BoxGeometry(90, 1.2, 70);
-    const waferMat = new THREE.MeshStandardMaterial({
-      color: 0x121216,
-      roughness: 0.7,
-      metalness: 0.4
+    // --- 1. PHOTOREALISTIC SILICON INTERPOSER & BGA PACKAGE ---
+    const pcbTexture = generatePcbTexture();
+    const substrateGeo = new THREE.BoxGeometry(94, 1.4, 74);
+    const substrateMat = new THREE.MeshStandardMaterial({
+      map: pcbTexture,
+      roughness: 0.65,
+      metalness: 0.35
     });
-    const wafer = new THREE.Mesh(waferGeo, waferMat);
-    wafer.position.set(5, -0.6, 0);
-    wafer.receiveShadow = true;
-    scene.add(wafer);
+    const substrate = new THREE.Mesh(substrateGeo, substrateMat);
+    substrate.position.set(5, -0.7, 0);
+    substrate.receiveShadow = true;
+    scene.add(substrate);
 
-    // Grid Floor Guide
-    const grid = new THREE.GridHelper(90, 45, 0x27272a, 0x18181b);
-    grid.position.set(5, 0.02, 0);
-    scene.add(grid);
-
-    // Chip Boundary Trim (Golden Bezel)
-    const bezelGeo = new THREE.BoxGeometry(91, 0.3, 71);
+    // Chamfered Gold Package Bezel
+    const bezelGeo = new THREE.BoxGeometry(95, 0.35, 75);
     const bezelMat = new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      metalness: 0.85,
-      roughness: 0.2
+      color: 0xd29922,
+      metalness: 0.92,
+      roughness: 0.18
     });
     const bezel = new THREE.Mesh(bezelGeo, bezelMat);
-    bezel.position.set(5, -0.1, 0);
+    bezel.position.set(5, -0.15, 0);
     scene.add(bezel);
 
-    // Groups for Interactive Raycasting
+    // BGA Solder Balls Perimeter Mockup (Underneath)
+    const bgaMat = new THREE.MeshStandardMaterial({ color: 0x8b949e, metalness: 0.9, roughness: 0.2 });
+    for (let bx = -40; bx <= 50; bx += 8) {
+      for (let bz = -32; bz <= 32; bz += 8) {
+        if (Math.abs(bx - 5) > 36 || Math.abs(bz) > 28) {
+          const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), bgaMat);
+          ball.position.set(bx, -1.6, bz);
+          scene.add(ball);
+        }
+      }
+    }
+
+    // SMD 0402 Decoupling Ceramic Capacitors around Die Edge
+    const capGeo = new THREE.BoxGeometry(1.2, 0.6, 0.7);
+    const capMat = new THREE.MeshStandardMaterial({ color: 0xa16207, metalness: 0.4, roughness: 0.5 });
+    for (let i = 0; i < 28; i++) {
+      const cap = new THREE.Mesh(capGeo, capMat);
+      if (i < 14) {
+        cap.position.set(-32 + i * 5.5, 0.3, -30);
+      } else {
+        cap.position.set(-32 + (i - 14) * 5.5, 0.3, 30);
+      }
+      scene.add(cap);
+    }
+
+    // Interactive raycast objects list
     const interactiveObjects = [];
 
     // =========================================================================
-    // 1. INPUT STAGE: 28x28 IMAGE & IM2COL DECOMPOSITION (WEST-NORTH CORNER)
+    // 2. STAGE 1: FRONT-END INPUT TENSOR & IM2COL UNROLLING
     // =========================================================================
     const inputGroup = new THREE.Group();
     inputGroup.position.set(-28, 0, -20);
     scene.add(inputGroup);
 
-    // 28x28 Input Image Plane Mockup
-    const imgPlaneGeo = new THREE.BoxGeometry(10, 0.4, 10);
-    const imgPlaneMat = new THREE.MeshStandardMaterial({
-      color: 0x18181b,
-      roughness: 0.6,
-      metalness: 0.2
+    // 28x28 Input Image Tensor Carrier
+    const imgSubGeo = new THREE.BoxGeometry(11, 0.5, 11);
+    const imgSubMat = new THREE.MeshStandardMaterial({
+      color: 0x161b22,
+      metalness: 0.4,
+      roughness: 0.5
     });
-    const imgPlane = new THREE.Mesh(imgPlaneGeo, imgPlaneMat);
-    imgPlane.position.set(0, 0.4, 0);
-    imgPlane.castShadow = true;
-    imgPlane.userData = { title: "MNIST Input Tensor [28×28]", desc: "784 Signed INT8 Pixels [-128..+127]", status: "Streaming via AXI Master" };
-    inputGroup.add(imgPlane);
-    interactiveObjects.push(imgPlane);
+    const imgCarrier = new THREE.Mesh(imgSubGeo, imgSubMat);
+    imgCarrier.position.set(0, 0.25, 0);
+    imgCarrier.castShadow = true;
+    imgCarrier.userData = { title: "Input Tensor Buffer [28×28]", type: "SRAM Staging Memory", status: "Signed INT8 Pixels [-128..+127]" };
+    inputGroup.add(imgCarrier);
+    interactiveObjects.push(imgCarrier);
 
-    // 3x3 Receptive Field Sliding Window (Red Box)
-    const rfGeo = new THREE.BoxGeometry(2.5, 0.6, 2.5);
+    // High-Precision 3x3 Receptive Field Box with Laser Crosshairs
+    const rfGeo = new THREE.BoxGeometry(2.6, 0.6, 2.6);
     const rfMat = new THREE.MeshStandardMaterial({
       color: 0xf43f5e,
       emissive: 0xf43f5e,
-      emissiveIntensity: 0.6,
+      emissiveIntensity: 0.55,
+      metalness: 0.7,
+      roughness: 0.2,
       transparent: true,
-      opacity: 0.85
+      opacity: 0.88
     });
     const rfWindow = new THREE.Mesh(rfGeo, rfMat);
-    rfWindow.position.set(-1.8, 0.7, -1.8);
-    rfWindow.userData = { title: "3×3 Sliding Window (Im2Col)", desc: "Flattens 9 pixels into column vector B [9×1]", status: "Receptive Field Active" };
+    rfWindow.position.set(-2.2, 0.65, -2.2);
+    rfWindow.userData = { title: "3×3 Receptive Field Window", type: "Convolution Kernel Aperture", status: "Unrolling 9 bytes into Column Vector B" };
     inputGroup.add(rfWindow);
     interactiveObjects.push(rfWindow);
 
-    // Im2Col Unfolding Engine Block
-    const unrollGeo = new THREE.BoxGeometry(7, 2.2, 5);
+    // Im2Col Address Generator Micro-Engine
+    const unrollGeo = new THREE.BoxGeometry(7, 2.0, 5);
     const unrollMat = new THREE.MeshStandardMaterial({
-      color: 0x0284c7,
-      metalness: 0.5,
-      roughness: 0.3,
+      color: 0x0369a1,
+      metalness: 0.75,
+      roughness: 0.25,
       emissive: 0x0284c7,
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.3
     });
     const unrollBlock = new THREE.Mesh(unrollGeo, unrollMat);
-    unrollBlock.position.set(10, 1.1, 0);
+    unrollBlock.position.set(10, 1.0, 0);
     unrollBlock.castShadow = true;
-    unrollBlock.userData = { title: "Im2Col Address Generator", desc: "Maps 2D convolution loops into continuous GEMM memory access", status: "Cycle Rate: 1 Col / Cycle" };
+    unrollBlock.userData = { title: "Im2Col Hardware Address Generator", type: "RTL State Machine (im2col_address_gen.sv)", status: "Throughput: 1 Column [9×1] / Cycle" };
     inputGroup.add(unrollBlock);
     interactiveObjects.push(unrollBlock);
 
     // =========================================================================
-    // 2. ON-CHIP SRAM BUFFERS (BUFFER A: WEST, BUFFER B: NORTH)
+    // 3. STAGE 2: ON-CHIP SRAM COMPILER MACROS (BUFFER A & BUFFER B)
     // =========================================================================
-    // Buffer A (Weight SRAM) - West of Array
+    // SRAM Buffer A (Weights - West of Array)
     const sramAGroup = new THREE.Group();
     sramAGroup.position.set(-14, 0, 4);
     scene.add(sramAGroup);
 
-    const sramAGeo = new THREE.BoxGeometry(4.5, 3.2, 16);
+    const sramATexture = generateSramCoreTexture("BUFFER A [16×9]", "#06b6d4");
+    const sramAGeo = new THREE.BoxGeometry(4.8, 2.8, 17);
     const sramAMat = new THREE.MeshStandardMaterial({
-      color: 0x0891b2,
-      metalness: 0.7,
+      map: sramATexture,
+      color: 0x0e7490,
+      metalness: 0.85,
       roughness: 0.2,
-      emissive: 0x06b6d4,
+      emissive: 0x0891b2,
       emissiveIntensity: 0.35
     });
     const sramABlock = new THREE.Mesh(sramAGeo, sramAMat);
-    sramABlock.position.set(0, 1.6, 0);
+    sramABlock.position.set(0, 1.4, 0);
     sramABlock.castShadow = true;
-    sramABlock.userData = { title: "SRAM Buffer A (Weight Stationary)", desc: "Holds 72 Bytes for Sub-tile A0 [8×9]. Locked for 98 cycles.", status: "Reuse Factor: 98× (Zero DRAM Read)" };
+    sramABlock.userData = { title: "SRAM Buffer A (Weight Stationary)", type: "TSMC 28nm SRAM Compiler Macro", status: "Locked Sub-tile A0 (72B) • 98× DRAM Reuse" };
     sramAGroup.add(sramABlock);
     interactiveObjects.push(sramABlock);
 
-    // Buffer B (Input Activation Double Buffer) - North of Array
+    // SRAM Buffer B (Inputs - North of Array)
     const sramBGroup = new THREE.Group();
     sramBGroup.position.set(4, 0, -14);
     scene.add(sramBGroup);
 
-    const sramBGeo = new THREE.BoxGeometry(16, 3.2, 4.5);
+    const sramBTexture = generateSramCoreTexture("BUFFER B [9×196]", "#d97706");
+    const sramBGeo = new THREE.BoxGeometry(17, 2.8, 4.8);
     const sramBMat = new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      metalness: 0.7,
+      map: sramBTexture,
+      color: 0xb45309,
+      metalness: 0.85,
       roughness: 0.2,
-      emissive: 0xf59e0b,
+      emissive: 0xd97706,
       emissiveIntensity: 0.35
     });
     const sramBBlock = new THREE.Mesh(sramBGeo, sramBMat);
-    sramBBlock.position.set(0, 1.6, 0);
+    sramBBlock.position.set(0, 1.4, 0);
     sramBBlock.castShadow = true;
-    sramBBlock.userData = { title: "SRAM Buffer B (Ping-Pong Input)", desc: "Stores Sub-tiles B0..B24 [9×8]. Alternates Bank 0 & 1.", status: "Streaming Bandwidth: 8 Bytes / Cycle" };
+    sramBBlock.userData = { title: "SRAM Buffer B (Ping-Pong Activations)", type: "Double-Buffering Memory Macro", status: "Streaming Sub-tiles B0..B24 [9×8]" };
     sramBGroup.add(sramBBlock);
     interactiveObjects.push(sramBBlock);
 
     // =========================================================================
-    // 3. WAVEFRONT SKEW UNITS (ROW SKEW: WEST, COL SKEW: NORTH)
+    // 4. STAGE 3: WAVEFRONT SKEW DELAY REGISTER BANKS (56 D-FFs)
     // =========================================================================
-    // Row Skew Staircase (between Buffer A and 64 PE Array)
     const rowSkewGroup = new THREE.Group();
     rowSkewGroup.position.set(-6, 0, 4);
     scene.add(rowSkewGroup);
 
-    const dffGeo = new THREE.BoxGeometry(0.8, 1.0, 1.4);
+    const dffGeo = new THREE.BoxGeometry(0.85, 0.9, 1.5);
     const dffMat = new THREE.MeshStandardMaterial({
-      color: 0x7c3aed,
-      metalness: 0.6,
+      color: 0x6d28d9,
+      metalness: 0.7,
       roughness: 0.3,
-      emissive: 0x8b5cf6,
-      emissiveIntensity: 0.3
+      emissive: 0x7c3aed,
+      emissiveIntensity: 0.35
     });
 
-    const rowDffMeshes = [];
+    const rowDffs = [];
     for (let r = 0; r < 8; r++) {
-      const zPos = (r - 3.5) * 2.0;
+      const z = (r - 3.5) * 2.0;
       for (let s = 0; s < r; s++) {
-        const xPos = -(r - s) * 0.9;
+        const x = -(r - s) * 0.95;
         const dff = new THREE.Mesh(dffGeo, dffMat);
-        dff.position.set(xPos, 0.6, zPos);
+        dff.position.set(x, 0.5, z);
         dff.castShadow = true;
-        dff.userData = { title: `Row ${r} Delay Stage (D-FF #${s+1})`, desc: `Delays Row A[${r}] by ${r} clock cycles`, status: `Latency: +${s+1} Tclk` };
+        dff.userData = { title: `Row ${r} Delay Cell (Stage ${s+1}/${r})`, type: "Standard-Cell D-Flip-Flop", status: `Spatial Delay: +${s+1} Tclk` };
         rowSkewGroup.add(dff);
         interactiveObjects.push(dff);
-        rowDffMeshes.push(dff);
+        rowDffs.push(dff);
       }
     }
 
-    // Column Skew Staircase (between Buffer B and 64 PE Array)
     const colSkewGroup = new THREE.Group();
     colSkewGroup.position.set(4, 0, -6);
     scene.add(colSkewGroup);
 
-    const colDffMeshes = [];
+    const colDffs = [];
     for (let c = 0; c < 8; c++) {
-      const xPos = (c - 3.5) * 2.0;
+      const x = (c - 3.5) * 2.0;
       for (let s = 0; s < c; s++) {
-        const zPos = -(c - s) * 0.9;
+        const z = -(c - s) * 0.95;
         const dff = new THREE.Mesh(dffGeo, dffMat);
-        dff.position.set(xPos, 0.6, zPos);
+        dff.position.set(x, 0.5, z);
         dff.castShadow = true;
-        dff.userData = { title: `Col ${c} Delay Stage (D-FF #${s+1})`, desc: `Delays Col B[${c}] by ${c} clock cycles`, status: `Latency: +${s+1} Tclk` };
+        dff.userData = { title: `Col ${c} Delay Cell (Stage ${s+1}/${c})`, type: "Standard-Cell D-Flip-Flop", status: `Spatial Delay: +${s+1} Tclk` };
         colSkewGroup.add(dff);
         interactiveObjects.push(dff);
-        colDffMeshes.push(dff);
+        colDffs.push(dff);
       }
     }
 
     // =========================================================================
-    // 4. 64-PE SYSTOLIC ARRAY CORE (8x8 3D PE MATRIX)
+    // 5. STAGE 4: 64-PE SYSTOLIC ARRAY MESH (8×8 HIGH-TECH VLSI MACROS)
     // =========================================================================
     const arrayGroup = new THREE.Group();
     arrayGroup.position.set(4, 0, 4);
     scene.add(arrayGroup);
 
+    const peTexture = generatePeMacroTexture();
     const peMeshes = [];
-    const peGeo = new THREE.BoxGeometry(1.6, 2.0, 1.6);
+    const peGeo = new THREE.BoxGeometry(1.65, 1.8, 1.65);
+
+    // Silicon Interposer Base under 64 PEs
+    const peBaseGeo = new THREE.BoxGeometry(18, 0.4, 18);
+    const peBaseMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      metalness: 0.8,
+      roughness: 0.3
+    });
+    const peBase = new THREE.Mesh(peBaseGeo, peBaseMat);
+    peBase.position.set(0, 0.2, 0);
+    peBase.receiveShadow = true;
+    arrayGroup.add(peBase);
 
     for (let r = 0; r < 8; r++) {
       peMeshes[r] = [];
@@ -805,10 +1005,11 @@
         const z = (r - 3.5) * 2.0;
 
         const peMat = new THREE.MeshStandardMaterial({
-          color: 0x15803d,
-          metalness: 0.6,
-          roughness: 0.3,
-          emissive: 0x10b981,
+          map: peTexture,
+          color: 0x166534,
+          metalness: 0.8,
+          roughness: 0.22,
+          emissive: 0x15803d,
           emissiveIntensity: 0.25
         });
 
@@ -817,182 +1018,188 @@
         pe.castShadow = true;
         pe.userData = {
           title: `Processing Element PE(${r}, ${c})`,
-          desc: `Output-Stationary MAC: Signed 8×8 Mult + 32-bit Adder + C_acc Reg`,
-          status: `Active Wavefront: Cycle T = ${r + c}`
+          type: "Output-Stationary GEMM Macro Cell",
+          status: `Active Wavefront: Cycle T = ${r + c} • Slack +1.815 ns`
         };
 
         arrayGroup.add(pe);
         interactiveObjects.push(pe);
         peMeshes[r][c] = pe;
 
-        // Top Status LED on each PE
-        const ledGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.2, 8);
-        const ledMat = new THREE.MeshBasicMaterial({ color: 0x4ade80 });
-        const led = new THREE.Mesh(ledGeo, ledMat);
-        led.position.set(0, 1.1, 0);
-        pe.add(led);
+        // Top Optical Activity Sensor
+        const sensorGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.15, 8);
+        const sensorMat = new THREE.MeshBasicMaterial({ color: 0x4ade80 });
+        const sensor = new THREE.Mesh(sensorGeo, sensorMat);
+        sensor.position.set(0, 0.98, 0);
+        pe.add(sensor);
       }
     }
 
     // =========================================================================
-    // 5. GEN-2 SIMD 8-ROW DRAIN BUS & DRAIN BUFFER (EAST OF ARRAY)
+    // 6. STAGE 5: GEN-2 SIMD 8-ROW PARALLEL DRAIN BUSES
     // =========================================================================
     const drainGroup = new THREE.Group();
     drainGroup.position.set(16, 0, 4);
     scene.add(drainGroup);
 
-    // 8 Horizontal Copper Bus Traces
-    const busGeo = new THREE.BoxGeometry(7, 0.2, 0.4);
+    // 8 Precision Polished Copper Bus Channels
+    const busGeo = new THREE.BoxGeometry(7.2, 0.15, 0.5);
     const busMat = new THREE.MeshStandardMaterial({
       color: 0xf59e0b,
-      metalness: 0.9,
+      metalness: 0.95,
       roughness: 0.1,
-      emissive: 0xf59e0b,
-      emissiveIntensity: 0.5
+      emissive: 0xd97706,
+      emissiveIntensity: 0.45
     });
 
     for (let r = 0; r < 8; r++) {
       const z = (r - 3.5) * 2.0;
       const bus = new THREE.Mesh(busGeo, busMat);
-      bus.position.set(0, 0.3, z);
+      bus.position.set(0, 0.25, z);
       drainGroup.add(bus);
     }
 
-    // Drain Register File Block (SIMD Collector)
-    const drainRegGeo = new THREE.BoxGeometry(4.5, 3.0, 16);
+    // Drain Collector Register File Block
+    const drainRegGeo = new THREE.BoxGeometry(4.8, 2.6, 17);
     const drainRegMat = new THREE.MeshStandardMaterial({
-      color: 0xdb2777,
-      metalness: 0.7,
+      color: 0xbe185d,
+      metalness: 0.85,
       roughness: 0.2,
-      emissive: 0xec4899,
+      emissive: 0xdb2777,
       emissiveIntensity: 0.35
     });
     const drainRegBlock = new THREE.Mesh(drainRegGeo, drainRegMat);
-    drainRegBlock.position.set(6, 1.5, 0);
+    drainRegBlock.position.set(6, 1.3, 0);
     drainRegBlock.castShadow = true;
-    drainRegBlock.userData = { title: "SIMD 8-Row Drain Register File", desc: "Extracts all 8 rows simultaneously in 8 cycles (vs 64 in Gen-1)", status: "Drain Speedup: 8.0×" };
+    drainRegBlock.userData = { title: "SIMD 8-Row Drain Register File", type: "Gen-2 Parallel Drain Bus Architecture", status: "8-Row Parallel Drain in 8 Cycles (8.0× Speedup)" };
     drainGroup.add(drainRegBlock);
     interactiveObjects.push(drainRegBlock);
 
     // =========================================================================
-    // 6. QUANTIZED RELU & MAX-POOLING BLOCKS (SOUTH-EAST)
+    // 7. STAGE 6: QUANTIZED RELU & MAX-POOLING UNITS
     // =========================================================================
     const postGroup = new THREE.Group();
     postGroup.position.set(29, 0, 4);
     scene.add(postGroup);
 
-    // Quantized ReLU Unit
-    const reluGeo = new THREE.BoxGeometry(4.5, 2.8, 7);
+    // Parallel Quantized ReLU Unit
+    const reluGeo = new THREE.BoxGeometry(4.8, 2.6, 7.5);
     const reluMat = new THREE.MeshStandardMaterial({
-      color: 0x16a34a,
-      metalness: 0.6,
-      roughness: 0.3,
-      emissive: 0x22c55e,
+      color: 0x15803d,
+      metalness: 0.75,
+      roughness: 0.25,
+      emissive: 0x16a34a,
       emissiveIntensity: 0.35
     });
     const reluBlock = new THREE.Mesh(reluGeo, reluMat);
-    reluBlock.position.set(0, 1.4, -4);
+    reluBlock.position.set(0, 1.3, -4.5);
     reluBlock.castShadow = true;
-    reluBlock.userData = { title: "Parallel Quantized ReLU Unit", desc: "Clamps signed INT32 into [0, 127] saturation with >>8 shift", status: "Zero Saturation Overflow" };
+    reluBlock.userData = { title: "Quantized ReLU Pipeline Unit", type: "Parallel Arithmetic Shifter & Saturation Clamp", status: "INT32 >> 8 → INT8 [0, 127] • Zero Overflow" };
     postGroup.add(reluBlock);
     interactiveObjects.push(reluBlock);
 
-    // 2x2 Max-Pooling Unit
-    const poolGeo = new THREE.BoxGeometry(4.5, 2.8, 7);
+    // Max-Pooling Unit
+    const poolGeo = new THREE.BoxGeometry(4.8, 2.6, 7.5);
     const poolMat = new THREE.MeshStandardMaterial({
-      color: 0x9333ea,
-      metalness: 0.6,
-      roughness: 0.3,
-      emissive: 0xa855f7,
+      color: 0x7e22ce,
+      metalness: 0.75,
+      roughness: 0.25,
+      emissive: 0x9333ea,
       emissiveIntensity: 0.35
     });
     const poolBlock = new THREE.Mesh(poolGeo, poolMat);
-    poolBlock.position.set(0, 1.4, 4);
+    poolBlock.position.set(0, 1.3, 4.5);
     poolBlock.castShadow = true;
-    poolBlock.userData = { title: "2×2 Max-Pooling Unit (Stride 2)", desc: "Downsamples feature dimensions 28×28 → 14×14 (4× reduction)", status: "Pipelined 1 Cycle Latency" };
+    poolBlock.userData = { title: "2×2 Max-Pooling Engine (Stride 2)", type: "Spatial Downsampler (4× Reduction)", status: "Feature Map 28×28 → 14×14" };
     postGroup.add(poolBlock);
     interactiveObjects.push(poolBlock);
 
     // =========================================================================
-    // 7. SOC BUS & PHYSICAL PERIPHERALS (OLED HEX0 + LEDR)
+    // 8. STAGE 7: SOC INTERCONNECT & HARDWARE PERIPHERALS (OLED HEX0 + LEDR)
     // =========================================================================
     const socGroup = new THREE.Group();
-    socGroup.position.set(38, 0, 4);
+    socGroup.position.set(39, 0, 4);
     scene.add(socGroup);
 
-    // AXI4-Lite Interconnect Bridge
-    const axiBridgeGeo = new THREE.BoxGeometry(3, 1.6, 16);
-    const axiBridgeMat = new THREE.MeshStandardMaterial({
-      color: 0x3b82f6,
-      metalness: 0.8,
-      roughness: 0.2,
-      emissive: 0x3b82f6,
+    // AMBA AXI4-Lite Crossbar Interconnect
+    const axiGeo = new THREE.BoxGeometry(3.2, 1.6, 17);
+    const axiMat = new THREE.MeshStandardMaterial({
+      color: 0x1d4ed8,
+      metalness: 0.88,
+      roughness: 0.15,
+      emissive: 0x2563eb,
       emissiveIntensity: 0.4
     });
-    const axiBridge = new THREE.Mesh(axiBridgeGeo, axiBridgeMat);
-    axiBridge.position.set(0, 0.8, 0);
-    axiBridge.userData = { title: "AMBA AXI4-Lite Crossbar Interconnect", desc: "Connects PicoRV32 CPU, MMIO registers & FPGA peripherals", status: "Protocol: 32-bit Memory-Mapped" };
-    socGroup.add(axiBridge);
-    interactiveObjects.push(axiBridge);
+    const axiBlock = new THREE.Mesh(axiGeo, axiMat);
+    axiBlock.position.set(0, 0.8, 0);
+    axiBlock.userData = { title: "AMBA AXI4-Lite Crossbar Arbiter", type: "32-bit System Bus (axi_interconnect.sv)", status: "MMIO Dispatch Window @ 0x1000_0000" };
+    socGroup.add(axiBlock);
+    interactiveObjects.push(axiBlock);
 
-    // OLED 7-Segment Display Physical Mockup
-    const hexBoxGeo = new THREE.BoxGeometry(3.5, 4.0, 2.5);
-    const hexBoxMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0c, roughness: 0.5 });
+    // Physical OLED 7-Segment Display (HEX0)
+    const hexBoxGeo = new THREE.BoxGeometry(3.6, 4.2, 2.8);
+    const hexBoxMat = new THREE.MeshStandardMaterial({ color: 0x050507, roughness: 0.4, metalness: 0.6 });
     const hexBox = new THREE.Mesh(hexBoxGeo, hexBoxMat);
-    hexBox.position.set(5.5, 2.0, -3);
+    hexBox.position.set(5.8, 2.1, -3.5);
     hexBox.castShadow = true;
-    hexBox.userData = { title: "FPGA 7-Segment Display (HEX0)", desc: "Displays classified MNIST digit in real-time", status: "Predicted Digit Output: 8" };
+    hexBox.userData = { title: "FPGA 7-Segment Display (HEX0)", type: "Physical Peripheral On Kit DE10", status: "Predicted Digit Output: 8" };
     socGroup.add(hexBox);
     interactiveObjects.push(hexBox);
 
-    // 10 LEDR Indicators
-    const ledStripGeo = new THREE.BoxGeometry(3.5, 1.2, 5.5);
-    const ledStripMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.7 });
+    // LEDR[9:0] Indicators
+    const ledStripGeo = new THREE.BoxGeometry(3.6, 1.2, 6.0);
+    const ledStripMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.6, metalness: 0.5 });
     const ledStrip = new THREE.Mesh(ledStripGeo, ledStripMat);
-    ledStrip.position.set(5.5, 0.6, 3);
-    ledStrip.userData = { title: "LEDR[9:0] Confidence Indicators", desc: "10 on-board LEDs encoding argmax confidence", status: "LEDR[8] Active (High)" };
+    ledStrip.position.set(5.8, 0.6, 3.5);
+    ledStrip.userData = { title: "LEDR[9:0] Confidence Array", type: "On-Board FPGA Indicators", status: "Bit LEDR[8] High (Winning Class)" };
     socGroup.add(ledStrip);
     interactiveObjects.push(ledStrip);
 
     // =========================================================================
-    // DYNAMIC DATA PACKET PARTICLES (FLOWING THROUGH ARCHITECTURE)
+    // ORTHOGONAL SIGNAL TRACE PULSES (CONFINED STRICTLY TO CONDUCTORS)
     // =========================================================================
-    const particleCount = 120;
-    const particleGeo = new THREE.SphereGeometry(0.25, 8, 8);
+    const pulseCount = 75;
+    const pulseGeo = new THREE.SphereGeometry(0.2, 8, 8);
 
-    // Cyan Particles (Row A Weights)
-    const pMatA = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
-    const particlesA = [];
-    for (let i = 0; i < particleCount / 2; i++) {
-      const p = new THREE.Mesh(particleGeo, pMatA);
-      p.position.set(-14 + Math.random() * 22, 1.4, (Math.floor(Math.random() * 8) - 3.5) * 2.0 + 4);
+    // Cyan Row-A Pulses (Horizontal X-Axis Movement)
+    const pMatA = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const pulsesA = [];
+    for (let i = 0; i < pulseCount / 2; i++) {
+      const p = new THREE.Mesh(pulseGeo, pMatA);
+      p.position.set(-14 + Math.random() * 26, 0.45, (Math.floor(Math.random() * 8) - 3.5) * 2.0 + 4);
       scene.add(p);
-      particlesA.push({ mesh: p, speed: 0.12 + Math.random() * 0.08, startX: -14, endX: 12 });
+      pulsesA.push({ mesh: p, speed: 0.12 + Math.random() * 0.08, minX: -14, maxX: 12 });
     }
 
-    // Amber Particles (Col B Inputs)
+    // Gold Col-B Pulses (Vertical Z-Axis Movement)
     const pMatB = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-    const particlesB = [];
-    for (let i = 0; i < particleCount / 2; i++) {
-      const p = new THREE.Mesh(particleGeo, pMatB);
-      p.position.set((Math.floor(Math.random() * 8) - 3.5) * 2.0 + 4, 1.4, -14 + Math.random() * 22);
+    const pulsesB = [];
+    for (let i = 0; i < pulseCount / 2; i++) {
+      const p = new THREE.Mesh(pulseGeo, pMatB);
+      p.position.set((Math.floor(Math.random() * 8) - 3.5) * 2.0 + 4, 0.45, -14 + Math.random() * 26);
       scene.add(p);
-      particlesB.push({ mesh: p, speed: 0.12 + Math.random() * 0.08, startZ: -14, endZ: 12 });
+      pulsesB.push({ mesh: p, speed: 0.12 + Math.random() * 0.08, minZ: -14, maxZ: 12 });
     }
 
     // =========================================================================
-    // INTERACTIVE RAYCASTING (HOVER TOOLTIP)
+    // RAYCASTING CAD HOVER INSPECTION
     // =========================================================================
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
-    const tooltip = document.getElementById('tooltip-3d');
+    const tooltip = document.getElementById('cad-tooltip');
     const ttTitle = document.getElementById('tt-title');
-    const ttDesc = document.getElementById('tt-desc');
+    const ttType = document.getElementById('tt-type');
     const ttStatus = document.getElementById('tt-status');
+    const hudCoords = document.getElementById('hudCoords');
 
     window.addEventListener('mousemove', (e) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      // Update CAD cursor coordinates HUD
+      const mmX = (mouse.x * 20.0).toFixed(2);
+      const mmY = (mouse.y * 15.0).toFixed(2);
+      hudCoords.textContent = `X: ${mmX > 0 ? '+' : ''}${mmX} mm, Y: ${mmY > 0 ? '+' : ''}${mmY} mm`;
 
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(interactiveObjects, false);
@@ -1004,7 +1211,7 @@
           tooltip.style.left = (e.clientX + 14) + 'px';
           tooltip.style.top = (e.clientY + 14) + 'px';
           ttTitle.textContent = obj.userData.title;
-          ttDesc.textContent = obj.userData.desc;
+          ttType.textContent = obj.userData.type;
           ttStatus.textContent = obj.userData.status;
         }
       } else {
@@ -1013,29 +1220,27 @@
     });
 
     // =========================================================================
-    // WORKFLOW STAGE STEPPER & CAMERA CONTROLLER
+    // STAGE STEPPER & SMOOTH CAD CAMERA CONTROLLER
     // =========================================================================
-    let targetCamPos = { x: -35, y: 32, z: -30 };
-    let targetCamLook = { x: -18, y: 0, z: -18 };
+    let targetCamPos = { x: -36, y: 30, z: -26 };
+    let targetCamLook = { x: -18, y: 0, z: -16 };
 
-    function goToStage(idx) {
+    function selectStage(idx) {
       currentStage = Math.max(0, Math.min(STAGES.length - 1, idx));
       const st = STAGES[currentStage];
 
-      // Update UI elements
-      document.getElementById('stageBadge').textContent = st.badge;
+      document.getElementById('stageTag').textContent = st.tag;
+      document.getElementById('stageModuleTag').textContent = st.module;
       document.getElementById('stageTitle').textContent = st.title;
       document.getElementById('stageDesc').textContent = st.desc;
-      document.getElementById('stageFormula').textContent = st.formula;
-      document.getElementById('activeModulesBox').innerHTML = st.modules;
+      document.getElementById('stageMath').textContent = st.math;
+      document.getElementById('activeRtlList').innerHTML = st.modules;
 
-      // Update timeline dots
-      document.querySelectorAll('.step-dot').forEach((dot, i) => {
+      document.querySelectorAll('.timeline-dot').forEach((dot, i) => {
         if (i === currentStage) dot.classList.add('active');
         else dot.classList.remove('active');
       });
 
-      // Smooth camera transition target
       targetCamPos = { ...st.camPos };
       targetCamLook = { ...st.camLook };
     }
@@ -1044,146 +1249,147 @@
       let next = currentStage + delta;
       if (next < 0) next = STAGES.length - 1;
       if (next >= STAGES.length) next = 0;
-      goToStage(next);
+      selectStage(next);
     }
 
-    function toggleAutoPlay() {
-      isAutoPlaying = !isAutoPlaying;
-      const icon = document.getElementById('playIcon');
-      const text = document.getElementById('playText');
-      const btn = document.getElementById('btnPlayPause');
+    function toggleTour() {
+      isTouring = !isTouring;
+      const icon = document.getElementById('tourIcon');
+      const text = document.getElementById('tourText');
+      const btn = document.getElementById('btnAutoTour');
 
-      if (isAutoPlaying) {
+      if (isTouring) {
         icon.className = 'bi bi-pause-fill me-1';
         text.textContent = 'Pause Tour';
         btn.classList.replace('btn-primary', 'btn-warning');
-        runAutoTour();
+        runTour();
       } else {
         icon.className = 'bi bi-play-fill me-1';
         text.textContent = 'Auto Tour';
         btn.classList.replace('btn-warning', 'btn-primary');
-        clearTimeout(autoPlayTimer);
+        clearTimeout(tourTimer);
       }
     }
 
-    function runAutoTour() {
-      if (!isAutoPlaying) return;
+    function runTour() {
+      if (!isTouring) return;
       stepStage(1);
-      autoPlayTimer = setTimeout(runAutoTour, tourIntervalMs);
+      tourTimer = setTimeout(runTour, tourInterval);
     }
 
-    function updateTourSpeed() {
-      tourSpeed = parseInt(document.getElementById('tourSpeed').value);
-      if (isAutoPlaying) {
-        clearTimeout(autoPlayTimer);
-        autoPlayTimer = setTimeout(runAutoTour, tourIntervalMs);
+    function changeTourSpeed() {
+      tourInterval = parseInt(document.getElementById('tourSpeed').value);
+      if (isTouring) {
+        clearTimeout(tourTimer);
+        tourTimer = setTimeout(runTour, tourInterval);
       }
     }
 
-    function setCameraPreset(preset) {
-      document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+    function setCamAngle(angle) {
+      document.querySelectorAll('.cad-tool-btn').forEach(b => b.classList.remove('active'));
       event.target.classList.add('active');
 
-      if (preset === 'isometric') {
-        targetCamPos = { x: 0, y: 40, z: 42 };
+      if (angle === 'iso') {
+        targetCamPos = { x: 5, y: 44, z: 46 };
         targetCamLook = { x: 5, y: 0, z: 0 };
-      } else if (preset === 'top') {
-        targetCamPos = { x: 5, y: 75, z: 0.1 };
+      } else if (angle === 'top') {
+        targetCamPos = { x: 5, y: 85, z: 0.1 };
         targetCamLook = { x: 5, y: 0, z: 0 };
-      } else if (preset === 'input') {
-        targetCamPos = { x: -25, y: 24, z: -25 };
+      } else if (angle === 'im2col') {
+        targetCamPos = { x: -28, y: 26, z: -25 };
         targetCamLook = { x: -16, y: 0, z: -16 };
-      } else if (preset === 'skew') {
-        targetCamPos = { x: -12, y: 22, z: -10 };
+      } else if (angle === 'skew') {
+        targetCamPos = { x: -14, y: 22, z: -10 };
         targetCamLook = { x: 0, y: 0, z: 0 };
-      } else if (preset === 'systolic') {
-        targetCamPos = { x: 4, y: 28, z: 24 };
+      } else if (angle === 'array') {
+        targetCamPos = { x: 4, y: 30, z: 25 };
         targetCamLook = { x: 4, y: 0, z: 4 };
-      } else if (preset === 'output') {
-        targetCamPos = { x: 28, y: 22, z: 12 };
-        targetCamLook = { x: 20, y: 0, z: 4 };
+      } else if (angle === 'drain') {
+        targetCamPos = { x: 24, y: 22, z: 15 };
+        targetCamLook = { x: 16, y: 0, z: 6 };
+      } else if (angle === 'soc') {
+        targetCamPos = { x: 38, y: 22, z: -8 };
+        targetCamLook = { x: 26, y: 0, z: -2 };
       }
     }
 
-    function toggleHelpModal() {
-      const modal = new bootstrap.Modal(document.getElementById('helpModal'));
-      modal.show();
+    function resetCameraView() {
+      setCamAngle('iso');
+      selectStage(0);
     }
 
     // =========================================================================
-    // ANIMATION RENDER LOOP (WAVEFRONT SWEEP & CAMERA LERP)
+    // PHOTOREALISTIC RENDER LOOP WITH WAVEFRONT TIMING
     // =========================================================================
     let clock = new THREE.Clock();
     let simTime = 0;
 
-    function animate() {
-      requestAnimationFrame(animate);
+    function render() {
+      requestAnimationFrame(render);
 
       const delta = clock.getDelta();
       simTime += delta;
 
-      // 1. Smooth Camera LERP to Target
-      camera.position.x += (targetCamPos.x - camera.position.x) * 0.05;
-      camera.position.y += (targetCamPos.y - camera.position.y) * 0.05;
-      camera.position.z += (targetCamPos.z - camera.position.z) * 0.05;
+      // Smooth CAD Camera LERP
+      camera.position.x += (targetCamPos.x - camera.position.x) * 0.055;
+      camera.position.y += (targetCamPos.y - camera.position.y) * 0.055;
+      camera.position.z += (targetCamPos.z - camera.position.z) * 0.055;
 
-      controls.target.x += (targetCamLook.x - controls.target.x) * 0.05;
-      controls.target.y += (targetCamLook.y - controls.target.y) * 0.05;
-      controls.target.z += (targetCamLook.z - controls.target.z) * 0.05;
+      controls.target.x += (targetCamLook.x - controls.target.x) * 0.055;
+      controls.target.y += (targetCamLook.y - controls.target.y) * 0.055;
+      controls.target.z += (targetCamLook.z - controls.target.z) * 0.055;
       controls.update();
 
-      // 2. Animate 3x3 Sliding Window on Input Image
-      const winCycle = simTime * 1.5;
-      rfWindow.position.x = -2.2 + Math.sin(winCycle) * 2.2;
-      rfWindow.position.z = -2.2 + Math.cos(winCycle * 0.7) * 2.2;
+      // Precision Receptive Field Aperture Gliding
+      const scanT = simTime * 1.6;
+      rfWindow.position.x = -2.2 + Math.sin(scanT) * 2.2;
+      rfWindow.position.z = -2.2 + Math.cos(scanT * 0.8) * 2.2;
 
-      // 3. Animate 64-PE Wavefront Glow (45-degree diagonal sweep)
-      const currentWavefront = Math.floor((simTime * 4.5) % 15);
+      // Realistic 45-Degree Systolic Wavefront Pulse across 64 PEs
+      const wavefrontCycle = Math.floor((simTime * 4.2) % 15);
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           const dist = r + c;
           const pe = peMeshes[r][c];
-          if (dist === currentWavefront) {
+          if (dist === wavefrontCycle) {
             pe.material.emissiveIntensity = 0.95;
-            pe.material.color.setHex(0x22c55e);
-            pe.position.y = 1.35; // Slight physical lift on active MAC!
-          } else if (dist < currentWavefront) {
-            pe.material.emissiveIntensity = 0.25;
-            pe.material.color.setHex(0x15803d);
+            pe.material.color.setHex(0x22c55e); // Active MAC
+            pe.position.y = 1.15; // Precision mechanical lift
+          } else if (dist < wavefrontCycle) {
+            pe.material.emissiveIntensity = 0.22;
+            pe.material.color.setHex(0x166534); // Completed partial sum
             pe.position.y = 1.0;
           } else {
-            pe.material.emissiveIntensity = 0.08;
-            pe.material.color.setHex(0x0f3b1e);
+            pe.material.emissiveIntensity = 0.06;
+            pe.material.color.setHex(0x0f3b1e); // Standby
             pe.position.y = 1.0;
           }
         }
       }
 
-      // 4. Animate Flowing Data Particles
-      particlesA.forEach(p => {
+      // Orthogonal Copper Trace Pulses
+      pulsesA.forEach(p => {
         p.mesh.position.x += p.speed;
-        if (p.mesh.position.x > p.endX) p.mesh.position.x = p.startX;
+        if (p.mesh.position.x > p.maxX) p.mesh.position.x = p.minX;
       });
 
-      particlesB.forEach(p => {
+      pulsesB.forEach(p => {
         p.mesh.position.z += p.speed;
-        if (p.mesh.position.z > p.endZ) p.mesh.position.z = p.startZ;
+        if (p.mesh.position.z > p.maxZ) p.mesh.position.z = p.minZ;
       });
 
       renderer.render(scene, camera);
     }
 
-    // Window Resize Handler
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Start Animation Loop on Load
     window.addEventListener('DOMContentLoaded', () => {
-      goToStage(0);
-      animate();
+      selectStage(0);
+      render();
     });
   </script>
 </body>
