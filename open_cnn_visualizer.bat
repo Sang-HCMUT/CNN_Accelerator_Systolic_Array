@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 > nul
 echo ===============================================================================
-echo [METIS-SUITE] PHÒNG TRỰC QUAN HÓA SUY LUẬN CNN & BỘ TĂNG TỐC 64 PE
+echo [METIS-SUITE] PHÒNG TRỰC QUAN HÓA SUY LUẬN CNN VÀ BỘ TĂNG TỐC 64 PE
 echo Đang mở Trực Tiếp Tab CNN Studio trong Cổng Hợp Nhất index.html
 echo ===============================================================================
 

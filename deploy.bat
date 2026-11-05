@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 > nul
 echo ===============================================================================
-echo [DEPLOY] TRIỂN KHAI NỀN TẢNG METIS ARCHITECTURE PLATFORM LÊN GITHUB & CLOUD
+echo [DEPLOY] TRIỂN KHAI NỀN TẢNG METIS ARCHITECTURE PLATFORM LÊN GITHUB VÀ CLOUD
 echo ===============================================================================
 
 echo 1. Đang kiểm tra trạng thái Git...
