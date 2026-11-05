@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Hardware Architecture & End-to-End Workflow — CNN Systolic SoC</title>
+
+  <!-- Google Fonts: Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- KaTeX for Mathematics -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+  <!-- Three.js 3D Engine & OrbitControls (Local offline with CDN fallback) -->
+  <script src="libs/three.min.js"></script>
+  <script src="libs/OrbitControls.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+      document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      --surface-app: #09090b;
+      --surface-panel: #121215;
+      --surface-card: #18181b;
+      --border-subtle: #27272a;
+      --accent-blue: #2563eb;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--surface-app);
+      color: #f4f4f5;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
+    }
+
+    #webgl-canvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    /* Top Navigation HUD */
+    .top-hud {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .hud-card {
+      background: rgba(18, 18, 21, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 16px;
+      pointer-events: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .hud-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-subtitle {
+      font-size: 0.75rem;
+      color: #a1a1aa;
+    }
+
+    /* Stage Banner Overlay */
+    .stage-banner {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 18, 21, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px 24px;
+      min-width: 580px;
+      max-width: 780px;
+      text-align: center;
+      z-index: 10;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+    .stage-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stage-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    .stage-desc {
+      font-size: 0.82rem;
+      color: #d4d4d8;
+      line-height: 1.45;
+    }
+    .stage-formula {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      margin-top: 6px;
+      background: rgba(0,0,0,0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* Bottom Control Bar */
+    .bottom-hud {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 18, 21, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .timeline-steps {
+      display: flex;
+      gap: 6px;
+    }
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #a1a1aa;
+      font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .step-dot:hover {
+      background: #3f3f46;
+      color: #fff;
+    }
+    .step-dot.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+    }
+
+    /* Right Telemetry Sidebar */
+    .telemetry-sidebar {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      width: 280px;
+      background: rgba(18, 18, 21, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+    .telem-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.8rem;
+    }
+    .telem-label { color: #a1a1aa; }
+    .telem-value {
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+    }
+
+    /* Camera View Selector Buttons */
+    .camera-hud {
+      position: absolute;
+      top: 80px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+    .cam-btn {
+      background: rgba(18, 18, 21, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      color: #a1a1aa;
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .cam-btn:hover, .cam-btn.active {
+      background: rgba(37, 99, 235, 0.2);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    /* Floating Tooltip */
+    #tooltip-3d {
+      position: absolute;
+      display: none;
+      background: rgba(18, 18, 21, 0.95);
+      border: 1px solid var(--accent-cyan);
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      pointer-events: none;
+      z-index: 100;
+      min-width: 180px;
+    }
+
+    /* Legend Overlay */
+    .legend-box {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(18, 18, 21, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.7rem;
+      z-index: 10;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Render Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Top HUD -->
+  <div class="top-hud">
+    <div class="hud-card d-flex align-items-center gap-3">
+      <div class="hud-title text-primary">
+        <i class="bi bi-cpu-fill fs-5 text-primary"></i>
+        <span>CNN SYSTOLIC SOC</span>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">3D Hardware Architecture</span>
+      </div>
+      <div class="vr bg-secondary opacity-50 d-none d-md-block" style="height: 20px;"></div>
+      <div class="hud-subtitle d-none d-md-block">
+        End-to-End Cycle-Accurate Hardware Dataflow (Cyclone V FPGA)
+      </div>
+    </div>
+
+    <div class="hud-card d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1" onclick="window.location.href='../index.html'" title="Return to Portal">
+        <i class="bi bi-house-door-fill me-1"></i>Portal Hub
+      </button>
+      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1" onclick="toggleHelpModal()" title="Help & Navigation Controls">
+        <i class="bi bi-question-circle"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Camera Preset Buttons (Left) -->
+  <div class="camera-hud">
+    <button class="cam-btn active" onclick="setCameraPreset('isometric')"><i class="bi bi-box"></i>Isometric 3D</button>
+    <button class="cam-btn" onclick="setCameraPreset('top')"><i class="bi bi-grid-3x3"></i>Top Floorplan</button>
+    <button class="cam-btn" onclick="setCameraPreset('input')"><i class="bi bi-box-arrow-in-right"></i>1. Im2Col & Buffers</button>
+    <button class="cam-btn" onclick="setCameraPreset('skew')"><i class="bi bi-bar-chart-steps"></i>2. Skew Delay Unit</button>
+    <button class="cam-btn" onclick="setCameraPreset('systolic')"><i class="bi bi-cpu"></i>3. 64-PE Core Mesh</button>
+    <button class="cam-btn" onclick="setCameraPreset('output')"><i class="bi bi-diagram-3"></i>4. Drain & Quant ReLU</button>
+  </div>
+
+  <!-- Current Stage Interactive Banner (Top Center) -->
+  <div class="stage-banner" id="stageBanner">
+    <span class="stage-badge bg-primary-subtle text-primary" id="stageBadge">Stage 1 / 7</span>
+    <h2 class="stage-name" id="stageTitle">Input Tensor & Im2Col Matrix Unrolling</h2>
+    <p class="stage-desc" id="stageDesc">
+      The 28×28 INT8 input image tensor is sampled with 3×3 receptive fields. Im2Col transforms spatial patches into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].
+    </p>
+    <div class="stage-formula" id="stageFormula">
+      Im2Col: Tensor [28×28] → Matrix B [9×196] | Weights: 16×[3×3] → Matrix A [16×9]
+    </div>
+  </div>
+
+  <!-- Right Telemetry Sidebar -->
+  <div class="telemetry-sidebar">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <span class="fw-bold small text-uppercase text-muted"><i class="bi bi-speedometer2 me-1"></i>Hardware Telemetry</span>
+      <span class="badge bg-success-subtle text-success font-monospace" style="font-size: 0.65rem;">LIVE CO-SIM</span>
+    </div>
+
+    <div class="telem-row">
+      <span class="telem-label">Target Clock (FMAX):</span>
+      <span class="telem-value text-success">69.49 MHz</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-label">Setup Slack:</span>
+      <span class="telem-value text-primary">+1.815 ns (MET)</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-label">PE Core Count:</span>
+      <span class="telem-value text-light">64 PEs (8×8 Mesh)</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-label">Arithmetic Mode:</span>
+      <span class="telem-value text-warning">INT8 MAC / INT32 ACC</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-label">DRAM Savings:</span>
+      <span class="telem-value text-emerald" style="color: #10b981;">98× (In-Situ SRAM)</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-label">SIMD Drain Speedup:</span>
+      <span class="telem-value text-info">8.0× (8 Cycles Drain)</span>
+    </div>
+    <div class="telem-row">
+      <span class="telem-label">Total Inference Latency:</span>
+      <span class="telem-value text-purple" style="color: #8b5cf6;">145.04 µs @ 50MHz</span>
+    </div>
+
+    <hr class="my-2 border-secondary opacity-25">
+
+    <div class="small fw-semibold text-muted mb-1">Active Stage Modules:</div>
+    <div class="p-2 rounded bg-black bg-opacity-50 font-monospace small" id="activeModulesBox" style="font-size: 0.7rem; color: #a1a1aa;">
+      • RTL: im2col_address_gen.sv<br>
+      • Memory: sram_buffer_a_72b.sv<br>
+      • Memory: sram_buffer_b_pingpong.sv
+    </div>
+  </div>
+
+  <!-- Legend Overlay (Bottom Left) -->
+  <div class="legend-box">
+    <div class="fw-bold mb-1.5 text-muted text-uppercase" style="font-size: 0.65rem;">Subsystem Legend</div>
+    <div class="legend-item"><div class="legend-color" style="background: #06b6d4;"></div><span>Weight Buffer A & Rows</span></div>
+    <div class="legend-item"><div class="legend-color" style="background: #f59e0b;"></div><span>Input Buffer B & Cols</span></div>
+    <div class="legend-item"><div class="legend-color" style="background: #8b5cf6;"></div><span>D-FF Skew Units (56 D-FFs)</span></div>
+    <div class="legend-item"><div class="legend-color" style="background: #10b981;"></div><span>64-PE Systolic Array Mesh</span></div>
+    <div class="legend-item"><div class="legend-color" style="background: #ec4899;"></div><span>SIMD Drain Bus & Quant ReLU</span></div>
+  </div>
+
+  <!-- Bottom Control Bar (Timeline Stepper) -->
+  <div class="bottom-hud">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-primary px-3 fw-semibold" id="btnPlayPause" onclick="toggleAutoPlay()">
+        <i class="bi bi-play-fill me-1" id="playIcon"></i><span id="playText">Auto Tour</span>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" onclick="stepStage(-1)" title="Previous Stage">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" onclick="stepStage(1)" title="Next Stage">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="vr bg-secondary opacity-50" style="height: 24px;"></div>
+
+    <!-- 7 Stage Dots -->
+    <div class="timeline-steps">
+      <div class="step-dot active" onclick="goToStage(0)" title="1. Im2Col Decomposition">1</div>
+      <div class="step-dot" onclick="goToStage(1)" title="2. SRAM Buffers & Tiling">2</div>
+      <div class="step-dot" onclick="goToStage(2)" title="3. Staggered Delay Skew Unit">3</div>
+      <div class="step-dot" onclick="goToStage(3)" title="4. 64-PE Systolic Array Mesh">4</div>
+      <div class="step-dot" onclick="goToStage(4)" title="5. SIMD 8-Row Parallel Drain">5</div>
+      <div class="step-dot" onclick="goToStage(5)" title="6. Quantized ReLU & MaxPool">6</div>
+      <div class="step-dot" onclick="goToStage(6)" title="7. Dense FC & SoC Output">7</div>
+    </div>
+
+    <div class="vr bg-secondary opacity-50" style="height: 24px;"></div>
+
+    <div class="d-flex align-items-center gap-2">
+      <span class="small text-muted font-monospace" style="font-size: 0.75rem;">Tour Speed:</span>
+      <select class="form-select form-select-sm bg-dark text-light border-secondary font-monospace" style="font-size: 0.75rem; width: 90px;" id="tourSpeed" onchange="updateTourSpeed()">
+        <option value="7000">Slow</option>
+        <option value="4500" selected>Normal</option>
+        <option value="2500">Fast</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Floating 3D Hover Tooltip -->
+  <div id="tooltip-3d">
+    <div class="fw-bold text-light" id="tt-title">PE(0, 0)</div>
+    <div class="text-secondary small" id="tt-desc">Processing Element (Output-Stationary)</div>
+    <div class="font-monospace text-cyan small mt-1" id="tt-status">ACC: 14,250 | MAC Active</div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-light border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="bi bi-info-circle me-2 text-primary"></i>3D Navigation Controls</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body small">
+          <p><strong>Mouse / Trackpad Controls:</strong></p>
+          <ul>
+            <li><strong>Left-Click + Drag:</strong> Rotate 3D camera 360° around the chip.</li>
+            <li><strong>Right-Click + Drag:</strong> Pan camera position across the floorplan.</li>
+            <li><strong>Scroll Wheel:</strong> Zoom in / zoom out smoothly.</li>
+            <li><strong>Hover over any module:</strong> Inspect instant microarchitectural specifications.</li>
+          </ul>
+          <p><strong>Interactive Workflow:</strong></p>
+          <p>Use the bottom number buttons (1 to 7) or the <strong>"Auto Tour"</strong> button to trace how input tensors flow through the hardware until the final digit prediction is generated!</p>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Got it</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- =========================================================================
+       THREE.JS 3D SCENE & HARDWARE WORKFLOW ANIMATION SCRIPT
+       ========================================================================= -->
+  <script>
+    // --- STAGE DEFINITIONS & METADATA ---
+    const STAGES = [
+      {
+        id: 0,
+        badge: "Stage 1 / 7 • Data Decomposition",
+        title: "Input Tensor & Im2Col Matrix Unrolling",
+        desc: "The 28×28 INT8 input image is unrolled using Im2Col: 196 overlapping 3×3 receptive fields are flattened into column vectors of Matrix B [9×196]. Filter weights [16 filters × 3×3] form Matrix A [16×9].",
+        formula: "GEMM Formulation: C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]",
+        camPos: { x: -35, y: 32, z: -30 },
+        camLook: { x: -18, y: 0, z: -18 },
+        modules: "• RTL: im2col_address_gen.sv<br>• Buffer: input_tensor_sram.sv<br>• Format: Signed INT8 [-128..+127]"
+      },
+      {
+        id: 1,
+        badge: "Stage 2 / 7 • Memory Stationarity",
+        title: "Dual On-Chip SRAM Buffers & Matrix Tiling",
+        desc: "Large matrices are tiled into 8×8 sub-matrices. Sub-tile A0 [8×9] is locked inside SRAM Buffer A and reused 98 consecutive times with streaming Sub-tiles B0..B24, reducing external DRAM traffic by 98×.",
+        formula: "Tiling: 16×9 = 2 Sub-tiles A [8×9] | 9×196 = 25 Sub-tiles B [9×8] | 98× DRAM Savings",
+        camPos: { x: -25, y: 28, z: -20 },
+        camLook: { x: -12, y: 0, z: -10 },
+        modules: "• Module: gemm_controller.sv<br>• SRAM A: 72 Bytes (Buffer A Locked)<br>• SRAM B: Double-Buffer Ping-Pong (72B)"
+      },
+      {
+        id: 2,
+        badge: "Stage 3 / 7 • Spatial Staggering",
+        title: "Wavefront Skew Unit (56 D-Flip-Flops)",
+        desc: "Row A inputs are delayed by 0T..7T clock cycles through 28 D-FF shift registers on the West edge. Column B inputs are delayed by 0T..7T through 28 D-FFs on the North edge to synchronize the 45° wavefront.",
+        formula: "Spatial Alignment Condition: Delay_A[i] = i·Tclk | Delay_B[j] = j·Tclk | Arrival: T = i + j",
+        camPos: { x: -18, y: 26, z: -12 },
+        camLook: { x: -6, y: 0, z: -6 },
+        modules: "• Module: systolic_skew_unit.sv<br>• Registers: 56 D-Flip-Flops (28 Row + 28 Col)<br>• Zero Bus Collision (100% Local Routing)"
+      },
+      {
+        id: 3,
+        badge: "Stage 4 / 7 • Systolic Compute Core",
+        title: "2D Spatial 64-PE Mesh (8×8 Output-Stationary)",
+        desc: "Matrix A streams East, Matrix B streams South. Each PE performs an 8×8 signed multiplication and accumulates partial sums into local 32-bit register C_acc. Diagonal wavefront propagates across 14 clock cycles.",
+        formula: "PE Operation: C_acc[i,j] += A[i,k] × B[k,j] | 64 Parallel MACs / Cycle",
+        camPos: { x: 0, y: 35, z: 28 },
+        camLook: { x: 4, y: 0, z: 4 },
+        modules: "• Module: systolic_array_core.sv<br>• 64× pe_gemm.sv (INT8 Mult + 32-bit Adder)<br>• Accumulator: 32-bit Signed C_acc Register"
+      },
+      {
+        id: 4,
+        badge: "Stage 5 / 7 • Gen-2 Fast Drain",
+        title: "SIMD 8-Row Parallel Drain Bus",
+        desc: "Upon completing K=9 accumulation cycles, Gen-2 drains all 8 rows simultaneously via parallel 32-bit buses into the output register file in just 8 clock cycles (8.0× faster than Gen-1 serial drain of 64 cycles).",
+        formula: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
+        camPos: { x: 22, y: 24, z: 18 },
+        camLook: { x: 14, y: 0, z: 8 },
+        modules: "• Module: systolic_accelerator_top.sv<br>• 8× Parallel 32-bit Row Drain Buses<br>• Bubble-Free Ping-Pong Pipeline Transfer"
+      },
+      {
+        id: 5,
+        badge: "Stage 6 / 7 • Activation & Pooling",
+        title: "Parallel Quantized ReLU & Max-Pooling",
+        desc: "The 32-bit accumulated sums are quantized to INT8 using an arithmetic right-shift (>>8) and clamped to [0, 127] with zero overflow risk. Spatial 2×2 Max-Pooling then downsamples the feature map 4×.",
+        formula: "ReLU: Output = clamp(acc >> 8, 0, 127) | MaxPool [2×2]: 28×28 → 14×14",
+        camPos: { x: 30, y: 22, z: 6 },
+        camLook: { x: 20, y: 0, z: 2 },
+        modules: "• Module: quantize_relu_unit.sv (8 Channels)<br>• Module: maxpool_unit.sv (Stride 2)<br>• Bit-True Golden Model Matched"
+      },
+      {
+        id: 6,
+        badge: "Stage 7 / 7 • Output Classification",
+        title: "Dense FC Layer & Physical SoC Dispatch",
+        desc: "Pooled features pass through the Dense FC layer on the 64-PE core to calculate 10 class logits. Argmax selects the winning digit, written via AXI4-Lite to HEX0 (7-segment OLED) and LEDR[9:0] on DE10-Standard.",
+        formula: "Argmax(Softmax(Logits)) → Predicted Digit (0..9) | AXI MMIO @ 0x1000_0000",
+        camPos: { x: 38, y: 24, z: -10 },
+        camLook: { x: 24, y: 0, z: -4 },
+        modules: "• Module: soc_top.sv & axi_interconnect.sv<br>• Output: HEX0 OLED + LEDR[9:0] Indicators<br>• Firmware: PicoRV32 systolic.h Driver"
+      }
+    ];
+
+    let currentStage = 0;
+    let isAutoPlaying = false;
+    let autoPlayTimer = null;
+    let tourIntervalMs = 4500;
+
+    // --- THREE.JS INITIALIZATION ---
+    const canvas = document.getElementById('webgl-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x09090b);
+    scene.fog = new THREE.FogExp2(0x09090b, 0.009);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(-35, 32, -30);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.02; // Don't go below floor
+    controls.minDistance = 10;
+    controls.maxDistance = 160;
+
+    // --- LIGHTING ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(40, 60, 30);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 150;
+    const d = 50;
+    dirLight.shadow.camera.left = -d;
+    dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;
+    dirLight.shadow.camera.bottom = -d;
+    scene.add(dirLight);
+
+    const cyanPointLight = new THREE.PointLight(0x06b6d4, 1.5, 45);
+    cyanPointLight.position.set(-15, 8, 4);
+    scene.add(cyanPointLight);
+
+    const emeraldPointLight = new THREE.PointLight(0x10b981, 2.0, 50);
+    emeraldPointLight.position.set(4, 10, 4);
+    scene.add(emeraldPointLight);
+
+    const amberPointLight = new THREE.PointLight(0xf59e0b, 1.5, 45);
+    amberPointLight.position.set(4, 8, -15);
+    scene.add(amberPointLight);
+
+    // --- GROUND SUBSTRATE (SILICON WAFER / INTERPOSER) ---
+    const waferGeo = new THREE.BoxGeometry(90, 1.2, 70);
+    const waferMat = new THREE.MeshStandardMaterial({
+      color: 0x121216,
+      roughness: 0.7,
+      metalness: 0.4
+    });
+    const wafer = new THREE.Mesh(waferGeo, waferMat);
+    wafer.position.set(5, -0.6, 0);
+    wafer.receiveShadow = true;
+    scene.add(wafer);
+
+    // Grid Floor Guide
+    const grid = new THREE.GridHelper(90, 45, 0x27272a, 0x18181b);
+    grid.position.set(5, 0.02, 0);
+    scene.add(grid);
+
+    // Chip Boundary Trim (Golden Bezel)
+    const bezelGeo = new THREE.BoxGeometry(91, 0.3, 71);
+    const bezelMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      metalness: 0.85,
+      roughness: 0.2
+    });
+    const bezel = new THREE.Mesh(bezelGeo, bezelMat);
+    bezel.position.set(5, -0.1, 0);
+    scene.add(bezel);
+
+    // Groups for Interactive Raycasting
+    const interactiveObjects = [];
+
+    // =========================================================================
+    // 1. INPUT STAGE: 28x28 IMAGE & IM2COL DECOMPOSITION (WEST-NORTH CORNER)
+    // =========================================================================
+    const inputGroup = new THREE.Group();
+    inputGroup.position.set(-28, 0, -20);
+    scene.add(inputGroup);
+
+    // 28x28 Input Image Plane Mockup
+    const imgPlaneGeo = new THREE.BoxGeometry(10, 0.4, 10);
+    const imgPlaneMat = new THREE.MeshStandardMaterial({
+      color: 0x18181b,
+      roughness: 0.6,
+      metalness: 0.2
+    });
+    const imgPlane = new THREE.Mesh(imgPlaneGeo, imgPlaneMat);
+    imgPlane.position.set(0, 0.4, 0);
+    imgPlane.castShadow = true;
+    imgPlane.userData = { title: "MNIST Input Tensor [28×28]", desc: "784 Signed INT8 Pixels [-128..+127]", status: "Streaming via AXI Master" };
+    inputGroup.add(imgPlane);
+    interactiveObjects.push(imgPlane);
+
+    // 3x3 Receptive Field Sliding Window (Red Box)
+    const rfGeo = new THREE.BoxGeometry(2.5, 0.6, 2.5);
+    const rfMat = new THREE.MeshStandardMaterial({
+      color: 0xf43f5e,
+      emissive: 0xf43f5e,
+      emissiveIntensity: 0.6,
+      transparent: true,
+      opacity: 0.85
+    });
+    const rfWindow = new THREE.Mesh(rfGeo, rfMat);
+    rfWindow.position.set(-1.8, 0.7, -1.8);
+    rfWindow.userData = { title: "3×3 Sliding Window (Im2Col)", desc: "Flattens 9 pixels into column vector B [9×1]", status: "Receptive Field Active" };
+    inputGroup.add(rfWindow);
+    interactiveObjects.push(rfWindow);
+
+    // Im2Col Unfolding Engine Block
+    const unrollGeo = new THREE.BoxGeometry(7, 2.2, 5);
+    const unrollMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      metalness: 0.5,
+      roughness: 0.3,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.2
+    });
+    const unrollBlock = new THREE.Mesh(unrollGeo, unrollMat);
+    unrollBlock.position.set(10, 1.1, 0);
+    unrollBlock.castShadow = true;
+    unrollBlock.userData = { title: "Im2Col Address Generator", desc: "Maps 2D convolution loops into continuous GEMM memory access", status: "Cycle Rate: 1 Col / Cycle" };
+    inputGroup.add(unrollBlock);
+    interactiveObjects.push(unrollBlock);
+
+    // =========================================================================
+    // 2. ON-CHIP SRAM BUFFERS (BUFFER A: WEST, BUFFER B: NORTH)
+    // =========================================================================
+    // Buffer A (Weight SRAM) - West of Array
+    const sramAGroup = new THREE.Group();
+    sramAGroup.position.set(-14, 0, 4);
+    scene.add(sramAGroup);
+
+    const sramAGeo = new THREE.BoxGeometry(4.5, 3.2, 16);
+    const sramAMat = new THREE.MeshStandardMaterial({
+      color: 0x0891b2,
+      metalness: 0.7,
+      roughness: 0.2,
+      emissive: 0x06b6d4,
+      emissiveIntensity: 0.35
+    });
+    const sramABlock = new THREE.Mesh(sramAGeo, sramAMat);
+    sramABlock.position.set(0, 1.6, 0);
+    sramABlock.castShadow = true;
+    sramABlock.userData = { title: "SRAM Buffer A (Weight Stationary)", desc: "Holds 72 Bytes for Sub-tile A0 [8×9]. Locked for 98 cycles.", status: "Reuse Factor: 98× (Zero DRAM Read)" };
+    sramAGroup.add(sramABlock);
+    interactiveObjects.push(sramABlock);
+
+    // Buffer B (Input Activation Double Buffer) - North of Array
+    const sramBGroup = new THREE.Group();
+    sramBGroup.position.set(4, 0, -14);
+    scene.add(sramBGroup);
+
+    const sramBGeo = new THREE.BoxGeometry(16, 3.2, 4.5);
+    const sramBMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      metalness: 0.7,
+      roughness: 0.2,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 0.35
+    });
+    const sramBBlock = new THREE.Mesh(sramBGeo, sramBMat);
+    sramBBlock.position.set(0, 1.6, 0);
+    sramBBlock.castShadow = true;
+    sramBBlock.userData = { title: "SRAM Buffer B (Ping-Pong Input)", desc: "Stores Sub-tiles B0..B24 [9×8]. Alternates Bank 0 & 1.", status: "Streaming Bandwidth: 8 Bytes / Cycle" };
+    sramBGroup.add(sramBBlock);
+    interactiveObjects.push(sramBBlock);
+
+    // =========================================================================
+    // 3. WAVEFRONT SKEW UNITS (ROW SKEW: WEST, COL SKEW: NORTH)
+    // =========================================================================
+    // Row Skew Staircase (between Buffer A and 64 PE Array)
+    const rowSkewGroup = new THREE.Group();
+    rowSkewGroup.position.set(-6, 0, 4);
+    scene.add(rowSkewGroup);
+
+    const dffGeo = new THREE.BoxGeometry(0.8, 1.0, 1.4);
+    const dffMat = new THREE.MeshStandardMaterial({
+      color: 0x7c3aed,
+      metalness: 0.6,
+      roughness: 0.3,
+      emissive: 0x8b5cf6,
+      emissiveIntensity: 0.3
+    });
+
+    const rowDffMeshes = [];
+    for (let r = 0; r < 8; r++) {
+      const zPos = (r - 3.5) * 2.0;
+      for (let s = 0; s < r; s++) {
+        const xPos = -(r - s) * 0.9;
+        const dff = new THREE.Mesh(dffGeo, dffMat);
+        dff.position.set(xPos, 0.6, zPos);
+        dff.castShadow = true;
+        dff.userData = { title: `Row ${r} Delay Stage (D-FF #${s+1})`, desc: `Delays Row A[${r}] by ${r} clock cycles`, status: `Latency: +${s+1} Tclk` };
+        rowSkewGroup.add(dff);
+        interactiveObjects.push(dff);
+        rowDffMeshes.push(dff);
+      }
+    }
+
+    // Column Skew Staircase (between Buffer B and 64 PE Array)
+    const colSkewGroup = new THREE.Group();
+    colSkewGroup.position.set(4, 0, -6);
+    scene.add(colSkewGroup);
+
+    const colDffMeshes = [];
+    for (let c = 0; c < 8; c++) {
+      const xPos = (c - 3.5) * 2.0;
+      for (let s = 0; s < c; s++) {
+        const zPos = -(c - s) * 0.9;
+        const dff = new THREE.Mesh(dffGeo, dffMat);
+        dff.position.set(xPos, 0.6, zPos);
+        dff.castShadow = true;
+        dff.userData = { title: `Col ${c} Delay Stage (D-FF #${s+1})`, desc: `Delays Col B[${c}] by ${c} clock cycles`, status: `Latency: +${s+1} Tclk` };
+        colSkewGroup.add(dff);
+        interactiveObjects.push(dff);
+        colDffMeshes.push(dff);
+      }
+    }
+
+    // =========================================================================
+    // 4. 64-PE SYSTOLIC ARRAY CORE (8x8 3D PE MATRIX)
+    // =========================================================================
+    const arrayGroup = new THREE.Group();
+    arrayGroup.position.set(4, 0, 4);
+    scene.add(arrayGroup);
+
+    const peMeshes = [];
+    const peGeo = new THREE.BoxGeometry(1.6, 2.0, 1.6);
+
+    for (let r = 0; r < 8; r++) {
+      peMeshes[r] = [];
+      for (let c = 0; c < 8; c++) {
+        const x = (c - 3.5) * 2.0;
+        const z = (r - 3.5) * 2.0;
+
+        const peMat = new THREE.MeshStandardMaterial({
+          color: 0x15803d,
+          metalness: 0.6,
+          roughness: 0.3,
+          emissive: 0x10b981,
+          emissiveIntensity: 0.25
+        });
+
+        const pe = new THREE.Mesh(peGeo, peMat);
+        pe.position.set(x, 1.0, z);
+        pe.castShadow = true;
+        pe.userData = {
+          title: `Processing Element PE(${r}, ${c})`,
+          desc: `Output-Stationary MAC: Signed 8×8 Mult + 32-bit Adder + C_acc Reg`,
+          status: `Active Wavefront: Cycle T = ${r + c}`
+        };
+
+        arrayGroup.add(pe);
+        interactiveObjects.push(pe);
+        peMeshes[r][c] = pe;
+
+        // Top Status LED on each PE
+        const ledGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.2, 8);
+        const ledMat = new THREE.MeshBasicMaterial({ color: 0x4ade80 });
+        const led = new THREE.Mesh(ledGeo, ledMat);
+        led.position.set(0, 1.1, 0);
+        pe.add(led);
+      }
+    }
+
+    // =========================================================================
+    // 5. GEN-2 SIMD 8-ROW DRAIN BUS & DRAIN BUFFER (EAST OF ARRAY)
+    // =========================================================================
+    const drainGroup = new THREE.Group();
+    drainGroup.position.set(16, 0, 4);
+    scene.add(drainGroup);
+
+    // 8 Horizontal Copper Bus Traces
+    const busGeo = new THREE.BoxGeometry(7, 0.2, 0.4);
+    const busMat = new THREE.MeshStandardMaterial({
+      color: 0xf59e0b,
+      metalness: 0.9,
+      roughness: 0.1,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 0.5
+    });
+
+    for (let r = 0; r < 8; r++) {
+      const z = (r - 3.5) * 2.0;
+      const bus = new THREE.Mesh(busGeo, busMat);
+      bus.position.set(0, 0.3, z);
+      drainGroup.add(bus);
+    }
+
+    // Drain Register File Block (SIMD Collector)
+    const drainRegGeo = new THREE.BoxGeometry(4.5, 3.0, 16);
+    const drainRegMat = new THREE.MeshStandardMaterial({
+      color: 0xdb2777,
+      metalness: 0.7,
+      roughness: 0.2,
+      emissive: 0xec4899,
+      emissiveIntensity: 0.35
+    });
+    const drainRegBlock = new THREE.Mesh(drainRegGeo, drainRegMat);
+    drainRegBlock.position.set(6, 1.5, 0);
+    drainRegBlock.castShadow = true;
+    drainRegBlock.userData = { title: "SIMD 8-Row Drain Register File", desc: "Extracts all 8 rows simultaneously in 8 cycles (vs 64 in Gen-1)", status: "Drain Speedup: 8.0×" };
+    drainGroup.add(drainRegBlock);
+    interactiveObjects.push(drainRegBlock);
+
+    // =========================================================================
+    // 6. QUANTIZED RELU & MAX-POOLING BLOCKS (SOUTH-EAST)
+    // =========================================================================
+    const postGroup = new THREE.Group();
+    postGroup.position.set(29, 0, 4);
+    scene.add(postGroup);
+
+    // Quantized ReLU Unit
+    const reluGeo = new THREE.BoxGeometry(4.5, 2.8, 7);
+    const reluMat = new THREE.MeshStandardMaterial({
+      color: 0x16a34a,
+      metalness: 0.6,
+      roughness: 0.3,
+      emissive: 0x22c55e,
+      emissiveIntensity: 0.35
+    });
+    const reluBlock = new THREE.Mesh(reluGeo, reluMat);
+    reluBlock.position.set(0, 1.4, -4);
+    reluBlock.castShadow = true;
+    reluBlock.userData = { title: "Parallel Quantized ReLU Unit", desc: "Clamps signed INT32 into [0, 127] saturation with >>8 shift", status: "Zero Saturation Overflow" };
+    postGroup.add(reluBlock);
+    interactiveObjects.push(reluBlock);
+
+    // 2x2 Max-Pooling Unit
+    const poolGeo = new THREE.BoxGeometry(4.5, 2.8, 7);
+    const poolMat = new THREE.MeshStandardMaterial({
+      color: 0x9333ea,
+      metalness: 0.6,
+      roughness: 0.3,
+      emissive: 0xa855f7,
+      emissiveIntensity: 0.35
+    });
+    const poolBlock = new THREE.Mesh(poolGeo, poolMat);
+    poolBlock.position.set(0, 1.4, 4);
+    poolBlock.castShadow = true;
+    poolBlock.userData = { title: "2×2 Max-Pooling Unit (Stride 2)", desc: "Downsamples feature dimensions 28×28 → 14×14 (4× reduction)", status: "Pipelined 1 Cycle Latency" };
+    postGroup.add(poolBlock);
+    interactiveObjects.push(poolBlock);
+
+    // =========================================================================
+    // 7. SOC BUS & PHYSICAL PERIPHERALS (OLED HEX0 + LEDR)
+    // =========================================================================
+    const socGroup = new THREE.Group();
+    socGroup.position.set(38, 0, 4);
+    scene.add(socGroup);
+
+    // AXI4-Lite Interconnect Bridge
+    const axiBridgeGeo = new THREE.BoxGeometry(3, 1.6, 16);
+    const axiBridgeMat = new THREE.MeshStandardMaterial({
+      color: 0x3b82f6,
+      metalness: 0.8,
+      roughness: 0.2,
+      emissive: 0x3b82f6,
+      emissiveIntensity: 0.4
+    });
+    const axiBridge = new THREE.Mesh(axiBridgeGeo, axiBridgeMat);
+    axiBridge.position.set(0, 0.8, 0);
+    axiBridge.userData = { title: "AMBA AXI4-Lite Crossbar Interconnect", desc: "Connects PicoRV32 CPU, MMIO registers & FPGA peripherals", status: "Protocol: 32-bit Memory-Mapped" };
+    socGroup.add(axiBridge);
+    interactiveObjects.push(axiBridge);
+
+    // OLED 7-Segment Display Physical Mockup
+    const hexBoxGeo = new THREE.BoxGeometry(3.5, 4.0, 2.5);
+    const hexBoxMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0c, roughness: 0.5 });
+    const hexBox = new THREE.Mesh(hexBoxGeo, hexBoxMat);
+    hexBox.position.set(5.5, 2.0, -3);
+    hexBox.castShadow = true;
+    hexBox.userData = { title: "FPGA 7-Segment Display (HEX0)", desc: "Displays classified MNIST digit in real-time", status: "Predicted Digit Output: 8" };
+    socGroup.add(hexBox);
+    interactiveObjects.push(hexBox);
+
+    // 10 LEDR Indicators
+    const ledStripGeo = new THREE.BoxGeometry(3.5, 1.2, 5.5);
+    const ledStripMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.7 });
+    const ledStrip = new THREE.Mesh(ledStripGeo, ledStripMat);
+    ledStrip.position.set(5.5, 0.6, 3);
+    ledStrip.userData = { title: "LEDR[9:0] Confidence Indicators", desc: "10 on-board LEDs encoding argmax confidence", status: "LEDR[8] Active (High)" };
+    socGroup.add(ledStrip);
+    interactiveObjects.push(ledStrip);
+
+    // =========================================================================
+    // DYNAMIC DATA PACKET PARTICLES (FLOWING THROUGH ARCHITECTURE)
+    // =========================================================================
+    const particleCount = 120;
+    const particleGeo = new THREE.SphereGeometry(0.25, 8, 8);
+
+    // Cyan Particles (Row A Weights)
+    const pMatA = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+    const particlesA = [];
+    for (let i = 0; i < particleCount / 2; i++) {
+      const p = new THREE.Mesh(particleGeo, pMatA);
+      p.position.set(-14 + Math.random() * 22, 1.4, (Math.floor(Math.random() * 8) - 3.5) * 2.0 + 4);
+      scene.add(p);
+      particlesA.push({ mesh: p, speed: 0.12 + Math.random() * 0.08, startX: -14, endX: 12 });
+    }
+
+    // Amber Particles (Col B Inputs)
+    const pMatB = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+    const particlesB = [];
+    for (let i = 0; i < particleCount / 2; i++) {
+      const p = new THREE.Mesh(particleGeo, pMatB);
+      p.position.set((Math.floor(Math.random() * 8) - 3.5) * 2.0 + 4, 1.4, -14 + Math.random() * 22);
+      scene.add(p);
+      particlesB.push({ mesh: p, speed: 0.12 + Math.random() * 0.08, startZ: -14, endZ: 12 });
+    }
+
+    // =========================================================================
+    // INTERACTIVE RAYCASTING (HOVER TOOLTIP)
+    // =========================================================================
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const tooltip = document.getElementById('tooltip-3d');
+    const ttTitle = document.getElementById('tt-title');
+    const ttDesc = document.getElementById('tt-desc');
+    const ttStatus = document.getElementById('tt-status');
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(interactiveObjects, false);
+
+      if (intersects.length > 0) {
+        const obj = intersects[0].object;
+        if (obj.userData && obj.userData.title) {
+          tooltip.style.display = 'block';
+          tooltip.style.left = (e.clientX + 14) + 'px';
+          tooltip.style.top = (e.clientY + 14) + 'px';
+          ttTitle.textContent = obj.userData.title;
+          ttDesc.textContent = obj.userData.desc;
+          ttStatus.textContent = obj.userData.status;
+        }
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+
+    // =========================================================================
+    // WORKFLOW STAGE STEPPER & CAMERA CONTROLLER
+    // =========================================================================
+    let targetCamPos = { x: -35, y: 32, z: -30 };
+    let targetCamLook = { x: -18, y: 0, z: -18 };
+
+    function goToStage(idx) {
+      currentStage = Math.max(0, Math.min(STAGES.length - 1, idx));
+      const st = STAGES[currentStage];
+
+      // Update UI elements
+      document.getElementById('stageBadge').textContent = st.badge;
+      document.getElementById('stageTitle').textContent = st.title;
+      document.getElementById('stageDesc').textContent = st.desc;
+      document.getElementById('stageFormula').textContent = st.formula;
+      document.getElementById('activeModulesBox').innerHTML = st.modules;
+
+      // Update timeline dots
+      document.querySelectorAll('.step-dot').forEach((dot, i) => {
+        if (i === currentStage) dot.classList.add('active');
+        else dot.classList.remove('active');
+      });
+
+      // Smooth camera transition target
+      targetCamPos = { ...st.camPos };
+      targetCamLook = { ...st.camLook };
+    }
+
+    function stepStage(delta) {
+      let next = currentStage + delta;
+      if (next < 0) next = STAGES.length - 1;
+      if (next >= STAGES.length) next = 0;
+      goToStage(next);
+    }
+
+    function toggleAutoPlay() {
+      isAutoPlaying = !isAutoPlaying;
+      const icon = document.getElementById('playIcon');
+      const text = document.getElementById('playText');
+      const btn = document.getElementById('btnPlayPause');
+
+      if (isAutoPlaying) {
+        icon.className = 'bi bi-pause-fill me-1';
+        text.textContent = 'Pause Tour';
+        btn.classList.replace('btn-primary', 'btn-warning');
+        runAutoTour();
+      } else {
+        icon.className = 'bi bi-play-fill me-1';
+        text.textContent = 'Auto Tour';
+        btn.classList.replace('btn-warning', 'btn-primary');
+        clearTimeout(autoPlayTimer);
+      }
+    }
+
+    function runAutoTour() {
+      if (!isAutoPlaying) return;
+      stepStage(1);
+      autoPlayTimer = setTimeout(runAutoTour, tourIntervalMs);
+    }
+
+    function updateTourSpeed() {
+      tourSpeed = parseInt(document.getElementById('tourSpeed').value);
+      if (isAutoPlaying) {
+        clearTimeout(autoPlayTimer);
+        autoPlayTimer = setTimeout(runAutoTour, tourIntervalMs);
+      }
+    }
+
+    function setCameraPreset(preset) {
+      document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (preset === 'isometric') {
+        targetCamPos = { x: 0, y: 40, z: 42 };
+        targetCamLook = { x: 5, y: 0, z: 0 };
+      } else if (preset === 'top') {
+        targetCamPos = { x: 5, y: 75, z: 0.1 };
+        targetCamLook = { x: 5, y: 0, z: 0 };
+      } else if (preset === 'input') {
+        targetCamPos = { x: -25, y: 24, z: -25 };
+        targetCamLook = { x: -16, y: 0, z: -16 };
+      } else if (preset === 'skew') {
+        targetCamPos = { x: -12, y: 22, z: -10 };
+        targetCamLook = { x: 0, y: 0, z: 0 };
+      } else if (preset === 'systolic') {
+        targetCamPos = { x: 4, y: 28, z: 24 };
+        targetCamLook = { x: 4, y: 0, z: 4 };
+      } else if (preset === 'output') {
+        targetCamPos = { x: 28, y: 22, z: 12 };
+        targetCamLook = { x: 20, y: 0, z: 4 };
+      }
+    }
+
+    function toggleHelpModal() {
+      const modal = new bootstrap.Modal(document.getElementById('helpModal'));
+      modal.show();
+    }
+
+    // =========================================================================
+    // ANIMATION RENDER LOOP (WAVEFRONT SWEEP & CAMERA LERP)
+    // =========================================================================
+    let clock = new THREE.Clock();
+    let simTime = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      simTime += delta;
+
+      // 1. Smooth Camera LERP to Target
+      camera.position.x += (targetCamPos.x - camera.position.x) * 0.05;
+      camera.position.y += (targetCamPos.y - camera.position.y) * 0.05;
+      camera.position.z += (targetCamPos.z - camera.position.z) * 0.05;
+
+      controls.target.x += (targetCamLook.x - controls.target.x) * 0.05;
+      controls.target.y += (targetCamLook.y - controls.target.y) * 0.05;
+      controls.target.z += (targetCamLook.z - controls.target.z) * 0.05;
+      controls.update();
+
+      // 2. Animate 3x3 Sliding Window on Input Image
+      const winCycle = simTime * 1.5;
+      rfWindow.position.x = -2.2 + Math.sin(winCycle) * 2.2;
+      rfWindow.position.z = -2.2 + Math.cos(winCycle * 0.7) * 2.2;
+
+      // 3. Animate 64-PE Wavefront Glow (45-degree diagonal sweep)
+      const currentWavefront = Math.floor((simTime * 4.5) % 15);
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const dist = r + c;
+          const pe = peMeshes[r][c];
+          if (dist === currentWavefront) {
+            pe.material.emissiveIntensity = 0.95;
+            pe.material.color.setHex(0x22c55e);
+            pe.position.y = 1.35; // Slight physical lift on active MAC!
+          } else if (dist < currentWavefront) {
+            pe.material.emissiveIntensity = 0.25;
+            pe.material.color.setHex(0x15803d);
+            pe.position.y = 1.0;
+          } else {
+            pe.material.emissiveIntensity = 0.08;
+            pe.material.color.setHex(0x0f3b1e);
+            pe.position.y = 1.0;
+          }
+        }
+      }
+
+      // 4. Animate Flowing Data Particles
+      particlesA.forEach(p => {
+        p.mesh.position.x += p.speed;
+        if (p.mesh.position.x > p.endX) p.mesh.position.x = p.startX;
+      });
+
+      particlesB.forEach(p => {
+        p.mesh.position.z += p.speed;
+        if (p.mesh.position.z > p.endZ) p.mesh.position.z = p.startZ;
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    // Window Resize Handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Start Animation Loop on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      goToStage(0);
+      animate();
+    });
+  </script>
+</body>
+</html>
