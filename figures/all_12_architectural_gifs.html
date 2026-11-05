@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bộ 12 Ảnh Động Kiến Trúc Vi Mạch - Bộ Tăng Tốc Tâm Thu CNN 64 PE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1e293b;
+      --card-hover: #334155;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      padding: 30px 40px;
+      line-height: 1.5;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 28px;
+    }
+    .header-left h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-left h1 span.badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .header-left p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+    .btn-primary:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--card-hover);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .card-header {
+      padding: 16px 18px 12px 18px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .card-title-group h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .card-title-group p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .card-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+    .tag-cyan { background: rgba(56, 189, 248, 0.15); color: var(--cyan); border: 1px solid var(--cyan); }
+    .tag-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid var(--emerald); }
+    .tag-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid var(--amber); }
+    .tag-rose { background: rgba(244, 63, 94, 0.15); color: var(--rose); border: 1px solid var(--rose); }
+    .tag-purple { background: rgba(168, 85, 247, 0.15); color: var(--purple); border: 1px solid var(--purple); }
+
+    .card-media {
+      position: relative;
+      background: #000;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .zoom-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(11, 15, 25, 0.85);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--card-border);
+      pointer-events: none;
+    }
+    .card-body {
+      padding: 14px 18px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .card-meta-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .card-meta-list li {
+      font-size: 12px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-meta-list li::before {
+      content: "•";
+      color: var(--cyan);
+      font-weight: bold;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .file-size {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .card-action-links {
+      display: flex;
+      gap: 10px;
+    }
+    .link-btn {
+      font-size: 12px;
+      color: var(--cyan);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link-btn:hover { text-decoration: underline; }
+
+    /* Lightbox Modal */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 8px;
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+    }
+    .lightbox-caption {
+      margin-top: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 24px;
+      right: 32px;
+      font-size: 32px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .lightbox-close:hover { color: var(--rose); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <h1>Thư Viện Toàn Diện 17 Ảnh Động Kiến Trúc Vi Mạch <span class="badge">17/17 GIFS READY</span></h1>
+      <p>Mô phỏng chu trình dữ liệu, kiến trúc vi mô và kiểm chứng phần cứng bộ tăng tốc tâm thu 64 PE cho luận văn tốt nghiệp</p>
+    </div>
+    <div class="header-actions">
+      <a href="visual_architecture_portal.html" class="btn btn-primary">
+        <span>🌐 Mở Cổng Kỹ Thuật Toàn Diện</span>
+      </a>
+      <a href="visual_architecture_portal.html#tab_cnn" class="btn">
+        <span>▶ CNN Studio Tab 4</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterGifs('all')">Tất Cả (17)</button>
+    <button class="filter-btn" onclick="filterGifs('deep')">⭐ Chuyên Sâu Luận Văn (5 Mới)</button>
+    <button class="filter-btn" onclick="filterGifs('algo')">Thuật Toán & Lượng Tử (01 - 04)</button>
+    <button class="filter-btn" onclick="filterGifs('core')">Lõi Tâm Thu 64 PE (05 - 08)</button>
+    <button class="filter-btn" onclick="filterGifs('soc')">SoC, AXI & Kiểm Chứng (09 - 12)</button>
+  </div>
+
+  <div class="grid" id="gifGrid">
+
+    <!-- DEEP DIVE 1: Memory Wall -->
+    <div class="card" data-category="deep">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>⭐ Nút Thắt Cổ Chai Memory Wall</h3>
+          <p>Von Neumann CPU vs. Systolic Array</p>
+        </div>
+        <span class="card-tag tag-rose">Memory Wall</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('memory_wall_von_neumann.gif', 'Nút Thắt Cổ Chai Bộ Nhớ (Memory Wall) Trong Von Neumann vs. Bộ Tăng Tốc Tâm Thu')">
+        <img src="memory_wall_von_neumann.gif" alt="Memory Wall Von Neumann">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">CPU Von Neumann bị nghẽn bus và stall 90% thời gian khi đọc/ghi DRAM ngoài. Mảng tâm thu phá bỏ Memory Wall nhờ tái sử dụng trọng số tại chỗ và PE-to-PE routing.</p>
+        <ul class="card-meta-list">
+          <li>Von Neumann: 2 × N³ lần đọc DRAM (ALU nghẽn nặng)</li>
+          <li>Mảng tâm thu: Nạp 1 lần vào SRAM, giảm 98× DRAM read</li>
+          <li>Cắt giảm 95% năng lượng tiêu hao trên bus ngoài</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">156.7 KB | 7 Frames</span>
+          <div class="card-action-links">
+            <a href="memory_wall_von_neumann.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_tiling" class="link-btn">Xem Tab 2</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEEP DIVE 2: Generic CNN -->
+    <div class="card" data-category="deep">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>⭐ Sơ Đồ Kiến Trúc Mạng CNN Tổng Quát</h3>
+          <p>Generic Deep Learning Pipeline</p>
+        </div>
+        <span class="card-tag tag-cyan">Deep CNN</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('neural_network_general_architecture.gif', 'Sơ Đồ Kiến Trúc Mạng Nơ-ron Chập Tổng Quát (Generic Deep CNN Pipeline)')">
+        <img src="neural_network_general_architecture.gif" alt="Generic CNN Architecture">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Dòng chảy toán học xuyên suốt của mạng nơ-ron chập sâu: Input Tensor → Conv2D → ReLU → MaxPool 2×2 → Deep Layers → Flatten 1D → Dense FC GEMM → Softmax Argmax.</p>
+        <ul class="card-meta-list">
+          <li>Ánh xạ 100% tầng Conv2D và Dense FC sang phép toán GEMM</li>
+          <li>Kỹ thuật im2col trải phẳng cửa sổ trượt thành vector cột B</li>
+          <li>Mô hình lượng tử hóa INT8 cố định bảo toàn độ chính xác cao</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">185.8 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="neural_network_general_architecture.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_im2col" class="link-btn">Xem Tab 1</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEEP DIVE 3: SoC Architecture -->
+    <div class="card" data-category="deep">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>⭐ Kiến Trúc Hệ Thống Trên Chip (SoC)</h3>
+          <p>PicoRV32 + AXI4-Lite + Accelerator</p>
+        </div>
+        <span class="card-tag tag-emerald">Full SoC</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('soc_general_architecture.gif', 'Kiến Trúc Hệ Thống Trên Chip SoC Tổng Quát (soc_top_de2 / de10)')">
+        <img src="soc_general_architecture.gif" alt="SoC Top-Level Architecture">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Sơ đồ khối toàn diện trên chip FPGA: Vi xử lý Host RISC-V PicoRV32 điều phối qua bus AMBA AXI4-Lite với Lõi tăng tốc 64 PE, SRAM 256B, 8 bộ lượng tử SIMD và ngoại vi.</p>
+        <ul class="card-meta-list">
+          <li>Phân xử bus AXI4-Lite đa kênh với cơ chế chống deadlock</li>
+          <li>Gia tốc toàn hệ thống 173.7× so với chạy phần mềm RISC-V</li>
+          <li>Đồng bộ tín hiệu ngoại vi UART, GPIO, HEX0 và LEDR</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">221.8 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="soc_general_architecture.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_soc_mmio" class="link-btn">Xem Tab 10</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEEP DIVE 4: UVM Internal Communication -->
+    <div class="card" data-category="deep">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>⭐ Giao Tiếp Nội Bộ UVM 1.1c (TLM)</h3>
+          <p>Sequence → Driver → Monitor → Scoreboard</p>
+        </div>
+        <span class="card-tag tag-purple">TLM Bus</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('uvm_internal_communication.gif', 'Kiến Trúc Giao Tiếp Nội Bộ UVM 1.1c Qua Các Cổng TLM, Analysis Ports và Scoreboard')">
+        <img src="uvm_internal_communication.gif" alt="UVM Internal Communication">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Mô hình hóa chi tiết luồng dữ liệu TLM chuẩn IEEE 1800: Phân phối item qua Sequencer, Driver lái tín hiệu vào gemm_if, Monitor thu thập và broadcast song song sang Scoreboard & Coverage.</p>
+        <ul class="card-meta-list">
+          <li>Cơ chế TLM Decoupling phân tách triệt để luồng lái và chấm điểm</li>
+          <li>Scoreboard đối soát bit-true từng phần tử với Python Golden Model</li>
+          <li>Đóng kín 100.00% Functional Coverage (88/88 bins)</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">185.7 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="uvm_internal_communication.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_uvm" class="link-btn">Xem Tab 12</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEEP DIVE 5: Gen-1 vs Gen-2 Deep Dive -->
+    <div class="card" data-category="deep">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>⭐ Gen-1 vs Gen-2: Vì Sao Chạy Nhanh Hơn?</h3>
+          <p>Serial Bottleneck vs 8-Channel SIMD Drain</p>
+        </div>
+        <span class="card-tag tag-emerald">+60.2% Speedup</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('gen1_vs_gen2_deep_dive.gif', 'Phân Tích Chuyên Sâu Cơ Chế Hoạt Động Gen-1 vs Gen-2: Vì Sao Gen-2 Nhanh Hơn?')">
+        <img src="gen1_vs_gen2_deep_dive.gif" alt="Gen-1 vs Gen-2 Deep Dive">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Phân tích vi kiến trúc chuyên sâu: Cả 2 đều dùng 22 chu kỳ MAC, nhưng Gen-1 nghẽn ở khâu Drain 64 chu kỳ (1 quantizer). Gen-2 dùng 8 quantizer SIMD xả 8 cột trong 8 chu kỳ kết hợp bus 32-bit (4-INT8).</p>
+        <ul class="card-meta-list">
+          <li>Gen-1: 15 load + 22 MAC + 64 drain = 101 chu kỳ</li>
+          <li>Gen-2: 7 load + 22 MAC + 8 SIMD drain = 37 chu kỳ (-63.4%)</li>
+          <li>Tăng tốc lõi +60.2% throughput và giảm 4× giao dịch bus</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">177.2 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="gen1_vs_gen2_deep_dive.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_gen1_gen2" class="link-btn">Xem Tab 8</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 01: im2col -->
+    <div class="card" data-category="algo">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>01. Thuật Toán im2col & GEMM</h3>
+          <p>RTL/matrix_buffer_a.sv</p>
+        </div>
+        <span class="card-tag tag-cyan">Bit-True</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('01_im2col_convolution_mapping.gif', '01. Thuật Toán im2col & Ánh Xạ Convolution Sang GEMM')">
+        <img src="01_im2col_convolution_mapping.gif" alt="im2col Mapping">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Trải phẳng cửa sổ trượt 3×3 thành các cột vector B [9×1], biến phép tích chập không gian thành phép nhân ma trận thuần túy trên mảng tâm thu.</p>
+        <ul class="card-meta-list">
+          <li>Loại bỏ hoàn toàn 4 vòng lặp for lồng nhau</li>
+          <li>Khai thác 100% tài nguyên tính toán của 64 PE</li>
+          <li>Tích lũy kết quả trực tiếp vào feature map ngõ ra</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">163.4 KB | 9 Frames</span>
+          <div class="card-action-links">
+            <a href="01_im2col_convolution_mapping.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_im2col" class="link-btn">Xem Tab 1</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02: Tiling Engine -->
+    <div class="card" data-category="algo">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>02. Chiến Lược Tiling Engine</h3>
+          <p>software_ref/tiling_engine.py</p>
+        </div>
+        <span class="card-tag tag-emerald">98x Reuse</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('02_matrix_tiling_engine.gif', '02. Chiến Lược Chia Khối Ma Trận Lớn (Tiling Engine)')">
+        <img src="02_matrix_tiling_engine.gif" alt="Matrix Tiling Engine">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Chia nhỏ ma trận trọng số và ma trận đầu vào thành các sub-tile 8×9 và 9×8 vừa vặn bộ đệm SRAM on-chip, tối ưu hóa băng thông DRAM ngoài.</p>
+        <ul class="card-meta-list">
+          <li>Cố định Tile A0 trong buffer, tái sử dụng liên tục 98 lần</li>
+          <li>Giảm 98 lần số lần đọc lại DRAM ngoài</li>
+          <li>Chỉ cần 256 bytes SRAM on-chip (128B Buffer A, 128B Buffer B)</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">171.1 KB | 10 Frames</span>
+          <div class="card-action-links">
+            <a href="02_matrix_tiling_engine.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_tiling" class="link-btn">Xem Tab 2</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03: Quantization Pipeline -->
+    <div class="card" data-category="algo">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>03. Chuỗi Biến Đổi Số Học & Không Tràn Số</h3>
+          <p>INT8 in → INT16 mult → INT32 acc</p>
+        </div>
+        <span class="card-tag tag-amber">Zero Overflow</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('03_quantization_overflow_pipeline.gif', '03. Chuỗi Biến Đổi Số Học & Bảo Đảm Không Tràn Số')">
+        <img src="03_quantization_overflow_pipeline.gif" alt="Quantization Pipeline">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Mở rộng độ rộng bit qua từng công đoạn tính toán: Nhân 16-bit, tích lũy 32-bit, dịch phải số học fixed-point và kẹp bão hòa (clamp) về INT8.</p>
+        <ul class="card-meta-list">
+          <li>Phân tích Worst-case: Tích lũy cực đại 131,072 &lt;&lt; 2,147,483,647</li>
+          <li>Dư biên độ an toàn tới 14-bit (100% không tràn số)</li>
+          <li>Bảo toàn nguyên vẹn độ chính xác suy luận mô hình</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">167.9 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="03_quantization_overflow_pipeline.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_quant" class="link-btn">Xem Tab 3</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04: CNN MNIST Pipeline -->
+    <div class="card" data-category="algo">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>04. Dòng Chảy Suy Luận CNN MNIST</h3>
+          <p>Conv1 → ReLU → Pool → FC → Argmax</p>
+        </div>
+        <span class="card-tag tag-emerald">Acc 97.06%</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('04_cnn_mnist_inference.gif', '04. Dòng Chảy Suy Luận Mạng CNN End-to-End')">
+        <img src="04_cnn_mnist_inference.gif" alt="CNN MNIST Inference">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Toàn bộ quy trình suy luận chữ số viết tay MNIST qua 7 giai đoạn tăng tốc phần cứng, xuất trực tiếp ra màn hình LED 7 đoạn HEX0 và LEDR[9:0].</p>
+        <ul class="card-meta-list">
+          <li>Ảnh 28×28 INT8 chuẩn hóa [-128, +127]</li>
+          <li>Dự đoán chính xác 10/10 mẫu với độ tin cậy 100.0%</li>
+          <li>Đèn LED 7 đoạn HEX0 và LEDR[8] sáng đồng bộ với RTL</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">169.5 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="04_cnn_mnist_inference.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_cnn" class="link-btn">Xem Tab 4</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05: Skew Unit -->
+    <div class="card" data-category="core">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>05. Mạng Lệch Pha Nhịp Sóng Skew Unit</h3>
+          <p>RTL/systolic_skew_unit.sv</p>
+        </div>
+        <span class="card-tag tag-cyan">Wavefront Sync</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('05_skew_wavefront_alignment.gif', '05. Mạng Lệch Pha Nhịp Sóng Bậc Thang (Skew Unit)')">
+        <img src="05_skew_wavefront_alignment.gif" alt="Skew Wavefront Alignment">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Bậc thang D-Flip-Flop trễ 0T..7T chu kỳ làm lệch pha dữ liệu hàng và cột, tạo mặt sóng chéo 45 độ lan truyền nhịp nhàng qua 64 PE.</p>
+        <ul class="card-meta-list">
+          <li>Toán hạng A và B gặp nhau chính xác tại chu kỳ T = i + j + k</li>
+          <li>Triệt tiêu hoàn toàn xung đột đường truyền (Bus Congestion)</li>
+          <li>100% kết nối cục bộ lân cận (Nearest-Neighbor)</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">207.1 KB | 14 Frames</span>
+          <div class="card-action-links">
+            <a href="05_skew_wavefront_alignment.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_skew" class="link-btn">Xem Tab 5</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06: PE Microarchitecture -->
+    <div class="card" data-category="core">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>06. Cấu Trúc Vi Mô Phần Tử Xử Lý (PE)</h3>
+          <p>RTL/pe_gemm.sv | Output-Stationary</p>
+        </div>
+        <span class="card-tag tag-emerald">1 MAC / Cycle</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('06_pe_microarchitecture.gif', '06. Cấu Trúc Vi Mô Phần Tử Xử Lý (PE Datapath)')">
+        <img src="06_pe_microarchitecture.gif" alt="PE Microarchitecture">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Sơ đồ vi mô chi tiết của một Processing Element: Bộ nhân 8×8 có dấu, bộ cộng 32-bit và thanh ghi tích lũy lưu giữ kết quả tại chỗ không cần RAM.</p>
+        <ul class="card-meta-list">
+          <li>1 Chu kỳ hoàn thành 1 phép nhân tích lũy MAC</li>
+          <li>Chuyển tiếp toán hạng a_out sang phải và b_out xuống dưới</li>
+          <li>Tín hiệu drain c_out trích xuất kết quả 32-bit khi hoàn tất</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">122.0 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="06_pe_microarchitecture.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_pe" class="link-btn">Xem Tab 6</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07: Systolic Array 64 PE -->
+    <div class="card" data-category="core">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>07. Mảng Tâm Thu 64 PE & FSM</h3>
+          <p>RTL/systolic_array_core.sv</p>
+        </div>
+        <span class="card-tag tag-rose">37 Cycles</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('07_systolic_array_64pe_mesh.gif', '07. Mảng Tâm Thu 64 PE Hoàn Chỉnh & FSM Controller')">
+        <img src="07_systolic_array_64pe_mesh.gif" alt="64-PE Systolic Array">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Lưới 8×8 đầy đủ 64 PE thực hiện chu trình tính toán 37 chu kỳ clock từ Load → Skew → Compute → SIMD Drain → Writeback.</p>
+        <ul class="card-meta-list">
+          <li>Mặt sóng tính toán quét chéo từ PE(0,0) xuống PE(7,7)</li>
+          <li>8 Quantizer SIMD song song xả hàng loạt 8 cột ngõ ra</li>
+          <li>Hiệu năng đỉnh 4.45 GOP/s tại tần số 69.49 MHz</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">152.1 KB | 10 Frames</span>
+          <div class="card-action-links">
+            <a href="07_systolic_array_64pe_mesh.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_array64" class="link-btn">Xem Tab 7</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08: Gen-1 vs Gen-2 -->
+    <div class="card" data-category="core">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>08. Bước Nhảy Vọt Kiến Trúc: Gen-1 vs Gen-2</h3>
+          <p>Serial Bottleneck vs Parallel SIMD</p>
+        </div>
+        <span class="card-tag tag-emerald">+60.2% Speedup</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('08_gen1_vs_gen2_evolution.gif', '08. Bước Nhảy Vọt Kiến Trúc: Gen-1 vs. Gen-2')">
+        <img src="08_gen1_vs_gen2_evolution.gif" alt="Gen-1 vs Gen-2 Evolution">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Cuộc đua hiệu năng giữa Gen-1 (101 chu kỳ, 1 quantizer đơn lẻ) và Gen-2 (37 chu kỳ, 8 quantizer SIMD, đóng gói 4-INT8 vào word 32-bit).</p>
+        <ul class="card-meta-list">
+          <li>Giảm độ trễ tính toán tới 63.4% (101 chu kỳ → 37 chu kỳ)</li>
+          <li>Tăng tốc lõi vi mạch +60.2% throughput thực tế</li>
+          <li>Giảm 4 lần số chu kỳ truyền nhận dữ liệu trên bus</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">153.6 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="08_gen1_vs_gen2_evolution.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_gen1_gen2" class="link-btn">Xem Tab 8</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 09: AXI Deadlock Immunity -->
+    <div class="card" data-category="soc">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>09. Bus AXI4-Lite & Cơ Chế Khóa Tự Vệ</h3>
+          <p>RTL/systolic_gemm_axi_lite.sv</p>
+        </div>
+        <span class="card-tag tag-emerald">Deadlock Immune</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('09_axi_handshake_deadlock.gif', '09. Bus AMBA AXI4-Lite & Cơ Chế Khóa Tự Vệ')">
+        <img src="09_axi_handshake_deadlock.gif" alt="AXI Deadlock Immunity">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Cơ chế chốt độc lập aw_received và w_received giải quyết triệt để nguy cơ deadlock khi Master phát dữ liệu trước địa chỉ dưới áp lực backpressure.</p>
+        <ul class="card-meta-list">
+          <li>Decoupled Address & Data channel hoàn toàn độc lập</li>
+          <li>Vượt qua 100% các kịch bản kiểm thử ép xung AXI Stress Test</li>
+          <li>Đảm bảo hệ thống SoC không bao giờ bị treo bus</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">145.0 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="09_axi_handshake_deadlock.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_axi" class="link-btn">Xem Tab 9</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10: SoC MMIO & Firmware -->
+    <div class="card" data-category="soc">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>10. Bản Đồ Bộ Nhớ MMIO & Firmware C</h3>
+          <p>RTL/soc_top_de2.sv | Host: PicoRV32</p>
+        </div>
+        <span class="card-tag tag-cyan">173.7x Speedup</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('10_soc_mmio_firmware.gif', '10. Bản Đồ Bộ Nhớ MMIO & Firmware C Điều Khiển')">
+        <img src="10_soc_mmio_firmware.gif" alt="SoC MMIO Firmware">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Hệ thống vi xử lý RISC-V PicoRV32 điều khiển bộ tăng tốc phần cứng qua các thanh ghi MMIO (REG_CTRL, REG_STATUS, PERF_CYCLES).</p>
+        <ul class="card-meta-list">
+          <li>Tăng tốc toàn hệ thống 173.7x so với phần mềm thuần</li>
+          <li>Giảm chu kỳ tính toán từ 12,850 xuống chỉ còn 74 chu kỳ</li>
+          <li>Tiết kiệm 99.4% năng lượng tiêu thụ trên vi xử lý</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">204.1 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="10_soc_mmio_firmware.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_soc_mmio" class="link-btn">Xem Tab 10</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11: FPGA Synthesis & STA -->
+    <div class="card" data-category="soc">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>11. Tổng Hợp FPGA & Timing Closure</h3>
+          <p>Altera DE2 & Terasic DE10-Lite</p>
+        </div>
+        <span class="card-tag tag-emerald">TNS = 0.000 ns</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('11_fpga_synth_timing.gif', '11. Báo Cáo Tổng Hợp FPGA & Timing Closure DE2 / DE10')">
+        <img src="11_fpga_synth_timing.gif" alt="FPGA Synthesis and Timing">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Báo cáo tổng hợp Quartus Prime 18.1 và phân tích thời gian tĩnh STA: Tiết kiệm tối đa tài nguyên Logic và khép kín Timing hoàn hảo.</p>
+        <ul class="card-meta-list">
+          <li>Chỉ dùng 2,842 / 33,216 LEs (8.6% tài nguyên chip)</li>
+          <li>FMAX đạt 69.49 MHz (Xung nhịp hệ thống 50 MHz)</li>
+          <li>Setup Slack dương +1.842 ns, TNS = 0.000 ns, 0 Violations</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">154.8 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="11_fpga_synth_timing.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_synth" class="link-btn">Xem Tab 11</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12: UVM 1.1c Verification -->
+    <div class="card" data-category="soc">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h3>12. Kim Tự Tháp Kiểm Chứng UVM 1.1c</h3>
+          <p>IEEE 1800 UVM | Waveform Viewer</p>
+        </div>
+        <span class="card-tag tag-emerald">100% Coverage</span>
+      </div>
+      <div class="card-media" onclick="openLightbox('12_uvm_verification_waveform.gif', '12. Kim Tự Tháp Kiểm Chứng UVM 1.1c & Waveform Viewer')">
+        <img src="12_uvm_verification_waveform.gif" alt="UVM Verification and Waveform">
+        <span class="zoom-hint">🔍 Phóng to</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Kiểm chứng toàn diện chuẩn công nghiệp UVM 1.1c với 10,000 ca kiểm thử ngẫu nhiên có ràng buộc và trình xem dạng sóng logic tương tác.</p>
+        <ul class="card-meta-list">
+          <li>10,000 / 10,000 Tests trùng khớp bit-true mô hình toán Python</li>
+          <li>Đóng kín 100.00% Functional Coverage (88/88 bins)</li>
+          <li>Dạng sóng logic trực quan hóa các đường bus clk, start, busy, valid</li>
+        </ul>
+        <div class="card-footer">
+          <span class="file-size">141.4 KB | 8 Frames</span>
+          <div class="card-action-links">
+            <a href="12_uvm_verification_waveform.gif" download class="link-btn">Tải GIF</a>
+            <a href="visual_architecture_portal.html#tab_uvm" class="link-btn">Xem Tab 12</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightboxImg" src="" alt="Lightbox">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+  <script>
+    function filterGifs(cat) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(c => {
+        if (cat === 'all' || c.getAttribute('data-category') === cat) {
+          c.style.display = 'flex';
+        } else {
+          c.style.display = 'none';
+        }
+      });
+    }
+
+    function openLightbox(src, caption) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightboxCaption').textContent = caption;
+      document.getElementById('lightbox').classList.add('active');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
+</body>
+</html>
