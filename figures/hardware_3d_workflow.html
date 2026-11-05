@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Hardware Architecture & End-to-End Silicon Workflow — CNN Systolic SoC</title>
+  <title>VLSI Silicon Floorplan & Hardware Architecture — CNN Systolic SoC</title>
 
-  <!-- Google Fonts: Inter & Fira Code -->
+  <!-- Google Fonts: Inter & JetBrains Mono / Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Bootstrap 5 & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -26,20 +26,25 @@
 
   <style>
     :root {
-      --bg-ground: #06080d;
-      --bg-panel: rgba(13, 17, 24, 0.92);
-      --border-panel: rgba(240, 246, 252, 0.12);
-      --accent-cyan: #38bdf8;
-      --accent-emerald: #10b981;
-      --accent-gold: #f59e0b;
-      --accent-rose: #f43f5e;
-      --accent-purple: #a855f7;
+      --eda-bg: #07090e;
+      --eda-surface: rgba(11, 15, 23, 0.94);
+      --eda-border: rgba(255, 255, 255, 0.09);
+      --eda-border-focus: rgba(56, 189, 248, 0.4);
+      --eda-cyan: #38bdf8;
+      --eda-gold: #eab308;
+      --eda-emerald: #10b981;
+      --eda-amber: #f59e0b;
+      --eda-rose: #f43f5e;
+      --eda-copper: #c27803;
+      --eda-text-main: #f1f5f9;
+      --eda-text-muted: #94a3b8;
+      --eda-text-dim: #64748b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg-ground);
-      color: #e6edf3;
+      background: var(--eda-bg);
+      color: var(--eda-text-main);
       font-family: 'Inter', -apple-system, sans-serif;
       overflow: hidden;
       width: 100vw;
@@ -51,93 +56,94 @@
       width: 100vw;
       height: 100vh;
       display: block;
-      cursor: grab;
+      cursor: crosshair;
     }
-    #webgl-canvas:active { cursor: grabbing; }
 
-    /* Top Navigation HUD */
-    .top-hud-bar {
+    /* Top EDA CAD Header */
+    .eda-top-bar {
       position: absolute;
-      top: 14px;
-      left: 18px;
-      right: 18px;
+      top: 12px;
+      left: 16px;
+      right: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       pointer-events: none;
       z-index: 30;
     }
-    .hud-box {
-      background: var(--bg-panel);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border-panel);
-      border-radius: 8px;
-      padding: 9px 15px;
+    .eda-panel {
+      background: var(--eda-surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--eda-border);
+      border-radius: 6px;
+      padding: 7px 14px;
       pointer-events: auto;
-      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
     }
-    .hud-title {
-      font-size: 0.92rem;
+    .eda-brand {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.82rem;
       font-weight: 700;
-      letter-spacing: -0.01em;
+      letter-spacing: 0.04em;
+      color: #f8fafc;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .hud-chip {
-      font-family: 'Fira Code', monospace;
-      font-size: 0.7rem;
+    .eda-badge {
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
       background: rgba(56, 189, 248, 0.12);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      padding: 2px 7px;
-      border-radius: 4px;
+      color: var(--eda-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      padding: 1px 7px;
+      border-radius: 3px;
       font-weight: 600;
     }
 
-    /* Left CAD Camera View Angle Toolbar */
-    .cam-toolbar {
+    /* Left CAD Navigation Toolbar */
+    .eda-cam-toolbar {
       position: absolute;
-      top: 72px;
-      left: 18px;
+      top: 66px;
+      left: 16px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       z-index: 30;
     }
-    .cam-btn {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-panel);
-      color: #8b949e;
-      font-size: 0.74rem;
-      font-family: 'Fira Code', monospace;
-      padding: 7px 12px;
-      border-radius: 6px;
+    .eda-btn {
+      background: var(--eda-surface);
+      border: 1px solid var(--eda-border);
+      color: var(--eda-text-muted);
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 6px 11px;
+      border-radius: 5px;
       text-align: left;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       transition: all 0.15s ease;
     }
-    .cam-btn:hover, .cam-btn.active {
-      background: rgba(56, 189, 248, 0.15);
-      border-color: #38bdf8;
-      color: #f0f6fc;
+    .eda-btn:hover, .eda-btn.active {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: var(--eda-cyan);
+      color: #ffffff;
     }
 
     /* Center Stage Guide Banner - Ultra Compact & Collapsible */
     .stage-guide-banner {
       position: absolute;
-      top: 64px;
+      top: 66px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(13, 17, 24, 0.90);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border-panel);
-      border-radius: 8px;
+      background: rgba(11, 15, 23, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--eda-border);
+      border-radius: 6px;
       padding: 6px 14px;
-      width: min(740px, calc(100vw - 360px));
+      width: min(720px, calc(100vw - 360px));
       z-index: 30;
       box-shadow: 0 8px 24px rgba(0,0,0,0.65);
       transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
@@ -154,49 +160,164 @@
       align-items: center;
       gap: 5px;
       font-size: 0.65rem;
-      font-family: 'Fira Code', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-weight: 600;
       padding: 2px 7px;
-      border-radius: 4px;
+      border-radius: 3px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
     .stage-title {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 700;
-      color: #f0f6fc;
+      color: #f1f5f9;
       letter-spacing: -0.01em;
     }
     .stage-desc {
-      font-size: 0.78rem;
-      color: #8b949e;
+      font-size: 0.77rem;
+      color: var(--eda-text-muted);
       line-height: 1.45;
       margin-bottom: 0;
     }
     .stage-formula-tag {
-      font-family: 'Fira Code', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 0.74rem;
-      color: #58a6ff;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(56, 189, 248, 0.25);
       padding: 2px 8px;
-      border-radius: 4px;
+      border-radius: 3px;
       display: inline-block;
     }
     .btn-xs {
       padding: 2px 7px;
       font-size: 0.68rem;
-      border-radius: 4px;
+      border-radius: 3px;
       line-height: 1.3;
     }
 
+    /* Right Telemetry Sidebar */
+    .eda-telemetry-sidebar {
+      position: absolute;
+      top: 66px;
+      right: 16px;
+      width: 275px;
+      background: var(--eda-surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--eda-border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      z-index: 30;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.65);
+      font-size: 0.76rem;
+      transition: all 0.25s ease;
+    }
+    .eda-sec-title {
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--eda-text-dim);
+      margin-bottom: 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .eda-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4.5px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .eda-label { color: var(--eda-text-muted); font-size: 0.73rem; }
+    .eda-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: #f8fafc;
+      font-size: 0.73rem;
+    }
+
+    /* Bottom Control Bar */
+    .eda-bottom-bar {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--eda-surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--eda-border);
+      border-radius: 8px;
+      padding: 7px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 30;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.7);
+    }
+    .eda-step-dot {
+      width: 27px;
+      height: 27px;
+      border-radius: 4px;
+      background: #101622;
+      border: 1px solid var(--eda-border);
+      color: var(--eda-text-dim);
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .eda-step-dot:hover, .eda-step-dot.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--eda-cyan);
+      color: var(--eda-cyan);
+    }
+
+    /* Bottom Coordinates Indicator */
+    .eda-coord-tracker {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: var(--eda-surface);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--eda-border);
+      border-radius: 5px;
+      padding: 5px 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--eda-text-muted);
+      z-index: 30;
+      display: flex;
+      gap: 14px;
+    }
+
+    /* Component Tooltip */
+    #comp-tooltip {
+      position: absolute;
+      display: none;
+      background: rgba(9, 13, 20, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 5px;
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+      max-width: 260px;
+    }
+
     /* Zen Mode (Clean 100% Unobstructed 3D View) */
-    body.zen-active .cam-toolbar,
-    body.zen-active .telemetry-sidebar,
+    body.zen-active .eda-cam-toolbar,
+    body.zen-active .eda-telemetry-sidebar,
     body.zen-active .stage-guide-banner,
-    body.zen-active .bottom-hud-bar,
-    body.zen-active .coord-tracker {
+    body.zen-active .eda-bottom-bar,
+    body.zen-active .eda-coord-tracker {
       opacity: 0 !important;
       pointer-events: none !important;
       transition: opacity 0.25s ease;
@@ -210,7 +331,7 @@
       backdrop-filter: blur(12px);
       border: 1px solid #38bdf8;
       color: #38bdf8;
-      font-family: 'Fira Code', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 0.75rem;
       padding: 6px 16px;
       border-radius: 20px;
@@ -227,123 +348,6 @@
     body.zen-active .zen-exit-pill {
       display: block !important;
     }
-
-    /* Right Telemetry Sidebar */
-    .telemetry-sidebar {
-      position: absolute;
-      top: 72px;
-      right: 18px;
-      width: 290px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border-panel);
-      border-radius: 10px;
-      padding: 14px;
-      z-index: 30;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      font-size: 0.78rem;
-    }
-    .sidebar-sec-title {
-      font-size: 0.68rem;
-      font-family: 'Fira Code', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #8b949e;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .sidebar-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .sidebar-label { color: #8b949e; }
-    .sidebar-val {
-      font-family: 'Fira Code', monospace;
-      font-weight: 600;
-      color: #f0f6fc;
-    }
-
-    /* Bottom Control Bar */
-    .bottom-hud-bar {
-      position: absolute;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-panel);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border-panel);
-      border-radius: 10px;
-      padding: 9px 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      z-index: 30;
-      box-shadow: 0 10px 32px rgba(0,0,0,0.7);
-    }
-    .step-node-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      background: #161b22;
-      border: 1px solid var(--border-panel);
-      color: #8b949e;
-      font-size: 0.72rem;
-      font-family: 'Fira Code', monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .step-node-dot:hover {
-      background: #21262d;
-      color: #f0f6fc;
-    }
-    .step-node-dot.active {
-      background: #1f6feb;
-      border-color: #58a6ff;
-      color: #fff;
-      font-weight: 700;
-      box-shadow: 0 0 10px rgba(31, 111, 235, 0.7);
-    }
-
-    /* 3D Component Inspection Tooltip */
-    #comp-tooltip {
-      position: absolute;
-      display: none;
-      background: rgba(13, 17, 24, 0.98);
-      border: 1px solid #58a6ff;
-      box-shadow: 0 0 20px rgba(88, 166, 255, 0.4);
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 0.74rem;
-      pointer-events: none;
-      z-index: 100;
-      min-width: 220px;
-    }
-
-    /* Coordinate Tracker */
-    .coord-tracker {
-      position: absolute;
-      bottom: 18px;
-      left: 18px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border-panel);
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-family: 'Fira Code', monospace;
-      font-size: 0.68rem;
-      color: #8b949e;
-      z-index: 30;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
   </style>
 </head>
 <body>
@@ -351,48 +355,49 @@
   <!-- 3D Canvas -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Top HUD Bar -->
-  <div class="top-hud-bar">
-    <div class="hud-box d-flex align-items-center gap-3">
-      <div class="hud-title text-light">
-        <i class="bi bi-cpu text-primary fs-5"></i>
-        <span>CNN SYSTOLIC SOC</span>
-        <span class="hud-chip">3D SILICON ARCHITECTURE</span>
+  <!-- Top EDA CAD Header -->
+  <div class="eda-top-bar">
+    <div class="eda-panel d-flex align-items-center gap-3">
+      <div class="eda-brand">
+        <i class="bi bi-cpu text-info"></i>
+        <span>VLSI SILICON FLOORPLAN & WORKFLOW</span>
+        <span class="eda-badge">TSMC 28nm / CYCLONE V</span>
       </div>
-      <div class="vr bg-secondary opacity-50 d-none d-md-block" style="height: 18px;"></div>
-      <span class="small font-monospace text-muted d-none d-md-block" style="font-size: 0.75rem;">
-        Complete Cycle-Accurate Hardware Dataflow (Cyclone V FPGA)
+      <div class="vr bg-secondary opacity-50 d-none d-md-block" style="height: 16px;"></div>
+      <span class="font-monospace text-muted d-none d-md-block" style="font-size: 0.72rem;">
+        64-PE Systolic Core • Dual SRAM Buffers • 8-Row SIMD Drain
       </span>
     </div>
 
-    <div class="hud-box d-flex align-items-center gap-2">
-      <button class="btn btn-sm btn-outline-info px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="toggleBannerVisibility()" id="btnBannerHUD" title="Show / Hide Stage Information Banner (Shortcut: H)">
+    <div class="eda-panel d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-info px-2.5 py-1 font-monospace" style="font-size: 0.7rem;" onclick="toggleBannerVisibility()" id="btnBannerHUD" title="Show / Hide Stage Information Banner (Shortcut: H)">
         <i class="bi bi-info-circle me-1"></i><span id="bannerHUDText">Stage Info</span>
       </button>
-      <button class="btn btn-sm btn-outline-warning px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="toggleZenMode()" id="btnZen" title="Zen Mode: Hide all UI overlays for 100% unobstructed 3D view (Shortcut: Z)">
+      <button class="btn btn-sm btn-outline-warning px-2.5 py-1 font-monospace" style="font-size: 0.7rem;" onclick="toggleZenMode()" id="btnZen" title="Zen Mode: Hide all UI overlays for 100% unobstructed 3D view (Shortcut: Z)">
         <i class="bi bi-aspect-ratio me-1"></i>Zen Mode
       </button>
-      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="window.location.href='../index.html'" title="Return to Portal">
+      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.7rem;" onclick="window.location.href='../index.html'" title="Return to Portal">
         <i class="bi bi-house-door-fill me-1"></i>Portal
       </button>
-      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="setCamPreset('overview')" title="Reset Camera">
-        <i class="bi bi-arrow-clockwise me-1"></i>Reset View
+      <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.7rem;" onclick="setCamPreset('overview')" title="Reset Camera">
+        <i class="bi bi-arrow-clockwise me-1"></i>Reset CAD View
       </button>
     </div>
   </div>
 
-  <!-- Left Camera Preset Toolbar -->
-  <div class="cam-toolbar">
-    <button class="cam-btn active" onclick="setCamPreset('overview')"><i class="bi bi-box"></i>Isometric Overview</button>
-    <button class="cam-btn" onclick="setCamPreset('input')"><i class="bi bi-bounding-box"></i>1. Input & Im2Col</button>
-    <button class="cam-btn" onclick="setCamPreset('buffers')"><i class="bi bi-memory"></i>2. Dual SRAM Buffers</button>
-    <button class="cam-btn" onclick="setCamPreset('skew')"><i class="bi bi-bar-chart-steps"></i>3. Wavefront Skew D-FF</button>
-    <button class="cam-btn" onclick="setCamPreset('array')"><i class="bi bi-grid-3x3"></i>4. 64-PE Systolic Core</button>
-    <button class="cam-btn" onclick="setCamPreset('drain')"><i class="bi bi-diagram-3"></i>5. SIMD Drain & ReLU</button>
-    <button class="cam-btn" onclick="setCamPreset('soc')"><i class="bi bi-display"></i>6. Dense & HEX0 Output</button>
+  <!-- Left CAD View Toolbar -->
+  <div class="eda-cam-toolbar">
+    <button class="eda-btn active" onclick="setCamPreset('overview')"><i class="bi bi-box"></i>3D Isometric</button>
+    <button class="eda-btn" onclick="setCamPreset('die_top')"><i class="bi bi-grid"></i>Die Floorplan</button>
+    <div class="hr border-secondary opacity-25 my-1"></div>
+    <button class="eda-btn" onclick="setCamPreset('input')"><i class="bi bi-bounding-box"></i>1. Im2Col & SRAM</button>
+    <button class="eda-btn" onclick="setCamPreset('skew')"><i class="bi bi-bar-chart-steps"></i>2. Skew Delay</button>
+    <button class="eda-btn" onclick="setCamPreset('array')"><i class="bi bi-grid-3x3"></i>3. 64-PE Array</button>
+    <button class="eda-btn" onclick="setCamPreset('drain')"><i class="bi bi-diagram-3"></i>4. SIMD & ReLU</button>
+    <button class="eda-btn" onclick="setCamPreset('soc')"><i class="bi bi-display"></i>5. SoC & HEX0</button>
   </div>
 
-  <!-- Center Stage Banner (Ultra-Compact by default, Collapsible, Dockable) -->
+  <!-- Center Stage Banner (Ultra-Compact, Collapsible, Dockable) -->
   <div class="stage-guide-banner" id="stageBanner">
     <div class="d-flex align-items-center justify-content-between gap-3">
       <div class="d-flex align-items-center gap-2 text-truncate">
@@ -419,14 +424,104 @@
     <!-- Expanded Detail Drawer (Hidden by default to keep 3D view 100% clear) -->
     <div class="stage-expanded-drawer mt-2 pt-2 border-top border-secondary border-opacity-25" id="stageDrawer" style="display: none;">
       <p class="stage-desc text-muted mb-2" id="stageDesc">
-        The 28×28 INT8 handwritten digit tensor arrives from memory. Im2Col unrolls 196 overlapping 3×3 receptive fields into vertical column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].
+        The 28×28 INT8 image tensor arrives from external memory via AXI master. The Im2Col hardware address generator flattens 196 overlapping 3×3 receptive fields into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].
       </p>
       <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
         <div class="stage-formula-tag" id="stageFormula">
-          C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]
+          Im2Col: Tensor [28×28] → Matrix B [9×196] | Weights: 16×[3×3] → Matrix A [16×9]
         </div>
         <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size: 0.68rem;" id="stageExtra">64 Concurrent MACs</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Right Telemetry Sidebar -->
+  <div class="eda-telemetry-sidebar">
+    <div class="eda-sec-title">
+      <span><i class="bi bi-activity me-1 text-info"></i>DIE TELEMETRY (STA)</span>
+      <span class="text-success font-monospace">TIMING MET</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">Synthesized FMAX:</span>
+      <span class="eda-val text-success">69.49 MHz</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">Worst Setup Slack:</span>
+      <span class="eda-val text-info">+1.815 ns @ 50MHz</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">Core Dimensions:</span>
+      <span class="eda-val">3.82 mm × 3.15 mm</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">PE Cell Mesh:</span>
+      <span class="eda-val text-warning">8×8 (64 MAC PEs)</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">Arithmetic Standard:</span>
+      <span class="eda-val">INT8 MAC / INT32 ACC</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">DRAM Bandwidth Saved:</span>
+      <span class="eda-val text-success">98× (In-Situ Buffer A)</span>
+    </div>
+    <div class="eda-row">
+      <span class="eda-label">SIMD Drain Speedup:</span>
+      <span class="eda-val text-info">8.0× (8 Cycles Drain)</span>
+    </div>
+
+    <div class="eda-sec-title mt-3">
+      <span><i class="bi bi-cpu me-1 text-info"></i>ACTIVE MICRO-BLOCKS</span>
+    </div>
+    <div class="p-2 rounded bg-black font-monospace small" id="activeModulesBox" style="font-size: 0.66rem; color: #8b949e; line-height: 1.5; border: 1px solid rgba(255,255,255,0.06);">
+      • rtl/im2col_address_gen.sv<br>
+      • rtl/input_tensor_sram.sv<br>
+      • Format: Signed INT8 [-128..+127]
+    </div>
+  </div>
+
+  <!-- Bottom Coordinates Indicator -->
+  <div class="eda-coord-tracker">
+    <div>CAD CURSOR: <span id="cadCoords" class="text-light">X: +0.00 mm, Y: +0.00 mm</span></div>
+    <div>DIE TEMP: <span class="text-warning">38.4 °C</span> • VDD: <span class="text-success">1.10 V</span></div>
+  </div>
+
+  <!-- Bottom Timeline Stepper Bar -->
+  <div class="eda-bottom-bar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-primary px-3 fw-semibold font-monospace" style="font-size: 0.72rem;" id="btnTour" onclick="toggleTour()">
+        <i class="bi bi-play-fill me-1" id="tourIcon"></i><span id="tourText">Auto Tour</span>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary font-monospace px-2 py-1" onclick="stepStage(-1)" title="Previous Step">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary font-monospace px-2 py-1" onclick="stepStage(1)" title="Next Step">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="vr bg-secondary opacity-50" style="height: 18px;"></div>
+
+    <!-- 7 Stage Dots -->
+    <div class="d-flex gap-1.5">
+      <div class="eda-step-dot active" onclick="goToStage(0)" title="1. Input & Im2Col">01</div>
+      <div class="eda-step-dot" onclick="goToStage(1)" title="2. Dual SRAM Buffers">02</div>
+      <div class="eda-step-dot" onclick="goToStage(2)" title="3. Wavefront Skew D-FF">03</div>
+      <div class="eda-step-dot" onclick="goToStage(3)" title="4. 64-PE Systolic Mesh">04</div>
+      <div class="eda-step-dot" onclick="goToStage(4)" title="5. SIMD 8-Row Drain">05</div>
+      <div class="eda-step-dot" onclick="goToStage(5)" title="6. Quantized ReLU & MaxPool">06</div>
+      <div class="eda-step-dot" onclick="goToStage(6)" title="7. Dense FC & Physical SoC">07</div>
+    </div>
+
+    <div class="vr bg-secondary opacity-50" style="height: 18px;"></div>
+
+    <div class="d-flex align-items-center gap-2">
+      <span class="text-muted font-monospace" style="font-size: 0.68rem;">Tour Delay:</span>
+      <select class="form-select form-select-sm bg-black text-light border-secondary font-monospace" style="font-size: 0.68rem; width: 75px; padding: 2px 6px;" id="tourSpeed" onchange="updateTourSpeed()">
+        <option value="6000">6.0s</option>
+        <option value="4200" selected>4.2s</option>
+        <option value="2500">2.5s</option>
+      </select>
     </div>
   </div>
 
@@ -435,123 +530,33 @@
     <i class="bi bi-aspect-ratio me-1"></i>Exit Zen Mode (or press ESC / Z)
   </div>
 
-  <!-- Right Telemetry Sidebar -->
-  <div class="telemetry-sidebar">
-    <div class="sidebar-sec-title">
-      <span><i class="bi bi-activity me-1 text-primary"></i>Hardware Telemetry (STA)</span>
-      <span class="text-success font-monospace">TIMING MET</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">FMAX DE10-Std:</span>
-      <span class="sidebar-val text-success">69.49 MHz</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">Setup Timing Slack:</span>
-      <span class="sidebar-val text-primary">+1.815 ns (MET)</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">Systolic Mesh:</span>
-      <span class="sidebar-val text-light">8×8 (64 MAC PEs)</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">Arithmetic Type:</span>
-      <span class="sidebar-val text-warning">INT8 MAC / INT32 ACC</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">DRAM Savings:</span>
-      <span class="sidebar-val text-success">98× (In-Situ SRAM A0)</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">SIMD Drain Speedup:</span>
-      <span class="sidebar-val text-info">8.0× (8 Cycles Drain)</span>
-    </div>
-    <div class="sidebar-row">
-      <span class="sidebar-label">Full MNIST Latency:</span>
-      <span class="sidebar-val text-purple" style="color: #a855f7;">145.04 µs @ 50MHz</span>
-    </div>
-
-    <div class="sidebar-sec-title mt-3">
-      <span><i class="bi bi-layers me-1 text-info"></i>Active Microarchitectural Modules</span>
-    </div>
-    <div class="p-2 rounded bg-black font-monospace small" id="activeModulesBox" style="font-size: 0.68rem; color: #8b949e; line-height: 1.5;">
-      • rtl/im2col_address_gen.sv<br>
-      • rtl/sram_buffer_a_72b.sv<br>
-      • rtl/sram_buffer_b_pingpong.sv
-    </div>
-  </div>
-
-  <!-- Bottom Coordinates Indicator -->
-  <div class="coord-tracker">
-    <div><strong>CAD CURSOR:</strong> <span id="cadCoords" class="text-light">X: +0.00 mm, Z: +0.00 mm</span></div>
-    <div><strong>VDD:</strong> <span class="text-warning">1.10 V</span> • <strong>FMAX:</strong> <span class="text-success">69.49 MHz</span></div>
-  </div>
-
-  <!-- Bottom Timeline Stepper Bar -->
-  <div class="bottom-hud-bar">
-    <div class="d-flex align-items-center gap-2">
-      <button class="btn btn-sm btn-primary px-3 fw-semibold font-monospace" style="font-size: 0.75rem;" id="btnTour" onclick="toggleTour()">
-        <i class="bi bi-play-fill me-1" id="tourIcon"></i><span id="tourText">Auto Tour</span>
-      </button>
-      <button class="btn btn-sm btn-outline-secondary font-monospace" onclick="stepStage(-1)" title="Previous Step">
-        <i class="bi bi-chevron-left"></i>
-      </button>
-      <button class="btn btn-sm btn-outline-secondary font-monospace" onclick="stepStage(1)" title="Next Step">
-        <i class="bi bi-chevron-right"></i>
-      </button>
-    </div>
-
-    <div class="vr bg-secondary opacity-50" style="height: 20px;"></div>
-
-    <!-- 7 Stage Dots -->
-    <div class="d-flex gap-1.5">
-      <div class="step-node-dot active" onclick="goToStage(0)" title="1. Input & Im2Col">01</div>
-      <div class="step-node-dot" onclick="goToStage(1)" title="2. Dual SRAM Buffers">02</div>
-      <div class="step-node-dot" onclick="goToStage(2)" title="3. Wavefront Skew D-FF">03</div>
-      <div class="step-node-dot" onclick="goToStage(3)" title="4. 64-PE Systolic Mesh">04</div>
-      <div class="step-node-dot" onclick="goToStage(4)" title="5. SIMD 8-Row Drain">05</div>
-      <div class="step-node-dot" onclick="goToStage(5)" title="6. Quantized ReLU & MaxPool">06</div>
-      <div class="step-node-dot" onclick="goToStage(6)" title="7. Dense FC & Physical SoC">07</div>
-    </div>
-
-    <div class="vr bg-secondary opacity-50" style="height: 20px;"></div>
-
-    <div class="d-flex align-items-center gap-2">
-      <span class="text-muted font-monospace" style="font-size: 0.7rem;">Speed:</span>
-      <select class="form-select form-select-sm bg-black text-light border-secondary font-monospace" style="font-size: 0.7rem; width: 85px;" id="tourSpeed" onchange="updateTourSpeed()">
-        <option value="6000">Slow</option>
-        <option value="4200" selected>Normal</option>
-        <option value="2500">Fast</option>
-      </select>
-    </div>
-  </div>
-
   <!-- Component Hover Tooltip -->
   <div id="comp-tooltip">
     <div class="fw-bold font-monospace text-light" id="tt-title">PE_MAC(0, 0)</div>
     <div class="text-secondary small" id="tt-type">Output-Stationary Processing Element</div>
-    <div class="font-monospace text-primary small mt-1" id="tt-status">C_acc[31:0] Active | Slack +1.815 ns</div>
+    <div class="font-monospace text-info small mt-1" id="tt-status">C_acc[31:0] Active | Slack +1.815 ns</div>
   </div>
 
   <!-- =========================================================================
-       THREE.JS HIGH-TECH ISOMETRIC HARDWARE PIPELINE SCRIPT
+       THREE.JS PHOTOREALISTIC VLSI SILICON DIE & PIPELINE
        ========================================================================= -->
   <script>
-    // --- STAGE DEFINITIONS & METADATA (LOWERED LOOK TARGET FOR HEADROOM) ---
+    // --- STAGE DEFINITIONS & METADATA ---
     const STAGES = [
       {
         id: 0,
-        pill: "STAGE 01 / 07 • DATA UNROLLING",
+        pill: "STAGE 01 / 07 • FRONT-END DATA UNROLLING",
         module: "RTL: im2col_address_gen.sv",
-        title: "Input Tensor Ingestion & Im2Col Matrix Unfolding",
-        desc: "The 28×28 INT8 image tensor arrives from external memory via AXI Master. The Im2Col hardware address generator flattens 196 overlapping 3×3 receptive fields into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].",
-        formula: "GEMM Formulation: C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]",
+        title: "Tensor Ingestion & Im2Col Matrix Unfolding",
+        desc: "The 28×28 INT8 image tensor arrives from external memory via AXI master. The Im2Col hardware address generator flattens 196 overlapping 3×3 receptive fields into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].",
+        formula: "Im2Col: Tensor [28×28] → Matrix B [9×196] | Weights: 16×[3×3] → Matrix A [16×9]",
         camPos: { x: -36, y: 34, z: 30 },
         camLook: { x: -34, y: -2.0, z: 0 },
         modules: "• rtl/im2col_address_gen.sv<br>• rtl/input_tensor_sram.sv<br>• Format: Signed INT8 [-128..+127]"
       },
       {
         id: 1,
-        pill: "STAGE 02 / 07 • ON-CHIP STORAGE & STATIONARITY",
+        pill: "STAGE 02 / 07 • ON-CHIP SRAM MACROS & TILING",
         module: "RTL: gemm_controller.sv",
         title: "Dual On-Chip SRAM Buffers & Matrix Tiling",
         desc: "Matrices are partitioned into 8×8 sub-tiles. Sub-tile A0 [8×9] (72 Bytes) is loaded into SRAM Buffer A and locked for 98 consecutive cycles. Buffer B streams Sub-tiles B0..B24 [9×8] using ping-pong banks, slashing external DRAM read traffic by 98×.",
@@ -562,9 +567,9 @@
       },
       {
         id: 2,
-        pill: "STAGE 03 / 07 • SPATIAL DELAY SYNCHRONIZATION",
+        pill: "STAGE 03 / 07 • DELAY SYNCHRONIZATION LADDER",
         module: "RTL: systolic_skew_unit.sv",
-        title: "Wavefront Skew Unit (56 D-Flip-Flops)",
+        title: "Wavefront Skew Unit (56 D-Flip-Flop Standard Cells)",
         desc: "Because horizontal and vertical systolic inter-PE routing costs 1 clock cycle (z⁻¹), input rows A are delayed by 0T..7T clock cycles through 28 D-FF shift registers on the West edge, and columns B are delayed by 0T..7T through 28 D-FFs on the North edge.",
         formula: "Spatial Alignment: Delay_A[i] = i·Tclk | Delay_B[j] = j·Tclk | Arrival: T = i + j",
         camPos: { x: -7, y: 30, z: 24 },
@@ -584,11 +589,10 @@
       },
       {
         id: 4,
-        pill: "STAGE 05 / 07 • GEN-2 PARALLEL DRAIN BREAKTHROUGH",
+        pill: "STAGE 05 / 07 • SIMD PARALLEL DRAIN BUS",
         module: "RTL: systolic_accelerator_top.sv",
         title: "SIMD 8-Row Parallel Drain Bus",
         desc: "Upon completing K=9 accumulation cycles, Gen-2 drains all 8 rows simultaneously via parallel 32-bit buses into the output register file in just 8 clock cycles (8.0× faster than the Gen-1 baseline serial drain of 64 cycles).",
-        math: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
         formula: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
         camPos: { x: 16, y: 30, z: 26 },
         camLook: { x: 16, y: -2.0, z: 0 },
@@ -631,29 +635,29 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.15;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x06080d);
-    scene.fog = new THREE.FogExp2(0x06080d, 0.0075);
+    scene.background = new THREE.Color(0x07090e);
+    scene.fog = new THREE.FogExp2(0x07090e, 0.0065);
 
     const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(-10, 48, 52); // Default stunning isometric angle
+    camera.position.set(-10, 50, 54);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
-    controls.maxPolarAngle = Math.PI / 2 - 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.04;
     controls.minDistance = 12;
     controls.maxDistance = 180;
     controls.target.set(0, -2.0, 0);
 
-    // --- CLEAN STUDIO LIGHTING (NO COLORED BLOTCHES) ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    // --- STUDIO LIGHTING (CLEAN NEUTRAL ENGINEERING SPEC) ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.3);
-    keyLight.position.set(-40, 70, 50);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    keyLight.position.set(-35, 75, 45);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
     keyLight.shadow.mapSize.height = 2048;
@@ -664,96 +668,110 @@
     keyLight.shadow.camera.top = d; keyLight.shadow.camera.bottom = -d;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.6);
-    rimLight.position.set(40, 30, -50);
+    const fillLight = new THREE.DirectionalLight(0x94a3b8, 0.45);
+    fillLight.position.set(40, 45, 30);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.55);
+    rimLight.position.set(30, 25, -50);
     scene.add(rimLight);
 
-    // Ground Interposer Plane
-    const groundGeo = new THREE.PlaneGeometry(160, 90);
-    const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x090d14,
-      roughness: 0.8,
-      metalness: 0.2
+    // =========================================================================
+    // MULTI-LAYER SEMICONDUCTOR SUBSTRATE (PCB / SILICON INTERPOSER FLOOR)
+    // =========================================================================
+    const substrateGeo = new THREE.BoxGeometry(164, 1.0, 94);
+    const substrateMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0d14, // Dark obsidian substrate
+      roughness: 0.85,
+      metalness: 0.15
     });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.5;
-    ground.receiveShadow = true;
-    scene.add(ground);
+    const substrate = new THREE.Mesh(substrateGeo, substrateMat);
+    substrate.position.y = -0.5;
+    substrate.receiveShadow = true;
+    scene.add(substrate);
 
-    // Technical Floor Grid
-    const gridHelper = new THREE.GridHelper(160, 80, 0x1f2937, 0x111827);
-    gridHelper.position.y = -0.48;
+    // Gold Guard Ring along Perimeter
+    const ringGeo = new THREE.BoxGeometry(164.2, 0.1, 94.2);
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: 0xb45309, // Gold plating
+      roughness: 0.3,
+      metalness: 0.85
+    });
+    const guardRing = new THREE.Mesh(ringGeo, ringMat);
+    guardRing.position.y = 0.02;
+    scene.add(guardRing);
+
+    // CAD Engineering Floor Grid
+    const gridHelper = new THREE.GridHelper(164, 82, 0x1e293b, 0x0f172a);
+    gridHelper.position.y = 0.05;
     scene.add(gridHelper);
 
     // Raycast Objects
     const interactiveObjects = [];
 
-    // Helper: Create Text Label in 3D
-    function create3DLabel(text, color = "#38bdf8", size = 18) {
+    // Helper: Laser-Etched Text on Substrate Surface (Flat, zero cartoon floating!)
+    function createEtchedSilkscreen(text, x, z, width = 12, height = 2.4, color = "#94a3b8") {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 128;
+      c.width = 512; c.height = 100;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = "rgba(13, 17, 23, 0.85)";
-      ctx.roundRect ? ctx.roundRect(4, 4, 504, 120, 16) : ctx.fillRect(4, 4, 504, 120);
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
-      ctx.stroke();
+      ctx.fillStyle = "rgba(0,0,0,0)";
+      ctx.fillRect(0, 0, 512, 100);
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `bold ${size * 2}px Fira Code, monospace`;
-      ctx.textAlign = "center";
+      ctx.fillStyle = color;
+      ctx.font = "bold 34px 'JetBrains Mono', 'Fira Code', monospace";
+      ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(text, 256, 64);
+      ctx.fillText(text, 14, 50);
 
       const texture = new THREE.CanvasTexture(c);
-      const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-      const sprite = new THREE.Sprite(spriteMat);
-      sprite.scale.set(6, 1.5, 1);
-      return sprite;
+      const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0.85 });
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
+      plane.rotation.x = -Math.PI / 2;
+      plane.position.set(x, 0.08, z);
+      scene.add(plane);
+      return plane;
     }
 
-    // Helper: Create 3D Conduit / Bus Line between Points
-    function createConduit(p1, p2, color = 0x38bdf8, width = 0.3) {
+    // Substrate Global Silkscreen Labels (Industrial CAD style)
+    createEtchedSilkscreen("TSMC 28nm HPM // 64-PE SYSTOLIC SOC // DIE: 3.82mm x 3.15mm", -45, -42, 45, 3.0, "#64748b");
+    createEtchedSilkscreen("SYNTHESIZED FMAX: 69.49 MHz // WORST SLACK: +1.815 ns (MET)", 15, -42, 45, 3.0, "#10b981");
+
+    // Helper: Micro-Interconnect Copper Bus Ribbon
+    function createBusRibbon(p1, p2, width = 0.45, color = 0xc27803) {
       const dir = new THREE.Vector3().subVectors(p2, p1);
       const len = dir.length();
-      const geom = new THREE.CylinderGeometry(width, width, len, 8);
+      const geom = new THREE.BoxGeometry(width, 0.14, len);
       const mat = new THREE.MeshStandardMaterial({
         color: color,
-        metalness: 0.8,
-        roughness: 0.2,
-        emissive: color,
-        emissiveIntensity: 0.4
+        metalness: 0.85,
+        roughness: 0.25
       });
-      const cyl = new THREE.Mesh(geom, mat);
-      cyl.position.copy(p1).add(dir.clone().multiplyScalar(0.5));
-      cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
-      scene.add(cyl);
-      return cyl;
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.position.copy(p1).add(dir.clone().multiplyScalar(0.5));
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.clone().normalize());
+      scene.add(mesh);
+      return mesh;
     }
 
     // =========================================================================
-    // ZONE 1: INPUT 28x28 VOXEL DIGIT & 3D IM2COL UNROLLING (X: -38)
+    // ZONE 1: CMOS ACTIVE PIXEL MATRIX (28x28) & LASER RETICLE (X: -36)
     // =========================================================================
     const zone1 = new THREE.Group();
     zone1.position.set(-36, 0, 0);
     scene.add(zone1);
 
-    // Stage Platform
+    // Silicon Sensor Package Base
     const z1Plat = new THREE.Mesh(
-      new THREE.BoxGeometry(16, 0.8, 20),
-      new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.5, roughness: 0.5 })
+      new THREE.BoxGeometry(16, 0.6, 20),
+      new THREE.MeshStandardMaterial({ color: 0x0f141f, metalness: 0.7, roughness: 0.3 })
     );
-    z1Plat.position.y = 0.4;
+    z1Plat.position.y = 0.3;
     z1Plat.receiveShadow = true;
     zone1.add(z1Plat);
 
-    const lbl1 = create3DLabel("1. INPUT & IM2COL", "#38bdf8");
-    lbl1.position.set(-36, 8, -9);
-    scene.add(lbl1);
+    createEtchedSilkscreen("[ZONE 01] CMOS_SENSOR_IM2COL [28x28]", -36, -9.5, 14, 2.0, "#38bdf8");
 
-    // 28x28 Handwritten Digit (Voxelized in 3D representing real MNIST '8')
+    // Active 28x28 Sensor Pixel Array (Representing real digit '8')
     const digitPattern = [
       "....########....",
       "...##########...",
@@ -770,95 +788,121 @@
       "....########...."
     ];
 
-    const voxelGeo = new THREE.BoxGeometry(0.35, 0.8, 0.35);
-    const voxelMat = new THREE.MeshStandardMaterial({
+    const pixelGeo = new THREE.BoxGeometry(0.36, 0.08, 0.36);
+    const pixelMatLit = new THREE.MeshStandardMaterial({
       color: 0x38bdf8,
       emissive: 0x0284c7,
-      emissiveIntensity: 0.6,
-      metalness: 0.3,
+      emissiveIntensity: 0.75,
+      metalness: 0.2,
       roughness: 0.3
     });
+    const pixelMatDim = new THREE.MeshStandardMaterial({
+      color: 0x111928,
+      metalness: 0.6,
+      roughness: 0.4
+    });
 
-    for (let r = 0; r < digitPattern.length; r++) {
-      for (let c = 0; c < digitPattern[r].length; c++) {
-        if (digitPattern[r][c] === '#') {
-          const v = new THREE.Mesh(voxelGeo, voxelMat);
-          v.position.set((c - 8) * 0.45, 1.2, (r - 6) * 0.5);
-          v.castShadow = true;
-          zone1.add(v);
-        }
+    for (let r = 0; r < 14; r++) {
+      for (let c = 0; c < 16; c++) {
+        const isLit = (r < digitPattern.length && digitPattern[r][c] === '#');
+        const p = new THREE.Mesh(pixelGeo, isLit ? pixelMatLit : pixelMatDim);
+        p.position.set((c - 7.5) * 0.44, 0.64, (r - 6.5) * 0.44);
+        zone1.add(p);
       }
     }
 
-    // 3x3 Sliding Receptive Field Laser Frame
-    const rfGeo = new THREE.BoxGeometry(2.4, 1.4, 2.4);
-    const rfMat = new THREE.MeshStandardMaterial({
-      color: 0xf43f5e,
-      emissive: 0xf43f5e,
-      emissiveIntensity: 0.8,
-      transparent: true,
-      opacity: 0.75
-    });
-    const rfAperture = new THREE.Mesh(rfGeo, rfMat);
-    rfAperture.position.set(-1.5, 1.4, -1.5);
-    rfAperture.userData = { title: "3×3 Receptive Field Window", type: "Convolution Aperture", status: "Flattens 9 INT8 pixels into Column B" };
-    zone1.add(rfAperture);
-    interactiveObjects.push(rfAperture);
+    // 3x3 Im2Col Laser Reticle (Precision EDA Inspection Frame)
+    const reticleGroup = new THREE.Group();
+    const reticleFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 0.12, 2.2),
+      new THREE.MeshStandardMaterial({
+        color: 0xf43f5e,
+        emissive: 0xf43f5e,
+        emissiveIntensity: 0.85,
+        wireframe: true
+      })
+    );
+    reticleFrame.position.y = 0.72;
+    reticleGroup.add(reticleFrame);
+
+    // Central Precision Crosshair
+    const crosshair = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.04, 0.8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    crosshair.rotation.x = Math.PI / 2;
+    crosshair.position.y = 0.72;
+    reticleGroup.add(crosshair);
+
+    reticleGroup.position.set(-1.5, 0, -1.5);
+    reticleGroup.userData = { title: "3×3 Receptive Field Reticle", type: "Im2Col Aperture", status: "Flattens 9 INT8 pixels into Column B" };
+    zone1.add(reticleGroup);
+    interactiveObjects.push(reticleFrame);
 
     // =========================================================================
-    // ZONE 2: ON-CHIP DUAL SRAM BUFFERS (X: -20)
+    // ZONE 2: FOUNDRY SRAM MACRO IP BLOCKS (X: -20)
     // =========================================================================
     const zone2 = new THREE.Group();
     zone2.position.set(-20, 0, 0);
     scene.add(zone2);
 
     const z2Plat = new THREE.Mesh(
-      new THREE.BoxGeometry(12, 0.8, 20),
-      new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.5, roughness: 0.5 })
+      new THREE.BoxGeometry(12, 0.6, 20),
+      new THREE.MeshStandardMaterial({ color: 0x0f141f, metalness: 0.7, roughness: 0.3 })
     );
-    z2Plat.position.y = 0.4;
+    z2Plat.position.y = 0.3;
     z2Plat.receiveShadow = true;
     zone2.add(z2Plat);
 
-    const lbl2 = create3DLabel("2. ON-CHIP SRAM", "#06b6d4");
-    lbl2.position.set(-20, 8, -9);
-    scene.add(lbl2);
+    createEtchedSilkscreen("[ZONE 02] ON_CHIP_SRAM_MACROS", -20, -9.5, 14, 2.0, "#06b6d4");
 
-    // Buffer A (Weight Stationary Locked Buffer)
-    const sramAGeo = new THREE.BoxGeometry(8, 2.4, 4.5);
+    // SRAM Macro A (Stationary Weight Buffer A0)
+    const sramAGeo = new THREE.BoxGeometry(8.5, 1.4, 5.0);
     const sramAMat = new THREE.MeshStandardMaterial({
-      color: 0x0891b2,
-      metalness: 0.8,
-      roughness: 0.2,
-      emissive: 0x06b6d4,
-      emissiveIntensity: 0.4
+      color: 0x162032, // Dark ceramic
+      metalness: 0.85,
+      roughness: 0.25
     });
     const bufA = new THREE.Mesh(sramAGeo, sramAMat);
-    bufA.position.set(0, 1.8, -4);
+    bufA.position.set(0, 1.0, -4.5);
     bufA.castShadow = true;
-    bufA.userData = { title: "SRAM Buffer A (72 Bytes)", type: "Locked Weight Buffer A0", status: "Stationary Reuse: 98× DRAM Reduction" };
+    bufA.userData = { title: "SRAM Macro A (72 Bytes)", type: "Stationary Weight Buffer A0", status: "Locked: 98× DRAM Bandwidth Reduction" };
     zone2.add(bufA);
     interactiveObjects.push(bufA);
 
-    // Buffer B (Streaming Double-Buffer Ping-Pong)
-    const sramBGeo = new THREE.BoxGeometry(8, 2.4, 4.5);
+    // Brushed Aluminum Lid on SRAM A
+    const lidA = new THREE.Mesh(
+      new THREE.BoxGeometry(7.8, 0.08, 4.4),
+      new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.95, roughness: 0.2 })
+    );
+    lidA.position.set(0, 1.74, -4.5);
+    zone2.add(lidA);
+
+    // SRAM Macro B (Ping-Pong Activation Stream)
+    const sramBGeo = new THREE.BoxGeometry(8.5, 1.4, 5.0);
     const sramBMat = new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      metalness: 0.8,
-      roughness: 0.2,
-      emissive: 0xf59e0b,
-      emissiveIntensity: 0.4
+      color: 0x221a16, // Dark ceramic
+      metalness: 0.85,
+      roughness: 0.25
     });
     const bufB = new THREE.Mesh(sramBGeo, sramBMat);
-    bufB.position.set(0, 1.8, 4);
+    bufB.position.set(0, 1.0, 4.5);
     bufB.castShadow = true;
-    bufB.userData = { title: "SRAM Buffer B (Ping-Pong)", type: "Input Activations Stream", status: "Alternating Banks 0/1 (Sub-tiles B0..B24)" };
+    bufB.userData = { title: "SRAM Macro B (Ping-Pong)", type: "Streaming Activations Buffer", status: "Dual Bank 0/1 (Sub-tiles B0..B24)" };
     zone2.add(bufB);
     interactiveObjects.push(bufB);
 
-    // Connect Zone 1 to Zone 2 with Glowing Conduits
-    createConduit(new THREE.Vector3(-28, 1.8, -2), new THREE.Vector3(-24, 1.8, -4), 0x06b6d4, 0.18);
-    createConduit(new THREE.Vector3(-28, 1.8, 2), new THREE.Vector3(-24, 1.8, 4), 0xf59e0b, 0.18);
+    // Copper Heat Spreader Lid on SRAM B
+    const lidB = new THREE.Mesh(
+      new THREE.BoxGeometry(7.8, 0.08, 4.4),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9, roughness: 0.25 })
+    );
+    lidB.position.set(0, 1.74, 4.5);
+    zone2.add(lidB);
+
+    // Multi-Lane Parallel Copper Conduits Linking Zone 1 -> Zone 2
+    createBusRibbon(new THREE.Vector3(-28, 0.65, -4.5), new THREE.Vector3(-24.5, 0.65, -4.5), 0.8, 0x06b6d4);
+    createBusRibbon(new THREE.Vector3(-28, 0.65, 4.5), new THREE.Vector3(-24.5, 0.65, 4.5), 0.8, 0xd97706);
 
     // =========================================================================
     // ZONE 3: 56 D-FLIP-FLOP WAVEFRONT SKEW UNIT (X: -7)
@@ -867,33 +911,28 @@
     zone3.position.set(-7, 0, 0);
     scene.add(zone3);
 
-    const lbl3 = create3DLabel("3. SKEW D-FFs", "#8b5cf6");
-    lbl3.position.set(-7, 8, -9);
-    scene.add(lbl3);
+    createEtchedSilkscreen("[ZONE 03] SKEW_UNIT_56FF [0T..7T]", -7, -9.5, 14, 2.0, "#a855f7");
 
-    // 8 Row Shift-Register Channels (West Input to PEs)
-    const dffGeo = new THREE.BoxGeometry(0.65, 0.7, 0.7);
+    // Standard Cell D-FF Micro-Packages (Triangular Stepped Array)
+    const dffGeo = new THREE.BoxGeometry(0.55, 0.45, 0.55);
     const dffMat = new THREE.MeshStandardMaterial({
-      color: 0x7c3aed,
-      metalness: 0.7,
-      roughness: 0.3,
-      emissive: 0x8b5cf6,
-      emissiveIntensity: 0.5
+      color: 0x1a1a2e, // Dark IC epoxy
+      metalness: 0.8,
+      roughness: 0.25
     });
 
     for (let r = 0; r < 8; r++) {
       const z = (r - 3.5) * 1.8;
-      // Staggered triangular cascade of D-FFs
       for (let s = 0; s < r; s++) {
         const dff = new THREE.Mesh(dffGeo, dffMat);
-        dff.position.set(-(r - s) * 0.8, 1.2, z);
+        dff.position.set(-(r - s) * 0.75, 0.6, z);
         dff.castShadow = true;
-        dff.userData = { title: `Row ${r} Skew D-FF #${s+1}`, type: "Shift Register", status: `Delay: +${s+1} Tclk` };
+        dff.userData = { title: `Row ${r} Delay Stage #${s+1}`, type: "D-Flip-Flop Standard Cell", status: `Delay: +${s+1} Tclk (Wavefront Sync)` };
         zone3.add(dff);
         interactiveObjects.push(dff);
       }
-      // Copper wire linking to array
-      createConduit(new THREE.Vector3(-7 - r * 0.8, 1.2, z), new THREE.Vector3(-3.5, 1.2, z), 0x8b5cf6, 0.08);
+      // Micro-Trace Copper Line connecting to Array West Edge
+      createBusRibbon(new THREE.Vector3(-7 - r * 0.75, 0.6, z), new THREE.Vector3(-3.5, 0.6, z), 0.15, 0xeab308);
     }
 
     // =========================================================================
@@ -904,19 +943,17 @@
     scene.add(zone4);
 
     const z4Plat = new THREE.Mesh(
-      new THREE.BoxGeometry(17, 0.8, 17),
-      new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.7, roughness: 0.3 })
+      new THREE.BoxGeometry(17, 0.6, 17),
+      new THREE.MeshStandardMaterial({ color: 0x0a0f1d, metalness: 0.8, roughness: 0.2 })
     );
-    z4Plat.position.y = 0.4;
+    z4Plat.position.y = 0.3;
     z4Plat.receiveShadow = true;
     zone4.add(z4Plat);
 
-    const lbl4 = create3DLabel("4. 64-PE SYSTOLIC CORE", "#10b981");
-    lbl4.position.set(4, 8, -9);
-    scene.add(lbl4);
+    createEtchedSilkscreen("[ZONE 04] 64_PE_MAC_ARRAY [8x8]", 4, -9.5, 14, 2.0, "#10b981");
 
     const peMeshes = [];
-    const peGeo = new THREE.BoxGeometry(1.4, 1.6, 1.4);
+    const peGeo = new THREE.BoxGeometry(1.4, 0.8, 1.4);
 
     for (let r = 0; r < 8; r++) {
       peMeshes[r] = [];
@@ -925,15 +962,15 @@
         const z = (r - 3.5) * 1.8;
 
         const peMat = new THREE.MeshStandardMaterial({
-          color: 0x15803d,
-          metalness: 0.8,
-          roughness: 0.25,
-          emissive: 0x10b981,
-          emissiveIntensity: 0.25
+          color: 0x0f172a, // Dark metallic silicon core
+          metalness: 0.88,
+          roughness: 0.2,
+          emissive: 0x0284c7,
+          emissiveIntensity: 0.1
         });
 
         const pe = new THREE.Mesh(peGeo, peMat);
-        pe.position.set(x, 1.2, z);
+        pe.position.set(x, 0.8, z);
         pe.castShadow = true;
         pe.userData = {
           title: `Processing Element PE(${r}, ${c})`,
@@ -944,147 +981,161 @@
         interactiveObjects.push(pe);
         peMeshes[r][c] = pe;
 
-        // Top Optical Activity Indicator
-        const led = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.15, 8), new THREE.MeshBasicMaterial({ color: 0x4ade80 }));
-        led.position.set(0, 0.85, 0);
-        pe.add(led);
+        // Micro-Via Solder Pad on top of PE
+        const via = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 0.12, 0.08, 8),
+          new THREE.MeshStandardMaterial({ color: 0xeab308, metalness: 0.95, roughness: 0.15 })
+        );
+        via.position.set(0, 0.44, 0);
+        pe.add(via);
       }
     }
 
     // =========================================================================
-    // ZONE 5: GEN-2 SIMD 8-ROW DRAIN BUS (X: 16)
+    // ZONE 5: GEN-2 SIMD 8-ROW PARALLEL DRAIN BUS (X: 16)
     // =========================================================================
     const zone5 = new THREE.Group();
     zone5.position.set(16, 0, 0);
     scene.add(zone5);
 
-    const lbl5 = create3DLabel("5. SIMD DRAIN BUS", "#ec4899");
-    lbl5.position.set(16, 8, -9);
-    scene.add(lbl5);
+    createEtchedSilkscreen("[ZONE 05] SIMD_DRAIN_BUS [8x32b]", 16, -9.5, 14, 2.0, "#f59e0b");
 
-    // 8 Parallel Copper Bus Trunks
+    // 8 Parallel Copper Bus Ribbons (SIMD 8-Way Parallel)
     for (let r = 0; r < 8; r++) {
       const z = (r - 3.5) * 1.8;
-      createConduit(new THREE.Vector3(11.5, 1.2, z), new THREE.Vector3(18.5, 1.2, z), 0xf59e0b, 0.12);
+      createBusRibbon(new THREE.Vector3(11.5, 0.8, z), new THREE.Vector3(18.5, 0.8, z), 0.22, 0xeab308);
     }
 
-    // SIMD Collector Buffer Block
+    // SIMD Parallel Collector FIFO Buffer
     const drainBlock = new THREE.Mesh(
-      new THREE.BoxGeometry(4.5, 2.5, 15),
-      new THREE.MeshStandardMaterial({ color: 0xbe185d, metalness: 0.8, roughness: 0.2, emissive: 0xec4899, emissiveIntensity: 0.35 })
+      new THREE.BoxGeometry(4.2, 1.2, 15.5),
+      new THREE.MeshStandardMaterial({ color: 0x1e1b2e, metalness: 0.85, roughness: 0.25 })
     );
-    drainBlock.position.set(3, 1.6, 0);
+    drainBlock.position.set(3, 0.9, 0);
     drainBlock.castShadow = true;
-    drainBlock.userData = { title: "SIMD 8-Row Drain Buffer", type: "Gen-2 Fast Drain Architecture", status: "8 Rows Parallel Drain in 8 Cycles (8.0× Speedup)" };
+    drainBlock.userData = { title: "SIMD 8-Row Drain Buffer", type: "Gen-2 Fast Drain Architecture", status: "8 Rows Drained in 8 Cycles (8.0× Speedup)" };
     zone5.add(drainBlock);
     interactiveObjects.push(drainBlock);
 
     // =========================================================================
-    // ZONE 6: QUANTIZED RELU & MAX-POOLING (X: 26)
+    // ZONE 6: QUANTIZED RELU & MAX-POOLING VECTOR DSP (X: 26)
     // =========================================================================
     const zone6 = new THREE.Group();
     zone6.position.set(26, 0, 0);
     scene.add(zone6);
 
-    const lbl6 = create3DLabel("6. RELU & MAXPOOL", "#22c55e");
-    lbl6.position.set(26, 8, -9);
-    scene.add(lbl6);
+    createEtchedSilkscreen("[ZONE 06] QUANT_RELU_MAXPOOL", 26, -9.5, 14, 2.0, "#10b981");
 
-    // Quantized ReLU Unit
+    // Vector ReLU DSP Unit
     const reluBlock = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 2.4, 6.5),
-      new THREE.MeshStandardMaterial({ color: 0x16a34a, metalness: 0.75, roughness: 0.25, emissive: 0x22c55e, emissiveIntensity: 0.35 })
+      new THREE.BoxGeometry(4.2, 1.2, 6.5),
+      new THREE.MeshStandardMaterial({ color: 0x14201c, metalness: 0.8, roughness: 0.25 })
     );
-    reluBlock.position.set(0, 1.5, -4);
+    reluBlock.position.set(0, 0.9, -4.5);
     reluBlock.castShadow = true;
-    reluBlock.userData = { title: "Quantized ReLU Unit (8 Channels)", type: "Right-Shift >>8 + Clamp [0, 127]", status: "Zero Saturation Overflow" };
+    reluBlock.userData = { title: "Quantized ReLU Unit (8 Channels)", type: "Right-Shift >>8 + Saturation Clamp [0, 127]", status: "Bit-True Golden Matched" };
     zone6.add(reluBlock);
     interactiveObjects.push(reluBlock);
 
-    // Max-Pooling Unit
+    // Max-Pooling DSP Unit
     const poolBlock = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 2.4, 6.5),
-      new THREE.MeshStandardMaterial({ color: 0x9333ea, metalness: 0.75, roughness: 0.25, emissive: 0xa855f7, emissiveIntensity: 0.35 })
+      new THREE.BoxGeometry(4.2, 1.2, 6.5),
+      new THREE.MeshStandardMaterial({ color: 0x1e1528, metalness: 0.8, roughness: 0.25 })
     );
-    poolBlock.position.set(0, 1.5, 4);
+    poolBlock.position.set(0, 0.9, 4.5);
     poolBlock.castShadow = true;
     poolBlock.userData = { title: "2×2 Max-Pooling Engine", type: "Stride 2 Downsampling", status: "4× Data Reduction (28×28 → 14×14)" };
     zone6.add(poolBlock);
     interactiveObjects.push(poolBlock);
 
-    createConduit(new THREE.Vector3(20.5, 1.5, -2), new THREE.Vector3(23.5, 1.5, -4), 0x22c55e, 0.15);
-    createConduit(new THREE.Vector3(20.5, 1.5, 2), new THREE.Vector3(23.5, 1.5, 4), 0xa855f7, 0.15);
+    createBusRibbon(new THREE.Vector3(20.5, 0.8, -2.5), new THREE.Vector3(23.8, 0.8, -4.5), 0.35, 0x10b981);
+    createBusRibbon(new THREE.Vector3(20.5, 0.8, 2.5), new THREE.Vector3(23.8, 0.8, 4.5), 0.35, 0xa855f7);
 
     // =========================================================================
-    // ZONE 7: PHYSICAL SOC & OLED HEX0 OUTPUT (X: 36)
+    // ZONE 7: ALTERA CYCLONE V SOC DIE & REAL HARDWARE PERIPHERALS (X: 36)
     // =========================================================================
     const zone7 = new THREE.Group();
     zone7.position.set(36, 0, 0);
     scene.add(zone7);
 
-    const lbl7 = create3DLabel("7. SOC & OUTPUT", "#3b82f6");
-    lbl7.position.set(36, 8, -9);
-    scene.add(lbl7);
+    createEtchedSilkscreen("[ZONE 07] CYCLONE_V_SOC_HOST", 36, -9.5, 14, 2.0, "#38bdf8");
 
-    // OLED 7-Segment Display (HEX0) showing Digit '8'
-    const hexBox = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 4.8, 3.2),
-      new THREE.MeshStandardMaterial({ color: 0x050507, roughness: 0.4, metalness: 0.6 })
+    // FPGA SoC Package (Altera 5CSEMA5F31C6 BGA)
+    const socBga = new THREE.Mesh(
+      new THREE.BoxGeometry(5.2, 0.5, 5.2),
+      new THREE.MeshStandardMaterial({ color: 0x090c12, metalness: 0.8, roughness: 0.2 })
     );
-    hexBox.position.set(0, 2.4, -3.5);
-    hexBox.castShadow = true;
-    hexBox.userData = { title: "FPGA 7-Segment Display (HEX0)", type: "Physical Peripheral On DE10-Std", status: "Argmax Prediction Output: 8" };
-    zone7.add(hexBox);
-    interactiveObjects.push(hexBox);
+    socBga.position.set(0, 0.55, 0);
+    zone7.add(socBga);
 
-    // Glowing Green Segments for Digit '8'
-    const segGeoH = new THREE.BoxGeometry(1.6, 0.25, 0.1);
-    const segGeoV = new THREE.BoxGeometry(0.25, 1.2, 0.1);
+    // Nickel-Plated Integrated Heat Spreader Lid
+    const socLid = new THREE.Mesh(
+      new THREE.BoxGeometry(4.5, 0.4, 4.5),
+      new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.95, roughness: 0.15 })
+    );
+    socLid.position.set(0, 0.9, 0);
+    socLid.userData = { title: "Altera Cyclone V SoC FPGA", type: "5CSEMA5F31C6 Hardware", status: "Host AXI4-Lite Bridge @ 50MHz" };
+    zone7.add(socLid);
+    interactiveObjects.push(socLid);
+
+    // Corner Pin-1 Gold Triangle Marker
+    const pin1 = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18, 0.18, 0.08, 3),
+      new THREE.MeshBasicMaterial({ color: 0xeab308 })
+    );
+    pin1.position.set(-1.8, 1.15, -1.8);
+    zone7.add(pin1);
+
+    // Physical SMD 7-Segment Digital Display (HEX0) showing Digit '8'
+    const hexHousing = new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 3.8, 1.4),
+      new THREE.MeshStandardMaterial({ color: 0x030712, roughness: 0.5, metalness: 0.5 })
+    );
+    hexHousing.position.set(0, 2.2, -6.0);
+    hexHousing.userData = { title: "7-Segment Display HEX0", type: "Physical FPGA Output", status: "Prediction Argmax Result: 8" };
+    zone7.add(hexHousing);
+    interactiveObjects.push(hexHousing);
+
+    // Glowing Emerald Digital Segments
     const segMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+    const segGeoH = new THREE.BoxGeometry(1.2, 0.18, 0.08);
+    const segGeoV = new THREE.BoxGeometry(0.18, 0.9, 0.08);
 
-    const seg_a = new THREE.Mesh(segGeoH, segMat); seg_a.position.set(0, 4.0, -1.85); zone7.add(seg_a);
-    const seg_g = new THREE.Mesh(segGeoH, segMat); seg_g.position.set(0, 2.4, -1.85); zone7.add(seg_g);
-    const seg_d = new THREE.Mesh(segGeoH, segMat); seg_d.position.set(0, 0.8, -1.85); zone7.add(seg_d);
-    const seg_f = new THREE.Mesh(segGeoV, segMat); seg_f.position.set(-0.8, 3.2, -1.85); zone7.add(seg_f);
-    const seg_b = new THREE.Mesh(segGeoV, segMat); seg_b.position.set(0.8, 3.2, -1.85); zone7.add(seg_b);
-    const seg_e = new THREE.Mesh(segGeoV, segMat); seg_e.position.set(-0.8, 1.6, -1.85); zone7.add(seg_e);
-    const seg_c = new THREE.Mesh(segGeoV, segMat); seg_c.position.set(0.8, 1.6, -1.85); zone7.add(seg_c);
+    const s_a = new THREE.Mesh(segGeoH, segMat); s_a.position.set(0, 3.4, -5.25); zone7.add(s_a);
+    const s_g = new THREE.Mesh(segGeoH, segMat); s_g.position.set(0, 2.2, -5.25); zone7.add(s_g);
+    const s_d = new THREE.Mesh(segGeoH, segMat); s_d.position.set(0, 1.0, -5.25); zone7.add(s_d);
+    const s_f = new THREE.Mesh(segGeoV, segMat); s_f.position.set(-0.6, 2.8, -5.25); zone7.add(s_f);
+    const s_b = new THREE.Mesh(segGeoV, segMat); s_b.position.set(0.6, 2.8, -5.25); zone7.add(s_b);
+    const s_e = new THREE.Mesh(segGeoV, segMat); s_e.position.set(-0.6, 1.6, -5.25); zone7.add(s_e);
+    const s_c = new THREE.Mesh(segGeoV, segMat); s_c.position.set(0.6, 1.6, -5.25); zone7.add(s_c);
 
-    // 10 LEDR Indicators Strip
-    const ledStrip = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 1.2, 6.5),
-      new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.6 })
-    );
-    ledStrip.position.set(0, 0.6, 3.5);
-    ledStrip.userData = { title: "LEDR[9:0] Confidence Array", type: "On-Board FPGA Indicators", status: "LEDR[8] Active High (98.7% Conf)" };
-    zone7.add(ledStrip);
-    interactiveObjects.push(ledStrip);
-
+    // 10 Surface-Mount 0603 SMD LEDs (LEDR[9:0])
     for (let i = 0; i < 10; i++) {
       const isLit = (i === 8);
-      const ledLamp = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.2, 0.2, 0.2, 8),
-        new THREE.MeshBasicMaterial({ color: isLit ? 0xef4444 : 0x450a0a })
+      const smdLed = new THREE.Mesh(
+        new THREE.BoxGeometry(0.35, 0.15, 0.2),
+        new THREE.MeshBasicMaterial({ color: isLit ? 0xef4444 : 0x3f1212 })
       );
-      ledLamp.position.set(0, 1.3, 0.8 + (i - 4.5) * 0.55);
-      zone7.add(ledLamp);
+      smdLed.position.set(0, 0.6, 2.0 + (i - 4.5) * 0.45);
+      zone7.add(smdLed);
     }
 
-    createConduit(new THREE.Vector3(28.5, 1.5, -4), new THREE.Vector3(33.5, 2.0, -3.5), 0x3b82f6, 0.15);
+    createBusRibbon(new THREE.Vector3(28.5, 0.8, -4.5), new THREE.Vector3(33.5, 0.8, -3.0), 0.35, 0x38bdf8);
 
     // =========================================================================
-    // DYNAMIC SIGNAL FLOW PULSES ALONG CONDUITS (X: -36 TO +36)
+    // HIGH-SPEED BUS SIGNAL PULSES (GUIDED STRICTLY ALONG PHYSICAL CONDUITS)
     // =========================================================================
-    const packetCount = 45;
-    const packetGeo = new THREE.SphereGeometry(0.28, 8, 8);
+    const packetCount = 28;
+    const packetGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.4, 8);
     const packetMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-    const packets = [];
+    const busPulses = [];
 
     for (let i = 0; i < packetCount; i++) {
-      const p = new THREE.Mesh(packetGeo, packetMat);
-      p.position.set(-36 + (i / packetCount) * 72, 1.5, (Math.random() - 0.5) * 8);
-      scene.add(p);
-      packets.push({ mesh: p, speed: 0.18 + Math.random() * 0.08 });
+      const pulse = new THREE.Mesh(packetGeo, packetMat);
+      pulse.rotation.z = Math.PI / 2;
+      pulse.position.set(-36 + (i / packetCount) * 72, 0.85, (Math.random() - 0.5) * 5.0);
+      scene.add(pulse);
+      busPulses.push({ mesh: pulse, speed: 0.28 + Math.random() * 0.12 });
     }
 
     // =========================================================================
@@ -1102,9 +1153,9 @@
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-      const mmX = (mouse.x * 25.0).toFixed(2);
-      const mmZ = (mouse.y * 15.0).toFixed(2);
-      cadCoords.textContent = `X: ${mmX > 0 ? '+' : ''}${mmX} mm, Z: ${mmZ > 0 ? '+' : ''}${mmZ} mm`;
+      const mmX = (mouse.x * 28.5).toFixed(2);
+      const mmZ = (mouse.y * 16.2).toFixed(2);
+      cadCoords.textContent = `X: ${mmX > 0 ? '+' : ''}${mmX} mm, Y: ${mmZ > 0 ? '+' : ''}${mmZ} mm`;
 
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(interactiveObjects, false);
@@ -1127,7 +1178,7 @@
     // =========================================================================
     // STAGE NAVIGATION & GUIDED CAMERA TRANSITIONS
     // =========================================================================
-    let targetCam = { x: -10, y: 48, z: 52 };
+    let targetCam = { x: -10, y: 50, z: 54 };
     let targetLook = { x: 0, y: -2.0, z: 0 };
 
     let isDetailsExpanded = false;
@@ -1220,7 +1271,7 @@
       }
       document.getElementById('activeModulesBox').innerHTML = st.modules;
 
-      document.querySelectorAll('.step-node-dot').forEach((dot, i) => {
+      document.querySelectorAll('.eda-step-dot').forEach((dot, i) => {
         if (i === currentStage) dot.classList.add('active');
         else dot.classList.remove('active');
       });
@@ -1270,16 +1321,17 @@
     }
 
     function setCamPreset(preset) {
-      document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.eda-btn').forEach(b => b.classList.remove('active'));
       event.target.classList.add('active');
 
       if (preset === 'overview') {
-        targetCam = { x: -10, y: 48, z: 52 };
+        targetCam = { x: -10, y: 50, z: 54 };
         targetLook = { x: 0, y: -2.0, z: 0 };
+      } else if (preset === 'die_top') {
+        targetCam = { x: 0, y: 75, z: 0.1 };
+        targetLook = { x: 0, y: 0, z: 0 };
       } else if (preset === 'input') {
         goToStage(0);
-      } else if (preset === 'buffers') {
-        goToStage(1);
       } else if (preset === 'skew') {
         goToStage(2);
       } else if (preset === 'array') {
@@ -1292,7 +1344,7 @@
     }
 
     // =========================================================================
-    // RENDER ANIMATION LOOP (SMOOTH CAMERA LERP & WAVEFRONT EMERALD PULSE)
+    // RENDER ANIMATION LOOP (ELECTRICAL WAVEFRONT LOGIC TRANSITION WAVE)
     // =========================================================================
     let clock = new THREE.Clock();
     let simTime = 0;
@@ -1313,35 +1365,38 @@
       controls.target.z += (targetLook.z - controls.target.z) * 0.055;
       controls.update();
 
-      // 2. Animate 3x3 Receptive Field Sliding over 28x28 Voxel Digit
+      // 2. Animate Im2Col Laser Reticle Scanning over Sensor Pixels
       const scanT = simTime * 1.5;
-      rfAperture.position.x = -1.8 + Math.sin(scanT) * 2.2;
-      rfAperture.position.z = -1.8 + Math.cos(scanT * 0.8) * 2.2;
+      reticleGroup.position.x = -1.8 + Math.sin(scanT) * 2.2;
+      reticleGroup.position.z = -1.8 + Math.cos(scanT * 0.8) * 2.2;
 
-      // 3. Animate 45° Systolic Wavefront across 64 PEs
+      // 3. Animate 45° Systolic Electrical Wavefront across 64 PEs (NO TOY BOUNCING!)
       const wavefrontCycle = Math.floor((simTime * 4.5) % 15);
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           const dist = r + c;
           const pe = peMeshes[r][c];
           if (dist === wavefrontCycle) {
+            // Intense High-Energy Logic Activity Pulse
+            pe.material.emissive.setHex(0x38bdf8); // Electric cyan luminescence
             pe.material.emissiveIntensity = 0.95;
-            pe.material.color.setHex(0x22c55e); // Bright active MAC
-            pe.position.y = 1.35; // Lift on active computation
+            pe.material.color.setHex(0x1e293b);
           } else if (dist < wavefrontCycle) {
-            pe.material.emissiveIntensity = 0.25;
-            pe.material.color.setHex(0x15803d);
-            pe.position.y = 1.2;
+            // Settled Accumulated State
+            pe.material.emissive.setHex(0x0284c7);
+            pe.material.emissiveIntensity = 0.2;
+            pe.material.color.setHex(0x0f172a);
           } else {
-            pe.material.emissiveIntensity = 0.08;
-            pe.material.color.setHex(0x0f3b1e);
-            pe.position.y = 1.2;
+            // Standby State
+            pe.material.emissive.setHex(0x000000);
+            pe.material.emissiveIntensity = 0.0;
+            pe.material.color.setHex(0x090e17);
           }
         }
       }
 
-      // 4. Animate Flowing Signal Packets along Conduits
-      packets.forEach(p => {
+      // 4. Animate Guided High-Speed Bus Pulses along Interconnect
+      busPulses.forEach(p => {
         p.mesh.position.x += p.speed;
         if (p.mesh.position.x > 38) {
           p.mesh.position.x = -36;
