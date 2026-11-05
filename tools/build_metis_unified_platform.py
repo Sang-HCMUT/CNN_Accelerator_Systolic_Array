@@ -434,11 +434,11 @@ def build():
 
     # 5. Assemble Master index.html
     full_html = f'''<!DOCTYPE html>
-<html lang="vi" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CNN Systolic SoC Platform — Metis Architecture Suite (Báo Cáo 50% & Interactive Studio)</title>
+  <title>CNN Systolic SoC Platform — Metis Architecture Suite (50% Thesis Report & Hardware Studio)</title>
   
   <!-- Google Fonts: Inter & Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -788,19 +788,19 @@ def build():
       <!-- Quick Nav Switcher (Top Pills) -->
       <nav class="d-none d-xl-flex align-items-center gap-1 ms-4">
         <button class="nav-tab-btn active" onclick="switchMainTab('report')" id="nav-btn-report">
-          <i class="bi bi-file-earmark-text"></i> Báo Cáo 50%
+          <i class="bi bi-file-earmark-text"></i> 50% Report
         </button>
         <button class="nav-tab-btn" onclick="switchMainTab('cnn-studio')" id="nav-btn-cnn-studio">
           <i class="bi bi-play-circle"></i> MNIST Studio
         </button>
         <button class="nav-tab-btn" onclick="switchMainTab('gif-library')" id="nav-btn-gif-library">
-          <i class="bi bi-collection-play"></i> 18 GIFs Động
+          <i class="bi bi-collection-play"></i> 18 GIFs
         </button>
         <button class="nav-tab-btn" onclick="switchMainTab('skew-sim')" id="nav-btn-skew-sim">
           <i class="bi bi-water"></i> Skew & Wavefront
         </button>
         <button class="nav-tab-btn" onclick="switchMainTab('fpga-metrics')" id="nav-btn-fpga-metrics">
-          <i class="bi bi-speedometer2"></i> Đo Kiểm FPGA
+          <i class="bi bi-speedometer2"></i> FPGA Telemetry
         </button>
       </nav>
     </div>
@@ -813,23 +813,23 @@ def build():
       </span>
 
       <!-- Theme Switcher -->
-      <button class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5" onclick="toggleTheme()" title="Chuyển chế độ Sáng / Tối" id="btn-theme-toggle">
+      <button class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5" onclick="toggleTheme()" title="Toggle Light / Dark Theme" id="btn-theme-toggle">
         <i class="bi bi-moon-fill" id="theme-icon"></i>
       </button>
 
       <!-- Print Report Button -->
-      <button class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 d-none d-sm-inline-block" onclick="window.print()" title="In hoặc Xuất PDF">
+      <button class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 d-none d-sm-inline-block" onclick="window.print()" title="Print / Export PDF">
         <i class="bi bi-printer"></i>
       </button>
 
       <!-- Fullscreen Button -->
-      <button class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 d-none d-lg-inline-block" onclick="toggleFullscreen()" title="Toàn màn hình">
+      <button class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 d-none d-lg-inline-block" onclick="toggleFullscreen()" title="Toggle Fullscreen">
         <i class="bi bi-arrows-fullscreen"></i>
       </button>
 
       <!-- Run Demo Button -->
       <button class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold" onclick="switchMainTab('cnn-studio')">
-        <i class="bi bi-play-fill me-1"></i>Chạy Suy Luận
+        <i class="bi bi-play-fill me-1"></i>Live Studio
       </button>
     </div>
   </header>
@@ -841,10 +841,10 @@ def build():
 
     <!-- METIS SIDEBAR -->
     <aside class="app-sidebar">
-      <div class="sidebar-group-title">Ứng Dụng Nền Tảng</div>
+      <div class="sidebar-group-title">Platform Apps</div>
       <a class="sidebar-nav-link active" onclick="switchMainTab('report')" id="side-link-report">
         <i class="bi bi-file-earmark-text text-primary"></i>
-        <span>Báo Cáo Nghiên Cứu 50%</span>
+        <span>50% Research Report</span>
         <span class="badge bg-secondary-subtle text-secondary ms-auto small">6 Chương</span>
       </a>
       <a class="sidebar-nav-link" onclick="switchMainTab('cnn-studio')" id="side-link-cnn-studio">
@@ -854,17 +854,17 @@ def build():
       </a>
       <a class="sidebar-nav-link" onclick="switchMainTab('gif-library')" id="side-link-gif-library">
         <i class="bi bi-film text-warning"></i>
-        <span>Thư Viện 18 Mô Phỏng Động</span>
+        <span>18 Architectural GIFs</span>
         <span class="badge bg-warning-subtle text-warning ms-auto small">18 GIFs</span>
       </a>
       <a class="sidebar-nav-link" onclick="switchMainTab('skew-sim')" id="side-link-skew-sim">
         <i class="bi bi-water text-info"></i>
-        <span>Mô Phỏng 2D Skew Wavefront</span>
+        <span>2D Wavefront Skew Sim</span>
         <span class="badge bg-info-subtle text-info ms-auto small">RTL</span>
       </a>
       <a class="sidebar-nav-link" onclick="switchMainTab('fpga-metrics')" id="side-link-fpga-metrics">
         <i class="bi bi-speedometer2 text-danger"></i>
-        <span>Đo Kiểm & Tài Nguyên FPGA</span>
+        <span>FPGA Telemetry & STA</span>
         <span class="badge bg-danger-subtle text-danger ms-auto small">100% Cov</span>
       </a>
 
@@ -900,7 +900,7 @@ def build():
       <!-- Mini Hardware Telemetry Widget at Bottom -->
       <div class="mt-auto p-3 border-top bg-body-tertiary">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <small class="fw-semibold text-emphasis">Kiến trúc phần cứng</small>
+          <small class="fw-semibold text-emphasis">Hardware Architecture</small>
           <span class="badge bg-success-subtle text-success">Gen-2 Active</span>
         </div>
         <div class="small text-muted font-monospace mb-1">• 64 PE Mesh (INT8 MAC)</div>
@@ -927,8 +927,8 @@ def build():
                 <p class="text-secondary mb-0">Hệ Thống SoC Tích Hợp RISC-V PicoRV32, AMBA AXI4-Lite, Mảng 64 PE INT8, Khung Kiểm Thử UVM 1.2 và Hiện Thực Kit FPGA DE10-Standard.</p>
               </div>
               <div class="d-flex gap-2">
-                <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Xuất PDF</button>
-                <button class="btn btn-primary" onclick="switchMainTab('cnn-studio')"><i class="bi bi-play-circle me-1"></i>Chạy MNIST Studio</button>
+                <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Export PDF</button>
+                <button class="btn btn-primary" onclick="switchMainTab('cnn-studio')"><i class="bi bi-play-circle me-1"></i>Run MNIST Studio</button>
               </div>
             </div>
 
@@ -936,35 +936,35 @@ def build():
             <div class="row g-3 mt-3">
               <div class="col-6 col-md-4 col-xl-2">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">Mảng Tâm Thu</div>
+                  <div class="kpi-label">Systolic Core</div>
                   <div class="kpi-value text-primary">64 PE</div>
                   <small class="text-muted">8×8 2D Mesh</small>
                 </div>
               </div>
               <div class="col-6 col-md-4 col-xl-2">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">Chu Kỳ 1 Tile</div>
+                  <div class="kpi-label">Tile Latency</div>
                   <div class="kpi-value text-success">37 T</div>
                   <small class="text-muted">Single-Cycle MAC</small>
                 </div>
               </div>
               <div class="col-6 col-md-4 col-xl-2">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">Tái Sử Dụng A</div>
+                  <div class="kpi-label">Weight Reuse</div>
                   <div class="kpi-value text-warning">98×</div>
-                  <small class="text-muted">Tiết Kiệm DRAM</small>
+                  <small class="text-muted">DRAM Traffic Saved</small>
                 </div>
               </div>
               <div class="col-6 col-md-4 col-xl-2">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">Tần Số FMAX</div>
+                  <div class="kpi-label">Maximum FMAX</div>
                   <div class="kpi-value text-info">69.49 MHz</div>
                   <small class="text-muted">DE10-Standard</small>
                 </div>
               </div>
               <div class="col-6 col-md-4 col-xl-2">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">Tăng Tốc Gen-2</div>
+                  <div class="kpi-label">Gen-2 Speedup</div>
                   <div class="kpi-value text-danger">4.81×</div>
                   <small class="text-muted">vs Gen-1 Baseline</small>
                 </div>
@@ -999,11 +999,11 @@ def build():
           <div class="card-body p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
               <span class="badge bg-success-subtle text-success border border-success-subtle mb-1">Interactive Studio</span>
-              <h2 class="h5 fw-bold text-emphasis mb-0">Phòng Trực Quan Hóa Động Thuật Toán CNN & Bộ Tăng Tốc Tâm Thu 64 PE</h2>
+              <h2 class="h5 fw-bold text-emphasis mb-0">Real-Time CNN Inference & 64-PE Systolic Hardware Accelerator Studio</h2>
             </div>
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-secondary-subtle text-secondary font-monospace">DE10: 69.49 MHz</span>
-              <span class="badge bg-primary-subtle text-primary font-monospace">Độ Trễ @ 50MHz: 145.04 µs</span>
+              <span class="badge bg-primary-subtle text-primary font-monospace">Latency @ 50MHz: 145.04 µs</span>
             </div>
           </div>
         </div>
@@ -1014,7 +1014,7 @@ def build():
             
             <!-- Sample Digit Selectors -->
             <div class="d-flex align-items-center gap-1.5 flex-wrap">
-              <span class="small fw-semibold text-secondary me-2">Mẫu MNIST:</span>
+              <span class="small fw-semibold text-secondary me-2">MNIST Presets:</span>
               <div class="d-flex gap-1" id="digitPresetContainer">
                 <button class="digit-pill-btn active" onclick="selectPresetDigit(0)">0</button>
                 <button class="digit-pill-btn" onclick="selectPresetDigit(1)">1</button>
@@ -1034,21 +1034,21 @@ def build():
             <!-- Actions & Speed -->
             <div class="d-flex align-items-center gap-2">
               <button class="btn btn-sm btn-success px-3 fw-semibold" id="btnStart" onclick="startConvolution()">
-                <i class="bi bi-play-fill me-1"></i>Bắt Đầu Tích Chập
+                <i class="bi bi-play-fill me-1"></i>Start Convolution
               </button>
               <button class="btn btn-sm btn-outline-secondary" id="btnPause" onclick="togglePause()">
-                <i class="bi bi-pause-fill me-1"></i>Tạm Dừng
+                <i class="bi bi-pause-fill me-1"></i>Pause
               </button>
               <button class="btn btn-sm btn-outline-secondary" id="btnStep" onclick="stepNext()" disabled>
-                <i class="bi bi-skip-forward-fill me-1"></i>Bước Kế (+1)
+                <i class="bi bi-skip-forward-fill me-1"></i>Next Step (+1)
               </button>
               <button class="btn btn-sm btn-outline-secondary d-none" id="btnDrawMode" onclick="toggleDrawMode()">
-                <i class="bi bi-pencil me-1"></i>Vẽ Tay
+                <i class="bi bi-pencil me-1"></i>Freehand Draw
               </button>
               <select class="form-select form-select-sm w-auto font-monospace" id="speedSelect" onchange="handleSpeedChange()">
-                <option value="slow">Chậm (1.2s)</option>
-                <option value="normal" selected>Chuẩn (0.6s)</option>
-                <option value="fast">Nhanh (0.25s)</option>
+                <option value="slow">Slow (1.2s)</option>
+                <option value="normal" selected>Normal (0.6s)</option>
+                <option value="fast">Fast (0.25s)</option>
               </select>
             </div>
           </div>
@@ -1061,24 +1061,24 @@ def build():
           <div class="col-xl-3 col-md-4">
             <div class="card h-100 border shadow-sm">
               <div class="card-header py-2.5 px-3 d-flex justify-content-between align-items-center bg-transparent">
-                <span class="fw-semibold small"><i class="bi bi-pencil-square me-1 text-primary"></i>1. Tầng Đầu Vào (Input)</span>
+                <span class="fw-semibold small"><i class="bi bi-pencil-square me-1 text-primary"></i>1. Input Layer (28×28 INT8)</span>
                 <span class="badge bg-secondary-subtle text-secondary font-monospace">28×28 INT8</span>
               </div>
               <div class="card-body p-3 text-center">
                 <canvas id="inputCanvas" width="196" height="196" class="shadow-sm mx-auto d-block" style="cursor: crosshair;"></canvas>
                 
                 <div class="d-flex justify-content-center gap-1 mt-2">
-                  <button class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="clearCanvas()">Xóa Bảng</button>
-                  <button class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="invertCanvas()">Đảo Màu</button>
-                  <button class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="centerDrawing()">Căn Giữa</button>
+                  <button class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="clearCanvas()">Clear</button>
+                  <button class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="invertCanvas()">Invert</button>
+                  <button class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="centerDrawing()">Center Mass</button>
                 </div>
 
                 <div class="mt-3 p-2 rounded bg-body-tertiary text-start small">
                   <div class="d-flex justify-content-between font-monospace text-muted mb-1">
-                    <span>Tọa độ con trỏ:</span> <span id="mouseCoord" class="text-primary">(0, 0)</span>
+                    <span>Cursor Coords:</span> <span id="mouseCoord" class="text-primary">(0, 0)</span>
                   </div>
                   <div class="d-flex justify-content-between font-monospace text-muted">
-                    <span>Giá trị INT8:</span> <span id="mouseVal" class="text-success">-128 (Đen)</span>
+                    <span>INT8 Value:</span> <span id="mouseVal" class="text-success">-128 (Black)</span>
                   </div>
                 </div>
                 <small class="text-muted d-block mt-2">Bạn có thể tự do vẽ số bằng chuột hoặc click chọn 10 mẫu chuẩn ở thanh trên.</small>
@@ -1090,8 +1090,8 @@ def build():
           <div class="col-xl-6 col-md-8">
             <div class="card h-100 border shadow-sm">
               <div class="card-header py-2.5 px-3 d-flex justify-content-between align-items-center bg-transparent">
-                <span class="fw-semibold small"><i class="bi bi-cpu me-1 text-success"></i>2. Tiến Trình Tính Toán Phần Cứng (Systolic Engine)</span>
-                <span class="badge bg-primary-subtle text-primary font-monospace" id="lblEngineTag">Chờ Khởi Động</span>
+                <span class="fw-semibold small"><i class="bi bi-cpu me-1 text-success"></i>2. Hardware Systolic Engine Process (64 PE Mesh)</span>
+                <span class="badge bg-primary-subtle text-primary font-monospace" id="lblEngineTag">Ready / Standby</span>
               </div>
               <div class="card-body p-3">
                 <canvas id="filterCanvas" width="560" height="260" class="w-100 mb-2"></canvas>
@@ -1104,10 +1104,10 @@ def build():
                 <!-- Layer Description -->
                 <div class="p-2.5 rounded bg-body-tertiary small">
                   <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="fw-semibold text-emphasis" id="currentLayer">Sẵn sàng thực thi...</span>
-                    <span class="badge bg-secondary-subtle text-secondary font-monospace" id="layerSize">Output: Chờ lệnh</span>
+                    <span class="fw-semibold text-emphasis" id="currentLayer">Ready for execution...</span>
+                    <span class="badge bg-secondary-subtle text-secondary font-monospace" id="layerSize">Output: Standby</span>
                   </div>
-                  <div class="text-secondary" id="layerDescription">Nhấn nút 'Bắt Đầu Tích Chập' để kích hoạt chuỗi trực quan hóa động qua lõi tăng tốc 64 PE.</div>
+                  <div class="text-secondary" id="layerDescription">Click 'Start Convolution' to launch cycle-accurate hardware dataflow visualization across 64 PEs.</div>
                 </div>
 
                 <!-- Hidden layers 0..7 for compatibility -->
@@ -1127,16 +1127,16 @@ def build():
           <div class="col-xl-3 col-md-12">
             <div class="card h-100 border shadow-sm">
               <div class="card-header py-2.5 px-3 d-flex justify-content-between align-items-center bg-transparent">
-                <span class="fw-semibold small"><i class="bi bi-display me-1 text-warning"></i>3. Dự Đoán & Phần Cứng FPGA</span>
+                <span class="fw-semibold small"><i class="bi bi-display me-1 text-warning"></i>3. FPGA Telemetry & Classification</span>
                 <span class="badge bg-secondary-subtle text-secondary font-monospace">HEX & Softmax</span>
               </div>
               <div class="card-body p-3 d-flex flex-column justify-content-between">
                 
                 <!-- Prediction & 7-Segment -->
                 <div class="p-3 rounded bg-black text-center border">
-                  <div class="small text-muted font-monospace mb-1">DỰ ĐOÁN (ARGMAX)</div>
+                  <div class="small text-muted font-monospace mb-1">PREDICTED DIGIT (ARGMAX)</div>
                   <div class="display-3 fw-bold text-success font-monospace my-1" id="predictedDigit">--</div>
-                  <div class="small text-primary font-monospace" id="confidence">Độ tin cậy: --%</div>
+                  <div class="small text-primary font-monospace" id="confidence">Confidence: --%</div>
                 </div>
 
                 <!-- 7-Segment Visualizer (OLED) -->
@@ -1155,13 +1155,13 @@ def build():
 
                 <!-- LEDs -->
                 <div>
-                  <small class="text-muted font-monospace d-block mb-1">ĐÈN LEDR[9:0] (KIT DE10):</small>
+                  <small class="text-muted font-monospace d-block mb-1">HARDWARE LEDR[9:0] (DE10 KIT):</small>
                   <div class="d-flex justify-content-between p-2 rounded bg-black border" id="ledStrip"></div>
                 </div>
 
                 <!-- UART Console -->
                 <div class="mt-3 p-2 rounded bg-black border text-start font-monospace small" style="max-height: 90px; overflow-y: auto;" id="uartLine">
-                  <span class="text-success">[UART Core]:</span> Sẵn sàng nhận dữ liệu ma trận.
+                  <span class="text-success">[UART Core]:</span> Systolic core ready for matrix execution.
                 </div>
               </div>
             </div>
@@ -1179,18 +1179,18 @@ def build():
           <div class="card-body p-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
               <span class="badge bg-warning-subtle text-warning border border-warning-subtle mb-1">Bộ Sưu Tập Đồ Họa</span>
-              <h2 class="h5 fw-bold text-emphasis mb-0">Thư Viện Trực Quan Hóa Động 18 Mô Phỏng Vi Kiến Trúc</h2>
+              <h2 class="h5 fw-bold text-emphasis mb-0">18-Module Interactive Architectural Simulation Library</h2>
               <p class="text-secondary small mb-0">Bộ ảnh GIF 16:9 sắc nét, mô phỏng từ tầng bóng bán dẫn PE đến toàn bộ mạng SoC & bus AXI.</p>
             </div>
 
             <!-- Filter Buttons -->
             <div class="d-flex flex-wrap gap-1" id="gifFilterContainer">
-              <button class="btn btn-sm btn-primary" onclick="filterGifs('all')">Tất Cả (18)</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('pe')">Vi Kiến Trúc PE (3)</button>
+              <button class="btn btn-sm btn-primary" onclick="filterGifs('all')">All Modules (18)</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('pe')">PE Microarchitecture (3)</button>
               <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('wavefront')">Wavefront (4)</button>
               <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('soc')">SoC & AXI (4)</button>
               <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('uvm')">UVM & FPGA (4)</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('deepdive')">Chuyên Sâu (3)</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterGifs('deepdive')">Deep Dives (4)</button>
             </div>
           </div>
         </div>
@@ -1209,17 +1209,17 @@ def build():
           <div class="card-header bg-transparent py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
             <div>
               <span class="badge bg-info-subtle text-info border border-info-subtle mb-1">RTL Hardware Wavefront</span>
-              <h3 class="h5 fw-bold text-emphasis mb-0">Mô Phỏng Lan Truyền Sóng Dữ Liệu 2D Systolic Array (64 PE)</h3>
+              <h3 class="h5 fw-bold text-emphasis mb-0">2D Systolic Wavefront & Skew Unit Interactive Simulator (64 PEs)</h3>
             </div>
             <span class="badge bg-success-subtle text-success font-monospace">RTL: systolic_skew_unit.sv</span>
           </div>
           <div class="card-body p-4 text-center">
-            <p class="text-secondary small mb-3">Toán hạng Hàng A trễ $i \times T_{{clk}}$, Cột B trễ $j \times T_{{clk}}$. Dữ liệu gặp nhau chính xác tại chu kỳ $T = i + j$.</p>
+            <p class="text-secondary small mb-3">Row A operands delayed by $i \times T_{{clk}}$, Column B operands delayed by $j \times T_{{clk}}$. Operands align precisely at cycle $T = i + j$.</p>
             
             <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
-              <button class="btn btn-primary btn-sm px-3" onclick="toggleWavePlay()" id="btnWavePlay"><i class="bi bi-play-fill me-1"></i>Tự Động Chạy</button>
+              <button class="btn btn-primary btn-sm px-3" onclick="toggleWavePlay()" id="btnWavePlay"><i class="bi bi-play-fill me-1"></i>Auto Play</button>
               <button class="btn btn-outline-secondary btn-sm" onclick="stepWaveCycle(-1)"><i class="bi bi-skip-backward-fill"></i></button>
-              <span class="fw-bold font-monospace px-3 py-1 rounded bg-body-tertiary border" id="waveCycleLabel">Chu kỳ T = 6 / 14</span>
+              <span class="fw-bold font-monospace px-3 py-1 rounded bg-body-tertiary border" id="waveCycleLabel">Cycle T = 6 / 14</span>
               <button class="btn btn-outline-secondary btn-sm" onclick="stepWaveCycle(1)"><i class="bi bi-skip-forward-fill"></i></button>
               <input type="range" class="form-range w-auto" min="0" max="14" value="6" id="waveRangeSlider" oninput="setWaveCycle(this.value)">
             </div>
@@ -1231,23 +1231,23 @@ def build():
             <div class="row g-3 text-start mt-3" style="max-width: 900px; margin: 0 auto;">
               <div class="col-md-4">
                 <div class="p-3 rounded bg-body-tertiary border">
-                  <div class="small text-muted fw-semibold mb-1">ĐỘ TRỄ HÀNG A</div>
+                  <div class="small text-muted fw-semibold mb-1">ROW A SKEW DELAY</div>
                   <div class="font-monospace text-primary fw-bold">delay_A[i] = i × T_clk</div>
-                  <small class="text-secondary">Trễ từ 0T đến 7T qua 28 D-FF</small>
+                  <small class="text-secondary">0T to 7T stagger delay via 28 D-FFs</small>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="p-3 rounded bg-body-tertiary border">
-                  <div class="small text-muted fw-semibold mb-1">ĐỘ TRỄ CỘT B</div>
+                  <div class="small text-muted fw-semibold mb-1">COLUMN B SKEW DELAY</div>
                   <div class="font-monospace text-danger fw-bold">delay_B[j] = j × T_clk</div>
-                  <small class="text-secondary">Trễ từ 0T đến 7T qua 28 D-FF</small>
+                  <small class="text-secondary">0T to 7T stagger delay via 28 D-FFs</small>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="p-3 rounded bg-body-tertiary border">
-                  <div class="small text-muted fw-semibold mb-1">ĐẶC TÍNH SÓNG CHÉO</div>
+                  <div class="small text-muted fw-semibold mb-1">DIAGONAL WAVEFRONT</div>
                   <div class="font-monospace text-success fw-bold">T = i + j (Wavefront)</div>
-                  <small class="text-secondary">100% truyền cục bộ, 0% xung đột bus</small>
+                  <small class="text-secondary">100% nearest-neighbor spatial data reuse, 0% global bus contention</small>
                 </div>
               </div>
             </div>
@@ -1263,7 +1263,7 @@ def build():
           <div class="card-header bg-transparent py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
             <div>
               <span class="badge bg-danger-subtle text-danger border border-danger-subtle mb-1">Hardware Telemetry</span>
-              <h3 class="h5 fw-bold text-emphasis mb-0">Báo Cáo Tổng Hợp Mạch & Phân Tích Thời Gian Tĩnh (STA)</h3>
+              <h3 class="h5 fw-bold text-emphasis mb-0">Hardware Synthesis & Static Timing Analysis (STA) Telemetry</h3>
             </div>
             <span class="badge bg-primary-subtle text-primary font-monospace">Quartus Prime 22.1 Lite</span>
           </div>
@@ -1287,14 +1287,14 @@ def build():
               </div>
               <div class="col-md-3">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">Worst Case Slack</div>
+                  <div class="kpi-label">Worst-Case Timing Slack</div>
                   <div class="kpi-value text-primary">+1.815 ns</div>
                   <small class="text-muted">Met Timing @ 50 MHz Nominal</small>
                 </div>
               </div>
               <div class="col-md-3">
                 <div class="kpi-card text-center">
-                  <div class="kpi-label">UVM Functional Cov</div>
+                  <div class="kpi-label">UVM Functional Coverage</div>
                   <div class="kpi-value text-purple" style="color: #8b5cf6;">100.0%</div>
                   <small class="text-muted">4/4 Test Plans Completed</small>
                 </div>
@@ -1302,56 +1302,56 @@ def build():
             </div>
 
             <!-- Detailed Tables -->
-            <h5 class="fw-bold text-emphasis mb-3"><i class="bi bi-table me-2 text-primary"></i>1. Bảng Tiêu Hao Tài Nguyên Phần Cứng Trên Kit FPGA</h5>
+            <h5 class="fw-bold text-emphasis mb-3"><i class="bi bi-table me-2 text-primary"></i>1. Hardware Resource Utilization on Target FPGA Boards</h5>
             <div class="table-responsive mb-4">
               <table class="table table-hover border">
                 <thead class="table-dark">
                   <tr>
-                    <th>Khối Chức Năng</th>
-                    <th>Tài Nguyên Logic (ALMs / LEs)</th>
-                    <th>Thanh Ghi D-FF</th>
-                    <th>Bộ Nhân DSP 9×9</th>
-                    <th>Bộ Nhớ M10K</th>
+                    <th>Hardware Functional Block</th>
+                    <th>Logic Resources (ALMs / LEs)</th>
+                    <th>Registers (D-FF)</th>
+                    <th>DSP Blocks (18×18 / 9×9)</th>
+                    <th>Block Memory M10K</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="fw-semibold">Mảng Tâm Thu 64 PE (`systolic_array_core.sv`)</td>
+                    <td class="fw-semibold">64-PE Systolic Array Core (`systolic_array_core.sv`)</td>
                     <td>4,120 ALMs (12.8%)</td>
                     <td>2,304 FFs</td>
                     <td>64 DSP Blocks</td>
                     <td>0 Kbits (Local FFs)</td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">Mạng Lệch Pha (`systolic_skew_unit.sv`)</td>
+                    <td class="fw-semibold">Wavefront Skew Unit (`systolic_skew_unit.sv`)</td>
                     <td>112 ALMs (0.3%)</td>
                     <td>448 FFs</td>
                     <td>0</td>
                     <td>0</td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">Bộ Lượng Tử Hóa SIMD 8 Hàng (`quantize_relu_unit.sv`)</td>
+                    <td class="fw-semibold">SIMD 8-Row Quantized ReLU Unit (`quantize_relu_unit.sv`)</td>
                     <td>384 ALMs (1.2%)</td>
                     <td>256 FFs</td>
                     <td>0</td>
                     <td>0</td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">Bộ Đệm Ma Trận A, B, C (32KB SRAM Buffer)</td>
+                    <td class="fw-semibold">Matrix SRAM Buffers A, B, C (32KB On-Chip Buffer)</td>
                     <td>210 ALMs (0.6%)</td>
                     <td>128 FFs</td>
                     <td>0</td>
                     <td>256 Kbits (25 M10K)</td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">CPU PicoRV32 + Bus AXI4-Lite Crossbar</td>
+                    <td class="fw-semibold">PicoRV32 RISC-V CPU + AXI4-Lite Crossbar</td>
                     <td>1,420 ALMs (4.4%)</td>
                     <td>1,120 FFs</td>
                     <td>0</td>
                     <td>16 M10K (Instruction RAM)</td>
                   </tr>
                   <tr class="table-success fw-bold">
-                    <td>TỔNG TOÀN HỆ THỐNG SOC (GEN-2)</td>
+                    <td>TOTAL SOC SYSTEM-ON-CHIP (GEN-2)</td>
                     <td>8,421 ALMs (26.3%)</td>
                     <td>5,124 FFs</td>
                     <td>64 DSP (73%)</td>
@@ -1361,41 +1361,41 @@ def build():
               </table>
             </div>
 
-            <h5 class="fw-bold text-emphasis mb-3 mt-4"><i class="bi bi-graph-up-arrow me-2 text-success"></i>2. So Sánh Hiệu Năng & Tăng Tốc Gen-1 vs. Gen-2</h5>
+            <h5 class="fw-bold text-emphasis mb-3 mt-4"><i class="bi bi-graph-up-arrow me-2 text-success"></i>2. Architectural Performance Benchmarks: Gen-1 Baseline vs. Gen-2 Optimized</h5>
             <div class="table-responsive">
               <table class="table table-hover border">
                 <thead class="table-dark">
                   <tr>
-                    <th>Tiêu Chí Kỹ Thuật</th>
+                    <th>Benchmark Metric</th>
                     <th>Gen-1 Baseline</th>
                     <th>Gen-2 Active</th>
-                    <th>Mức Cải Thiện</th>
+                    <th>Improvement / Speedup</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="fw-semibold">Chu kỳ rút kết quả C (Drain Phase)</td>
-                    <td>64 chu kỳ (1 phần tử/chu kỳ)</td>
-                    <td class="text-success fw-bold">8 chu kỳ (SIMD 8 hàng)</td>
-                    <td><span class="badge bg-success">Tăng tốc 8.0×</span></td>
+                    <td class="fw-semibold">Result Drain Latency (Drain Phase)</td>
+                    <td>64 cycles (1 element/cycle)</td>
+                    <td class="text-success fw-bold">8 cycles (8-row parallel SIMD)</td>
+                    <td><span class="badge bg-success">8.0× Speedup</span></td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">Đóng gói nạp dữ liệu AXI</td>
-                    <td>1 Byte / Giao dịch AXI</td>
-                    <td class="text-success fw-bold">4 Bytes / Giao dịch AXI</td>
-                    <td><span class="badge bg-success">Tăng tốc 4.0×</span></td>
+                    <td class="fw-semibold">AXI Data Packing Efficiency</td>
+                    <td>1 Byte / AXI Transfer</td>
+                    <td class="text-success fw-bold">4 Bytes / AXI Transfer</td>
+                    <td><span class="badge bg-success">4.0× Throughput</span></td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">Độ trễ toàn bộ mạng MNIST (14×14×16)</td>
+                    <td class="fw-semibold">Full MNIST CNN Latency (14×14×16)</td>
                     <td>697.6 µs @ 50MHz</td>
                     <td class="text-success fw-bold">145.04 µs @ 50MHz</td>
-                    <td><span class="badge bg-success">Tăng tốc 4.81×</span></td>
+                    <td><span class="badge bg-success">4.81× Speedup</span></td>
                   </tr>
                   <tr>
-                    <td class="fw-semibold">Tái sử dụng trọng số SRAM Buffer A</td>
-                    <td>0 (Đọc lại từng lần)</td>
-                    <td class="text-success fw-bold">98× Tái sử dụng</td>
-                    <td><span class="badge bg-success">Giảm 98× DRAM</span></td>
+                    <td class="fw-semibold">SRAM Buffer A Weight Reuse</td>
+                    <td>None (Read every tile)</td>
+                    <td class="text-success fw-bold">98× In-Situ Reuse</td>
+                    <td><span class="badge bg-success">98× DRAM Saved</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -1417,7 +1417,7 @@ def build():
     <div class="card-header bg-transparent py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
       <div class="d-flex align-items-center gap-2">
         <span class="badge bg-primary-subtle text-primary border" id="lightboxId">GIF-01</span>
-        <h5 class="mb-0 fw-bold text-emphasis" id="lightboxTitle">Chi Tiết Vi Kiến Trúc</h5>
+        <h5 class="mb-0 fw-bold text-emphasis" id="lightboxTitle">Microarchitectural Details</h5>
       </div>
       <button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="closeLightbox()"><i class="bi bi-x-lg"></i></button>
     </div>
@@ -1425,7 +1425,7 @@ def build():
       <img src="" id="lightboxImg" class="img-fluid rounded shadow" style="max-height: 520px; object-fit: contain;">
     </div>
     <div class="p-4 border-top">
-      <p class="text-secondary small mb-3" id="lightboxDesc">Mô tả chi tiết vi kiến trúc.</p>
+      <p class="text-secondary small mb-3" id="lightboxDesc">Detailed microarchitectural description and timing analysis.</p>
       <div class="d-flex justify-content-between align-items-center">
         <span class="small font-monospace text-muted" id="lightboxModule"><i class="bi bi-code-slash me-1"></i>RTL/pe_gemm.sv</span>
         <a href="" id="lightboxDownloadBtn" download class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i>Tải GIF Gốc</a>
@@ -1493,7 +1493,7 @@ def build():
   // 5. LIGHTBOX MODAL
   function openLightbox(url, title, desc, module) {{
     document.getElementById('lightboxImg').src = url;
-    document.getElementById('lightboxTitle').textContent = title || 'Chi Tiết Mô Phỏng';
+    document.getElementById('lightboxTitle').textContent = title || 'Simulation Details';
     document.getElementById('lightboxDesc').textContent = desc || '';
     document.getElementById('lightboxModule').innerHTML = '<i class="bi bi-code-slash me-1"></i>' + (module || 'RTL Source');
     document.getElementById('lightboxDownloadBtn').href = url;
@@ -1529,7 +1529,7 @@ def build():
   let waveTimer = null;
   function setWaveCycle(c) {{
     waveCycle = parseInt(c);
-    document.getElementById('waveCycleLabel').textContent = `Chu kỳ T = ${{waveCycle}} / 14`;
+    document.getElementById('waveCycleLabel').textContent = `Cycle T = ${{waveCycle}} / 14`;
     document.getElementById('waveRangeSlider').value = waveCycle;
   }}
   function stepWaveCycle(delta) {{
@@ -1543,10 +1543,10 @@ def build():
     if (waveTimer) {{
       clearInterval(waveTimer);
       waveTimer = null;
-      btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Tự Động Chạy';
+      btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Auto Play';
     }} else {{
       waveTimer = setInterval(() => stepWaveCycle(1), 850);
-      btn.innerHTML = '<i class="bi bi-pause-fill me-1"></i>Tạm Dừng';
+      btn.innerHTML = '<i class="bi bi-pause-fill me-1"></i>Pause';
     }}
   }}
 
