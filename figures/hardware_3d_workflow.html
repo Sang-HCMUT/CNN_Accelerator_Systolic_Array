@@ -126,61 +126,106 @@
       color: #f0f6fc;
     }
 
-    /* Center Stage Guide Banner */
+    /* Center Stage Guide Banner - Ultra Compact & Collapsible */
     .stage-guide-banner {
       position: absolute;
-      top: 72px;
+      top: 64px;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--bg-panel);
-      backdrop-filter: blur(16px);
+      background: rgba(13, 17, 24, 0.90);
+      backdrop-filter: blur(14px);
       border: 1px solid var(--border-panel);
-      border-radius: 10px;
-      padding: 12px 24px;
-      min-width: 640px;
-      max-width: 840px;
-      text-align: center;
+      border-radius: 8px;
+      padding: 6px 14px;
+      width: min(740px, calc(100vw - 360px));
       z-index: 30;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.7);
-      transition: all 0.25s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+      transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1), bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+    }
+    .stage-guide-banner.dock-bottom {
+      top: auto !important;
+      bottom: 74px !important;
+    }
+    .stage-guide-banner.is-hidden {
+      display: none !important;
     }
     .stage-step-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.68rem;
+      gap: 5px;
+      font-size: 0.65rem;
       font-family: 'Fira Code', monospace;
       font-weight: 600;
-      padding: 2px 9px;
+      padding: 2px 7px;
       border-radius: 4px;
-      margin-bottom: 5px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border: 1px solid rgba(255, 255, 255, 0.15);
     }
     .stage-title {
-      font-size: 1.05rem;
+      font-size: 0.88rem;
       font-weight: 700;
-      margin-bottom: 3px;
       color: #f0f6fc;
       letter-spacing: -0.01em;
     }
     .stage-desc {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: #8b949e;
       line-height: 1.45;
       margin-bottom: 0;
     }
     .stage-formula-tag {
       font-family: 'Fira Code', monospace;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       color: #58a6ff;
       background: rgba(0, 0, 0, 0.45);
       border: 1px solid rgba(56, 189, 248, 0.2);
-      padding: 3px 10px;
-      border-radius: 5px;
+      padding: 2px 8px;
+      border-radius: 4px;
       display: inline-block;
-      margin-top: 6px;
+    }
+    .btn-xs {
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      border-radius: 4px;
+      line-height: 1.3;
+    }
+
+    /* Zen Mode (Clean 100% Unobstructed 3D View) */
+    body.zen-active .cam-toolbar,
+    body.zen-active .telemetry-sidebar,
+    body.zen-active .stage-guide-banner,
+    body.zen-active .bottom-hud-bar,
+    body.zen-active .coord-tracker {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.25s ease;
+    }
+    .zen-exit-pill {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      padding: 6px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+      transition: all 0.2s ease;
+    }
+    .zen-exit-pill:hover {
+      background: #38bdf8;
+      color: #06080d;
+    }
+    body.zen-active .zen-exit-pill {
+      display: block !important;
     }
 
     /* Right Telemetry Sidebar */
@@ -321,6 +366,12 @@
     </div>
 
     <div class="hud-box d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-info px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="toggleBannerVisibility()" id="btnBannerHUD" title="Show / Hide Stage Information Banner (Shortcut: H)">
+        <i class="bi bi-info-circle me-1"></i><span id="bannerHUDText">Stage Info</span>
+      </button>
+      <button class="btn btn-sm btn-outline-warning px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="toggleZenMode()" id="btnZen" title="Zen Mode: Hide all UI overlays for 100% unobstructed 3D view (Shortcut: Z)">
+        <i class="bi bi-aspect-ratio me-1"></i>Zen Mode
+      </button>
       <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 font-monospace" style="font-size: 0.72rem;" onclick="window.location.href='../index.html'" title="Return to Portal">
         <i class="bi bi-house-door-fill me-1"></i>Portal
       </button>
@@ -341,19 +392,47 @@
     <button class="cam-btn" onclick="setCamPreset('soc')"><i class="bi bi-display"></i>6. Dense & HEX0 Output</button>
   </div>
 
-  <!-- Center Stage Banner -->
+  <!-- Center Stage Banner (Ultra-Compact by default, Collapsible, Dockable) -->
   <div class="stage-guide-banner" id="stageBanner">
-    <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
-      <span class="stage-step-pill bg-primary bg-opacity-25 text-primary border-primary" id="stagePill">STAGE 01 / 07</span>
-      <span class="badge bg-secondary-subtle text-secondary font-monospace" style="font-size: 0.65rem;" id="stageModule">RTL: im2col_address_gen.sv</span>
+    <div class="d-flex align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-2 text-truncate">
+        <span class="stage-step-pill bg-primary bg-opacity-25 text-primary border-primary m-0 flex-shrink-0" id="stagePill">STAGE 01 / 07</span>
+        <strong class="stage-title text-light m-0 text-truncate" id="stageTitle">Input Tensor Ingestion & Im2Col Matrix Unfolding</strong>
+        <span class="badge bg-secondary-subtle text-secondary font-monospace d-none d-md-inline flex-shrink-0" style="font-size: 0.65rem;" id="stageModule">RTL: im2col_address_gen.sv</span>
+      </div>
+      <div class="d-flex align-items-center gap-1 flex-shrink-0">
+        <!-- Expand / Collapse Details Button -->
+        <button class="btn btn-xs btn-outline-info font-monospace" id="btnToggleExpand" onclick="toggleBannerDetails()" title="Toggle Detailed Information (Shortcut: D)">
+          <i class="bi bi-chevron-down" id="expandIcon"></i> <span id="expandText">Details</span>
+        </button>
+        <!-- Move Top / Bottom Dock Button -->
+        <button class="btn btn-xs btn-outline-secondary font-monospace" id="btnToggleDock" onclick="toggleBannerDock()" title="Move Banner (Top / Bottom Dock) (Shortcut: M)">
+          <i class="bi bi-arrow-down-up" id="dockIcon"></i>
+        </button>
+        <!-- Close / Hide Banner Button -->
+        <button class="btn btn-xs btn-outline-secondary font-monospace" onclick="toggleBannerVisibility()" title="Hide Banner (Shortcut: H)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
     </div>
-    <h3 class="stage-title" id="stageTitle">Input Tensor Ingestion & Im2Col Matrix Unfolding</h3>
-    <p class="stage-desc" id="stageDesc">
-      The 28×28 INT8 handwritten digit tensor arrives from memory. Im2Col unrolls 196 overlapping 3×3 receptive fields into vertical column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].
-    </p>
-    <div class="stage-formula-tag" id="stageFormula">
-      C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]
+    
+    <!-- Expanded Detail Drawer (Hidden by default to keep 3D view 100% clear) -->
+    <div class="stage-expanded-drawer mt-2 pt-2 border-top border-secondary border-opacity-25" id="stageDrawer" style="display: none;">
+      <p class="stage-desc text-muted mb-2" id="stageDesc">
+        The 28×28 INT8 handwritten digit tensor arrives from memory. Im2Col unrolls 196 overlapping 3×3 receptive fields into vertical column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].
+      </p>
+      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <div class="stage-formula-tag" id="stageFormula">
+          C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]
+        </div>
+        <span class="badge bg-dark border border-secondary text-info font-monospace" style="font-size: 0.68rem;" id="stageExtra">64 Concurrent MACs</span>
+      </div>
     </div>
+  </div>
+
+  <!-- Zen Mode Floating Exit Pill -->
+  <div class="zen-exit-pill" id="zenExitPill" onclick="toggleZenMode()">
+    <i class="bi bi-aspect-ratio me-1"></i>Exit Zen Mode (or press ESC / Z)
   </div>
 
   <!-- Right Telemetry Sidebar -->
@@ -457,17 +536,17 @@
        THREE.JS HIGH-TECH ISOMETRIC HARDWARE PIPELINE SCRIPT
        ========================================================================= -->
   <script>
-    // --- STAGE DEFINITIONS & METADATA ---
+    // --- STAGE DEFINITIONS & METADATA (LOWERED LOOK TARGET FOR HEADROOM) ---
     const STAGES = [
       {
         id: 0,
         pill: "STAGE 01 / 07 • DATA UNROLLING",
         module: "RTL: im2col_address_gen.sv",
-        title: "Input Tensor & Im2Col Matrix Unfolding",
+        title: "Input Tensor Ingestion & Im2Col Matrix Unfolding",
         desc: "The 28×28 INT8 image tensor arrives from external memory via AXI Master. The Im2Col hardware address generator flattens 196 overlapping 3×3 receptive fields into column vectors of Matrix B [9×196], while 16 filter kernels form Matrix A [16×9].",
         formula: "GEMM Formulation: C[16×196] = Weights_A[16×9] × Im2Col_B[9×196]",
-        camPos: { x: -38, y: 32, z: 28 },
-        camLook: { x: -32, y: 2, z: 0 },
+        camPos: { x: -36, y: 34, z: 30 },
+        camLook: { x: -34, y: -2.0, z: 0 },
         modules: "• rtl/im2col_address_gen.sv<br>• rtl/input_tensor_sram.sv<br>• Format: Signed INT8 [-128..+127]"
       },
       {
@@ -477,8 +556,8 @@
         title: "Dual On-Chip SRAM Buffers & Matrix Tiling",
         desc: "Matrices are partitioned into 8×8 sub-tiles. Sub-tile A0 [8×9] (72 Bytes) is loaded into SRAM Buffer A and locked for 98 consecutive cycles. Buffer B streams Sub-tiles B0..B24 [9×8] using ping-pong banks, slashing external DRAM read traffic by 98×.",
         formula: "Tiling: 16×9 = 2 Sub-tiles A [8×9] | 9×196 = 25 Sub-tiles B [9×8] | 98× DRAM Savings",
-        camPos: { x: -25, y: 30, z: 24 },
-        camLook: { x: -18, y: 2, z: 0 },
+        camPos: { x: -20, y: 32, z: 26 },
+        camLook: { x: -20, y: -2.0, z: 0 },
         modules: "• rtl/gemm_controller.sv<br>• SRAM A: 72 Bytes (Stationary Weight Buffer)<br>• SRAM B: Double-Buffer Ping-Pong (72 Bytes)"
       },
       {
@@ -488,8 +567,8 @@
         title: "Wavefront Skew Unit (56 D-Flip-Flops)",
         desc: "Because horizontal and vertical systolic inter-PE routing costs 1 clock cycle (z⁻¹), input rows A are delayed by 0T..7T clock cycles through 28 D-FF shift registers on the West edge, and columns B are delayed by 0T..7T through 28 D-FFs on the North edge.",
         formula: "Spatial Alignment: Delay_A[i] = i·Tclk | Delay_B[j] = j·Tclk | Arrival: T = i + j",
-        camPos: { x: -14, y: 28, z: 18 },
-        camLook: { x: -6, y: 2, z: -2 },
+        camPos: { x: -7, y: 30, z: 24 },
+        camLook: { x: -7, y: -2.0, z: -1 },
         modules: "• rtl/systolic_skew_unit.sv<br>• Registers: 56 D-Flip-Flops (28 Row + 28 Col)<br>• 100% Nearest-Neighbor Interconnect"
       },
       {
@@ -499,8 +578,8 @@
         title: "2D Spatial 64-PE Systolic Core (8×8 Output-Stationary)",
         desc: "Matrix A streams East, Matrix B streams South. Each PE houses an INT8 signed Booth multiplier, a 32-bit CLA adder, and an accumulator C_acc. A 45° diagonal wavefront sweeps across the mesh over 14 clock cycles, computing 64 concurrent MAC operations.",
         formula: "PE Operation: C_acc[i,j] += A[i,k] × B[k,j] | 64 Parallel MACs / Cycle",
-        camPos: { x: 4, y: 32, z: 24 },
-        camLook: { x: 4, y: 2, z: 0 },
+        camPos: { x: 4, y: 34, z: 30 },
+        camLook: { x: 4, y: -2.5, z: 0 },
         modules: "• rtl/systolic_array_core.sv<br>• 64× rtl/pe_gemm.sv (Output-Stationary)<br>• FMAX: 69.49 MHz | Slack: +1.815 ns (MET)"
       },
       {
@@ -511,8 +590,8 @@
         desc: "Upon completing K=9 accumulation cycles, Gen-2 drains all 8 rows simultaneously via parallel 32-bit buses into the output register file in just 8 clock cycles (8.0× faster than the Gen-1 baseline serial drain of 64 cycles).",
         math: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
         formula: "Drain Latency: T_drain = 8 Cycles (Gen-2 SIMD) vs 64 Cycles (Gen-1 Serial) | 8.0× Speedup",
-        camPos: { x: 18, y: 28, z: 20 },
-        camLook: { x: 15, y: 2, z: 0 },
+        camPos: { x: 16, y: 30, z: 26 },
+        camLook: { x: 16, y: -2.0, z: 0 },
         modules: "• rtl/systolic_accelerator_top.sv<br>• 8× Parallel 32-bit Row Drain Buses<br>• Bubble-Free Pipeline Data Transfer"
       },
       {
@@ -522,8 +601,8 @@
         title: "Parallel Quantized ReLU & Max-Pooling",
         desc: "The 32-bit accumulated partial sums are quantized to INT8 using an arithmetic right-shift (>>8) and clamped to [0, 127] with zero overflow risk. Spatial 2×2 Max-Pooling then downsamples the feature map 4× (28×28 → 14×14).",
         formula: "ReLU: Output = clamp(acc >> 8, 0, 127) | MaxPool [2×2]: 28×28 → 14×14",
-        camPos: { x: 28, y: 26, z: 16 },
-        camLook: { x: 25, y: 2, z: 0 },
+        camPos: { x: 26, y: 28, z: 22 },
+        camLook: { x: 26, y: -2.0, z: 0 },
         modules: "• rtl/quantize_relu_unit.sv (8 Channels)<br>• rtl/maxpool_unit.sv (Stride 2)<br>• 100% Bit-True Golden Model Matched"
       },
       {
@@ -533,8 +612,8 @@
         title: "Dense FC Layer & Physical SoC Output Dispatch",
         desc: "Pooled features pass through the Dense FC layer on the 64-PE core to calculate 10 class logits. Argmax selects the winning digit, written via AXI4-Lite to MMIO 0x1000_0000, lighting up the OLED 7-segment display (HEX0) and LEDR[9:0] on DE10-Standard.",
         formula: "Argmax(Softmax(Logits)) → Predicted Digit (0..9) | MMIO @ 0x1000_0000",
-        camPos: { x: 38, y: 26, z: 12 },
-        camLook: { x: 35, y: 2, z: 0 },
+        camPos: { x: 36, y: 28, z: 18 },
+        camLook: { x: 36, y: -2.0, z: 0 },
         modules: "• rtl/soc_top.sv & rtl/axi_interconnect.sv<br>• Physical Output: HEX0 OLED + LEDR[9:0]<br>• Firmware: PicoRV32 systolic.h Driver"
       }
     ];
@@ -567,7 +646,7 @@
     controls.maxPolarAngle = Math.PI / 2 - 0.05;
     controls.minDistance = 12;
     controls.maxDistance = 180;
-    controls.target.set(0, 0, 0);
+    controls.target.set(0, -2.0, 0);
 
     // --- CLEAN STUDIO LIGHTING (NO COLORED BLOTCHES) ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -1049,7 +1128,83 @@
     // STAGE NAVIGATION & GUIDED CAMERA TRANSITIONS
     // =========================================================================
     let targetCam = { x: -10, y: 48, z: 52 };
-    let targetLook = { x: 0, y: 2, z: 0 };
+    let targetLook = { x: 0, y: -2.0, z: 0 };
+
+    let isDetailsExpanded = false;
+    let isDockedBottom = false;
+    let isBannerVisible = true;
+    let isZenMode = false;
+
+    function toggleBannerDetails() {
+      isDetailsExpanded = !isDetailsExpanded;
+      const drawer = document.getElementById('stageDrawer');
+      const icon = document.getElementById('expandIcon');
+      const text = document.getElementById('expandText');
+      if (isDetailsExpanded) {
+        drawer.style.display = 'block';
+        icon.className = 'bi bi-chevron-up';
+        text.textContent = 'Collapse';
+      } else {
+        drawer.style.display = 'none';
+        icon.className = 'bi bi-chevron-down';
+        text.textContent = 'Details';
+      }
+    }
+
+    function toggleBannerDock() {
+      isDockedBottom = !isDockedBottom;
+      const banner = document.getElementById('stageBanner');
+      const icon = document.getElementById('dockIcon');
+      if (isDockedBottom) {
+        banner.classList.add('dock-bottom');
+        icon.className = 'bi bi-arrow-up';
+      } else {
+        banner.classList.remove('dock-bottom');
+        icon.className = 'bi bi-arrow-down-up';
+      }
+    }
+
+    function toggleBannerVisibility() {
+      isBannerVisible = !isBannerVisible;
+      const banner = document.getElementById('stageBanner');
+      const btnHUD = document.getElementById('btnBannerHUD');
+      if (isBannerVisible) {
+        banner.classList.remove('is-hidden');
+        btnHUD.classList.replace('btn-outline-secondary', 'btn-outline-info');
+      } else {
+        banner.classList.add('is-hidden');
+        btnHUD.classList.replace('btn-outline-info', 'btn-outline-secondary');
+      }
+    }
+
+    function toggleZenMode() {
+      isZenMode = !isZenMode;
+      const body = document.body;
+      const btnZen = document.getElementById('btnZen');
+      if (isZenMode) {
+        body.classList.add('zen-active');
+        btnZen.classList.replace('btn-outline-warning', 'btn-warning');
+      } else {
+        body.classList.remove('zen-active');
+        btnZen.classList.replace('btn-warning', 'btn-outline-warning');
+      }
+    }
+
+    // Keyboard Shortcuts (Z: Zen, H: Hide Info, D: Details, M: Move Dock)
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const key = e.key.toLowerCase();
+      if (key === 'z') toggleZenMode();
+      else if (key === 'h') toggleBannerVisibility();
+      else if (key === 'd') toggleBannerDetails();
+      else if (key === 'm') toggleBannerDock();
+      else if (key === 'escape') {
+        if (isZenMode) toggleZenMode();
+        else if (isDetailsExpanded) toggleBannerDetails();
+      } else if (key === 'arrowleft') stepStage(-1);
+      else if (key === 'arrowright') stepStage(1);
+      else if (key === ' ') { e.preventDefault(); toggleTour(); }
+    });
 
     function goToStage(idx) {
       currentStage = Math.max(0, Math.min(STAGES.length - 1, idx));
@@ -1060,6 +1215,9 @@
       document.getElementById('stageTitle').textContent = st.title;
       document.getElementById('stageDesc').textContent = st.desc;
       document.getElementById('stageFormula').textContent = st.formula;
+      if (document.getElementById('stageExtra')) {
+        document.getElementById('stageExtra').textContent = st.formula.includes('MAC') ? '64 Parallel MACs' : (st.module.includes('sram') ? 'In-Situ 72B' : 'Cycle-Accurate');
+      }
       document.getElementById('activeModulesBox').innerHTML = st.modules;
 
       document.querySelectorAll('.step-node-dot').forEach((dot, i) => {
@@ -1117,7 +1275,7 @@
 
       if (preset === 'overview') {
         targetCam = { x: -10, y: 48, z: 52 };
-        targetLook = { x: 0, y: 2, z: 0 };
+        targetLook = { x: 0, y: -2.0, z: 0 };
       } else if (preset === 'input') {
         goToStage(0);
       } else if (preset === 'buffers') {
