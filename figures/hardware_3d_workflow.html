@@ -563,7 +563,7 @@
         formula: "Tiling: 16×9 = 2 Sub-tiles A [8×9] | 9×196 = 25 Sub-tiles B [9×8] | 98× DRAM Savings",
         camPos: { x: -20, y: 32, z: 26 },
         camLook: { x: -20, y: -2.0, z: 0 },
-        modules: "• rtl/gemm_controller.sv<br>• SRAM A: 72 Bytes (Stationary Weight Buffer)<br>• SRAM B: Double-Buffer Ping-Pong (72 Bytes)"
+        modules: "• rtl/matrix_buffer_a.sv (Row-Parallel SRAM A)<br>• rtl/matrix_buffer_b.sv (Col-Parallel SRAM B)<br>• Format: Gen-2 Packed 4-INT8 MMIO"
       },
       {
         id: 2,

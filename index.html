@@ -1395,15 +1395,240 @@
   </div>
 </div>
 <li class="mb-1 text-secondary">Ngăn ngừa hiện tượng tràn số đổi dấu (Wrap-around Overflow).</li>
-<div class="pt-3 pb-1 mb-2 mt-3" id="2-5-b-m-ma-tr-n-matrix-buffer-a-b-c-sv-v-c-ch-ng-g-i-d-li-u-4-byte"><h3 class="h5 fw-semibold text-emphasis mb-1"><i class="bi bi-chevron-right text-muted small me-1"></i>2.5. Bộ Đệm Ma Trận `matrix_buffer_a/b/c.sv` Và Cơ Chế Đóng Gói Dữ Liệu 4 Byte</h3></div>
-<li class="mb-1 text-secondary"><strong class="fw-semibold text-emphasis">Matrix Buffer A</strong> ($8 \times 16$ bytes): Bộ nhớ đệm trọng số. Hỗ trợ 8 cổng đọc song song theo hàng để cấp dữ liệu liên tục cho bộ Skewing.</li>
-<li class="mb-1 text-secondary"><strong class="fw-semibold text-emphasis">Matrix Buffer B</strong> ($16 \times 8$ bytes): Bộ nhớ đệm điểm kích hoạt. Hỗ trợ 8 cổng đọc song song theo cột.</li>
-<li class="mb-1 text-secondary"><strong class="fw-semibold text-emphasis">Matrix Buffer C</strong> ($8 \times 8$ bytes): Bộ đệm ma trận kết quả ngõ ra kép (Dual-Channel):</li>
-<li class="mb-1 text-secondary">Kênh 1: 64 phần tử <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">INT8</code> lượng tử hóa phục vụ cho các tầng nơ-ron tiếp theo.</li>
-<li class="mb-1 text-secondary">Kênh 2: 64 phần tử <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">INT32</code> tích lũy thô phục vụ kiểm chứng bit-true và phân tích sai số.</li>
-<li class="mb-1 text-secondary"><strong class="fw-semibold text-emphasis">Cơ chế Đóng gói 4 Byte (Gen-2 Packed 4-INT8 Word Transfer)</strong>:</li>
-<li class="mb-1 text-secondary">Bổ sung các cổng ghi/đọc packed: <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">wr_packed_en</code>, <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">wr_packed_addr</code>, <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">wr_packed_data[31:0]</code>.</li>
-<li class="mb-1 text-secondary">Khi CPU ghi 1 từ 32-bit <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">[b3, b2, b1, b0]</code>, phần cứng tự động phân tách và ghi đồng thời vào 4 ô nhớ liên tiếp <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">ram[{addr, 2'b00}]</code> đến <code class="px-1.5 py-0.5 rounded bg-body-tertiary text-primary font-monospace small">ram[{addr, 2'b11}]</code> trong đúng 1 chu kỳ clock.</li>
+<div class="pt-3 pb-1 mb-2 mt-3" id="2-5-b-m-ma-tr-n-matrix-buffer-a-b-c-sv-v-c-ch-ng-g-i-d-li-u-4-byte"><h3 class="h5 fw-semibold text-emphasis mb-1"><i class="bi bi-chevron-right text-muted small me-1"></i>2.5. Chi Tiết Kiến Trúc Bộ Đệm Ma Trận `matrix_buffer_a/b/c.sv` & Cơ Chế Tiếp Nhận Tensor Đầu Vào</h3></div>
+
+<!-- Callout Hướng Dẫn Trực Quan Dễ Hiểu -->
+<div class="alert alert-primary bg-primary-subtle border-primary-subtle d-flex align-items-start gap-3 my-3 rounded-3 shadow-sm">
+  <i class="bi bi-cpu fs-2 text-primary flex-shrink-0 mt-1"></i>
+  <div>
+    <h6 class="fw-bold mb-1 text-primary">Nguyên Lý Hoạt Động Cốt Lõi: Tensor Đi Vào Buffer A & Buffer B Như Thế Nào?</h6>
+    <p class="mb-0 text-secondary small lh-base">
+      Mảng tâm thu 64 PE ($8\times 8$) là mạch tính toán 2D phần cứng thuần túy, chỉ hiểu phép nhân ma trận đại số <code>GEMM: C = A × B</code>. Khi hệ thống nhận một Tensor ảnh đầu vào ($1\times 28\times 28$) và một Tensor trọng số ($16\times 1\times 3\times 3$), dữ liệu bắt buộc phải trải qua <strong>5 bước khép kín</strong> để biến thành các xung nhịp đưa vào 64 PE: 
+      <em>(1) Trải Im2Col &rarr; (2) Chia khối Tiling Engine &rarr; (3) Ghi vào SRAM On-chip qua AXI Bus (Single-byte / Packed 4-INT8) &rarr; (4) Đọc song song theo Hàng (Buffer A) và Cột (Buffer B) &rarr; (5) Lệch pha Skew Unit tạo mặt sóng 45° đưa vào mảng PE</em>.
+    </p>
+  </div>
+</div>
+
+<!-- Sơ Đồ Bảng Tổng Hợp 5 Giai Đoạn Dataflow -->
+<div class="card my-3 border shadow-sm">
+  <div class="card-header bg-body-tertiary py-2 px-3 fw-semibold small text-uppercase text-muted d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-diagram-3 me-2 text-primary"></i>Bảng Tóm Tắt Dòng Chảy Dữ Liệu Của Buffer A Và Buffer B</span>
+    <span class="badge bg-primary-subtle text-primary font-monospace">Dataflow Architecture</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm align-middle text-center small mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th style="width: 14%;">Giai Đoạn</th>
+            <th style="width: 28%;">Bộ Đệm Trọng Số A (`matrix_buffer_a.sv`)</th>
+            <th style="width: 28%;">Bộ Đệm Kích Hoạt B (`matrix_buffer_b.sv`)</th>
+            <th style="width: 30%;">Bản Chất & Ý Nghĩa Phần Cứng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-bold bg-body-tertiary text-start px-2">1. Nguồn Tensor</td>
+            <td>16 Filters Tích chập: $[16 \times 1 \times 3 \times 3]$ (144 bytes)</td>
+            <td>1 Ảnh Đơn Sắc MNIST: $[1 \times 28 \times 28]$ (784 bytes)</td>
+            <td class="text-start">Dữ liệu lưu ngoài bộ nhớ DRAM / Flash hoặc bộ nhớ đệm AXI RAM.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold bg-body-tertiary text-start px-2">2. Trải Im2Col & Tiling</td>
+            <td>Trải thành Ma trận A: $[16 \times 9]$<br><span class="badge bg-primary-subtle text-primary mt-1">Cắt 2 lát Tile A: [8 × 9]</span></td>
+            <td>Trải 196 ô trượt 3×3 thành Ma trận B: $[9 \times 196]$<br><span class="badge bg-danger-subtle text-danger mt-1">Cắt 25 sub-tiles B: [9 × 8]</span></td>
+            <td class="text-start">Chuyển phép tích chập không gian trượt thành nhân ma trận GEMM $A \times B$ vừa khít kích thước lõi phần cứng $8 \times 8$.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold bg-body-tertiary text-start px-2">3. Ghi vào SRAM On-Chip</td>
+            <td>Dung lượng $8 \times 16 = 128\text{ bytes}$<br>Địa chỉ MMIO: <code>0x100</code> (Byte) / <code>0x700</code> (Packed)</td>
+            <td>Dung lượng $16 \times 8 = 128\text{ bytes}$<br>Địa chỉ MMIO: <code>0x300</code> (Byte) / <code>0x780</code> (Packed)</td>
+            <td class="text-start">Gen-2 Packed 4-INT8 rải 4 byte vào 4 ô nhớ trong đúng 1 chu kỳ clock, giảm $4\times$ số chu kỳ nạp qua bus AXI-Lite.</td>
+          </tr>
+          <tr>
+            <td class="fw-bold bg-body-tertiary text-start px-2">4. Đọc Song Song (ST_STREAM)</td>
+            <td><strong>8 HÀNG SONG SONG</strong> (Row-Parallel):<br><code class="text-primary fw-bold">read_idx = r * k_dim + k_step</code></td>
+            <td><strong>8 CỘT SONG SONG</strong> (Column-Parallel):<br><code class="text-danger fw-bold">read_idx = k_step * 8 + c</code></td>
+            <td class="text-start">Mỗi chu kỳ $k\_step \in [0..K-1]$, Buffer A xuất 8 trọng số ra cạnh Tây (West), Buffer B xuất 8 điểm ảnh ra cạnh Bắc (North).</td>
+          </tr>
+          <tr>
+            <td class="fw-bold bg-body-tertiary text-start px-2">5. Skewing & Tính Toán</td>
+            <td>Làm trễ hàng $i$: $i \times T_{clk}$ ($0T, 1T, \dots, 7T$)</td>
+            <td>Làm trễ cột $j$: $j \times T_{clk}$ ($0T, 1T, \dots, 7T$)</td>
+            <td class="text-start">Tạo mặt sóng xung kích $45^\circ$, đảm bảo $A[i, k]$ gặp $B[k, j]$ chính xác tại chu kỳ $T = i + j + k$ trên $PE[i, j]$.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Chi Tiết Từng Bước Cụ Thể Bằng Ngôn Ngữ Dễ Hiểu -->
+<h4 class="h6 fw-semibold text-secondary mt-3 mb-2">2.5.1. Bước 1: Trải Phẳng Tensor Thành Ma Trận A & B (Thuật Toán Im2Col)</h4>
+<p class="mb-2 text-secondary lh-base">Tại sao không thể đưa ảnh $28 \times 28$ trực tiếp vào mảng PE? Bởi vì mỗi ô $PE[i, j]$ trong mảng tâm thu là một bộ tính tích lũy nhân ma trận thuần túy ($C_{acc} += A \times B$). Do đó, ta phải biến phép tích chập cửa sổ trượt (Sliding Window Convolution) thành phép nhân ma trận bằng phương pháp <strong>Im2Col (Image-to-Column)</strong>:</p>
+
+<div class="row g-3 my-2">
+  <div class="col-md-6">
+    <div class="p-3 rounded-3 bg-body-tertiary border border-subtle h-100">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-primary-subtle text-primary font-monospace">Buffer A Source</span>
+        <strong class="text-emphasis small">Ma Trận Trọng Số A [16 × 9] (Weights)</strong>
+      </div>
+      <p class="text-secondary small mb-2">
+        Mỗi bộ lọc (filter) của tầng Conv1 có kích thước không gian $3 \times 3 = 9$ phần tử. Với 16 bộ lọc, ta duỗi thẳng mỗi bộ lọc thành một vector hàng dài 9 giá trị, xếp chồng lên nhau thành Ma trận $A \in \mathbb{R}^{16 \times 9}$:
+      </p>
+      <div class="font-monospace small p-2 rounded bg-dark text-light border">
+        Hàng 0: Filter 0 &rarr; [w0, w1, w2, ..., w8]<br>
+        Hàng 1: Filter 1 &rarr; [w0, w1, w2, ..., w8]<br>
+        ...<br>
+        Hàng 15: Filter 15 &rarr; [w0, w1, w2, ..., w8]
+      </div>
+      <small class="text-muted mt-2 d-block">&rarr; <strong>Tiling:</strong> Cắt thành 2 lát <code>Tile A0 [8×9]</code> (Filters 0..7) và <code>Tile A1 [8×9]</code> (Filters 8..15).</small>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="p-3 rounded-3 bg-body-tertiary border border-subtle h-100">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-danger-subtle text-danger font-monospace">Buffer B Source</span>
+        <strong class="text-emphasis small">Ma Trận Kích Hoạt B [9 × 196] (Patches)</strong>
+      </div>
+      <p class="text-secondary small mb-2">
+        Trên bức ảnh $28 \times 28$, cửa sổ trượt $3 \times 3$ (stride 2) quét qua toàn bộ bề mặt tạo thành $14 \times 14 = 196$ vị trí tiếp nhận (receptive fields). Mỗi ô cửa sổ 9 điểm ảnh được duỗi thành một vector cột, ghép thành Ma trận $B \in \mathbb{R}^{9 \times 196}$:
+      </p>
+      <div class="font-monospace small p-2 rounded bg-dark text-light border">
+        Cột 0: Patch 0 (9 pixel xung quanh tâm (1,1))<br>
+        Cột 1: Patch 1 (9 pixel xung quanh tâm (1,3))<br>
+        ...<br>
+        Cột 195: Patch 195 (9 pixel ô góc cuối cùng)
+      </div>
+      <small class="text-muted mt-2 d-block">&rarr; <strong>Tiling:</strong> Chia 196 cột thành 25 lát con <code>Sub-tile B0..B24 [9×8]</code> (mỗi lát chứa 8 patches).</small>
+    </div>
+  </div>
+</div>
+
+<h4 class="h6 fw-semibold text-secondary mt-3 mb-2">2.5.2. Bước 2: Cơ Chế Nạp Dữ Liệu Vào SRAM On-Chip (Giao Tiếp Ghi Single-Byte & Gen-2 Packed)</h4>
+<p class="mb-2 text-secondary lh-base">Cả hai bộ đệm đều được hiện thực bằng khối RAM nội vi (On-Chip Dual-Port SRAM) với kích thước vật lý là $ARRAY\_SIZE \times MAX\_K = 8 \times 16 = 128\text{ bytes}$ (định dạng Signed INT8 $[-128, 127]$):</p>
+
+<div class="card my-3 border shadow-sm">
+  <div class="card-header bg-body-tertiary py-1.5 px-3 d-flex justify-content-between align-items-center border-bottom">
+    <span class="badge bg-success-subtle text-success font-monospace small">RTL: matrix_buffer_a.sv & matrix_buffer_b.sv</span>
+    <span class="text-muted small">Cơ chế ghi song song 4-byte Gen-2</span>
+  </div>
+  <div class="card-body p-0">
+    <pre class="m-0 p-3 bg-dark text-light font-monospace small" style="overflow-x: auto;"><code>// Host write logic: Hỗ trợ cả 2 chế độ ghi trong cùng 1 khối phần cứng
+always_ff @(posedge clk) begin
+    if (wr_en) begin
+        // Chế độ Legacy: Ghi từng byte đơn lẻ qua địa chỉ byte
+        ram[wr_addr] &lt;= wr_data;
+    end else if (wr_packed_en) begin
+        // Chế độ Gen-2 Packed 4-INT8: CPU gửi 1 từ 32-bit chứa [byte3, byte2, byte1, byte0]
+        // Phần cứng tự động rải đồng thời vào 4 ô nhớ liên tiếp trong đúng 1 chu kỳ clock!
+        ram[{wr_packed_addr, 2'b00}] &lt;= wr_packed_data[7:0];   // Byte 0
+        ram[{wr_packed_addr, 2'b01}] &lt;= wr_packed_data[15:8];  // Byte 1
+        ram[{wr_packed_addr, 2'b10}] &lt;= wr_packed_data[23:16]; // Byte 2
+        ram[{wr_packed_addr, 2'b11}] &lt;= wr_packed_data[31:24]; // Byte 3
+    end
+end</code></pre>
+  </div>
+</div>
+<li class="mb-1 text-secondary"><strong>Hiệu quả vượt trội của Gen-2 Packed MMIO</strong>: Để nạp 1 sub-tile $8 \times 9 = 72\text{ bytes}$, chế độ Legacy cần 72 lệnh ghi AXI. Với Gen-2 Packed, CPU chỉ cần ghi $(8 \times 9)/4 = 18\text{ từ 32-bit}$, giảm $4\times$ số chu kỳ bus và giải phóng tài nguyên CPU RISC-V.</li>
+
+<h4 class="h6 fw-semibold text-secondary mt-3 mb-2">2.5.3. Bước 3: Sơ Đồ Phân Bố Ô Nhớ SRAM (Memory Mapping & Layout)</h4>
+<p class="mb-2 text-secondary lh-base">Dữ liệu được lưu trữ trong SRAM theo thứ tự Hàng ưu tiên (Row-Major), nhưng cấu trúc hàng của Buffer A và Buffer B mang ý nghĩa vật lý hoàn toàn khác biệt:</p>
+
+<div class="row g-3 my-2">
+  <div class="col-md-6">
+    <div class="border rounded-3 p-3 bg-body-tertiary">
+      <div class="fw-bold text-primary small mb-1"><i class="bi bi-hdd me-1"></i>Bản Đồ Bộ Nhớ BUFFER A (Weights [8 × 9])</div>
+      <table class="table table-bordered table-sm font-monospace small text-center mb-0 bg-dark text-light">
+        <thead>
+          <tr class="table-primary text-dark"><th>Hàng $r$</th><th>Ý Nghĩa Ô Nhớ</th><th>Địa Chỉ SRAM</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>$r=0$</td><td>Filter 0: $w_0, w_1, \dots, w_8$</td><td><code>0x00 .. 0x08</code></td></tr>
+          <tr><td>$r=1$</td><td>Filter 1: $w_0, w_1, \dots, w_8$</td><td><code>0x09 .. 0x11</code></td></tr>
+          <tr><td>$r=2$</td><td>Filter 2: $w_0, w_1, \dots, w_8$</td><td><code>0x12 .. 0x1A</code></td></tr>
+          <tr><td>...</td><td>...</td><td>...</td></tr>
+          <tr><td>$r=7$</td><td>Filter 7: $w_0, w_1, \dots, w_8$</td><td><code>0x3F .. 0x47</code></td></tr>
+        </tbody>
+      </table>
+      <small class="text-muted mt-1 d-block text-center">Mỗi hàng $r$ chứa trọn vẹn 9 trọng số của 1 bộ lọc.</small>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="border rounded-3 p-3 bg-body-tertiary">
+      <div class="fw-bold text-danger small mb-1"><i class="bi bi-hdd me-1"></i>Bản Đồ Bộ Nhớ BUFFER B (Patches [9 × 8])</div>
+      <table class="table table-bordered table-sm font-monospace small text-center mb-0 bg-dark text-light">
+        <thead>
+          <tr class="table-danger text-dark"><th>Hàng $k$</th><th>Ý Nghĩa Ô Nhớ</th><th>Địa Chỉ SRAM</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>$k=0$</td><td>Pixel $k=0$ của 8 Patches $[P_0..P_7]$</td><td><code>0x00 .. 0x07</code></td></tr>
+          <tr><td>$k=1$</td><td>Pixel $k=1$ của 8 Patches $[P_0..P_7]$</td><td><code>0x08 .. 0x0F</code></td></tr>
+          <tr><td>$k=2$</td><td>Pixel $k=2$ của 8 Patches $[P_0..P_7]$</td><td><code>0x10 .. 0x17</code></td></tr>
+          <tr><td>...</td><td>...</td><td>...</td></tr>
+          <tr><td>$k=8$</td><td>Pixel $k=8$ của 8 Patches $[P_0..P_7]$</td><td><code>0x40 .. 0x47</code></td></tr>
+        </tbody>
+      </table>
+      <small class="text-muted mt-1 d-block text-center">Mỗi hàng $k$ chứa điểm ảnh thứ $k$ của cả 8 cửa sổ trượt.</small>
+    </div>
+  </div>
+</div>
+
+<h4 class="h6 fw-semibold text-secondary mt-3 mb-2">2.5.4. Bước 4: Giải Thuật Đọc Song Song Khi Mảng Tâm Thu Chạy (ST_STREAM)</h4>
+<p class="mb-2 text-secondary lh-base">Khi FSM chuyển sang trạng thái tính toán <code>ST_STREAM</code>, bộ đếm <code>k_step</code> bắt đầu nhảy từ $0 \rightarrow K-1$ ($0 \rightarrow 8$ đối với Conv1). Cả hai buffer kích hoạt logic đọc song song bằng tổ hợp <code>always_comb</code>:</p>
+
+<div class="card my-3 border shadow-sm">
+  <div class="card-header bg-body-tertiary py-1.5 px-3 d-flex justify-content-between align-items-center border-bottom">
+    <span class="badge bg-primary-subtle text-primary font-monospace small">Công thức địa chỉ phần cứng (Hardware Addressing Equations)</span>
+    <span class="text-muted small">Khóa bảo vệ tràn biên phần cứng</span>
+  </div>
+  <div class="card-body p-3">
+    <div class="row g-3">
+      <div class="col-md-6 border-end">
+        <h6 class="fw-bold text-primary small"><i class="bi bi-arrow-right-circle me-1"></i>BUFFER A: Xuất 8 Hàng Song Song Ra Cạnh Tây (West)</h6>
+        <div class="p-2 rounded bg-dark text-light font-monospace small mb-2">
+          read_idx = r * k_dim + k_step; // r = 0, 1, ..., 7
+        </div>
+        <p class="text-secondary small mb-0">
+          Tại chu kỳ xung nhịp <code>k_step</code>, phần cứng tự động tính toán 8 địa chỉ đồng thời cho 8 hàng. Ví dụ ở chu kỳ $k\_step = 0$, cổng đọc sẽ rút cùng lúc 8 trọng số đầu tiên của cả 8 filters: $\{ \text{ram}[0\cdot 9 + 0], \text{ram}[1\cdot 9 + 0], \dots, \text{ram}[7\cdot 9 + 0] \}$, đưa thẳng vào 8 bus ngõ ra <code>row_data_out[0..7]</code>.
+        </p>
+      </div>
+
+      <div class="col-md-6">
+        <h6 class="fw-bold text-danger small"><i class="bi bi-arrow-down-circle me-1"></i>BUFFER B: Xuất 8 Cột Song Song Ra Cạnh Bắc (North)</h6>
+        <div class="p-2 rounded bg-dark text-light font-monospace small mb-2">
+          read_idx = k_step * ARRAY_SIZE + c; // c = 0, 1, ..., 7
+        </div>
+        <p class="text-secondary small mb-0">
+          Tại chu kỳ xung nhịp <code>k_step</code>, phần cứng tính 8 địa chỉ liên tiếp theo chiều ngang. Ví dụ ở chu kỳ $k\_step = 0$, cổng đọc rút toàn bộ 8 điểm ảnh ở vị trí $k=0$ của cả 8 cửa sổ trượt: $\{ \text{ram}[0 + 0], \text{ram}[0 + 1], \dots, \text{ram}[0 + 7] \}$, đưa thẳng vào 8 bus ngõ ra <code>col_data_out[0..7]</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<li class="mb-1 text-secondary"><strong>Cơ chế khóa an toàn phần cứng (Hardware Guardband Protection)</strong>: Trong cả hai module, điều kiện đọc <code>if (stream_en &amp;&amp; (k_step &lt; k_dim) &amp;&amp; (read_idx &lt; TOTAL_ENTRIES))</code> triệt tiêu hoàn toàn khả năng đọc vượt giới hạn 128 bytes, gán cứng ngõ ra bằng <code>'0</code> khi quá biên nhằm ngăn ngừa lỗi logic trong quá trình mô phỏng và chạy thực tế.</li>
+
+<h4 class="h6 fw-semibold text-secondary mt-3 mb-2">2.5.5. Bước 5: Chuyển Giao Sang Skew Unit & Chiến Lược Cố Định Trọng Số (Weight-Stationary)</h4>
+<p class="mb-2 text-secondary lh-base">Sau khi 8 byte từ Buffer A và 8 byte từ Buffer B được đọc ra, dòng chảy dữ liệu tiếp tục chuyển sang hai khối tối ưu hóa then chốt:</p>
+
+<li class="mb-1 text-secondary">
+  <strong class="fw-semibold text-emphasis">Lệch Pha Mặt Sóng 45° Qua `systolic_skew_unit.sv`</strong>:
+  Do dữ liệu từ hai buffer được đọc đồng thời, nếu đưa trực tiếp vào mảng PE thì $PE[0,0]$ và $PE[7,7]$ sẽ nhận dữ liệu cùng lúc, làm gãy nhịp lan truyền tâm thu. Khối Skew Unit sử dụng 28 thanh ghi D-FF làm trễ hàng $i$ của Buffer A một khoảng $i \times T_{clk}$ và cột $j$ của Buffer B một khoảng $j \times T_{clk}$. Điều này biến dòng dữ liệu song song phẳng thành một <strong>mặt sóng xung kích đường chéo $45^\circ$</strong> quét nhịp nhàng qua toàn bộ 64 PE.
+</li>
+
+<li class="mb-1 text-secondary">
+  <strong class="fw-semibold text-emphasis">Chiến Lược Cố Định Trọng Số (Weight-Stationary) Giúp Giảm 98× Băng Thông DRAM</strong>:
+  Do bộ trọng số của tầng Conv1 không thay đổi trong suốt quá trình nhận dạng ảnh, khối <code>Tile A0 [8×9]</code> (8 filters đầu tiên) sau khi nạp vào <code>matrix_buffer_a</code> sẽ được <strong>khóa cố định (Stationary)</strong> trong SRAM suốt 98 chu kỳ chạy liên tiếp. Trong lúc đó, <code>matrix_buffer_b</code> luân phiên đón nhận 25 sub-tiles kích hoạt $B_0, B_1, \dots, B_{24}$ từ ảnh. Kỹ thuật này giúp hệ thống <strong>loại bỏ 98 lần đọc lặp lại trọng số từ bộ nhớ ngoài DRAM</strong>, giảm nhiệt độ chip và tiết kiệm năng lượng tối đa cho kit FPGA.
+</li>
+
+<h4 class="h6 fw-semibold text-secondary mt-3 mb-2">2.5.6. Bộ Đệm Kết Quả Ngõ Ra Kép Matrix Buffer C (`matrix_buffer_c.sv`)</h4>
+<li class="mb-1 text-secondary"><strong class="fw-semibold text-emphasis">Matrix Buffer C</strong> ($8 \times 8$ bytes): Bộ đệm ngõ ra kép (Dual-Channel Architecture):</li>
+<li class="mb-1 text-secondary"><strong class="text-primary">Kênh 1 (INT8 Output Channel)</strong>: Lưu 64 phần tử sau khi qua tầng lượng tử hóa (Shift) và hàm phi tuyến (ReLU/Clamp), sẵn sàng nạp thẳng vào Buffer B của tầng tiếp theo.</li>
+<li class="mb-1 text-secondary"><strong class="text-success">Kênh 2 (INT32 Raw Accumulator Channel)</strong>: Lưu 64 từ 32-bit tích lũy thô trước khi nén, cho phép phần mềm CPU RISC-V đọc ra để kiểm tra đối so sánh bit-true 100% với mô hình PyTorch Golden.</li>
 <div class="pt-3 pb-1 mb-2 mt-3" id="2-6-b-i-u-khi-n-trung-t-m-gemm-controller-sv-v-chu-tr-nh-fsm-7-tr-ng-th-i"><h3 class="h5 fw-semibold text-emphasis mb-1"><i class="bi bi-chevron-right text-muted small me-1"></i>2.6. Bộ Điều Khiển Trung Tâm `gemm_controller.sv` Và Chu Trình FSM 7 Trạng Thái</h3></div>
 <li class="mb-1 text-secondary">FSM điều khiển luồng hoạt động chính xác từng chu kỳ nhịp:</li>
 
@@ -3982,6 +4207,49 @@ Scoreboard Summary   : Total: 81 | Passed: 81 | Failed: 0 (Bit-True)
                   <div class="small text-muted fw-semibold mb-1">DIAGONAL WAVEFRONT</div>
                   <div class="font-monospace text-success fw-bold">T = i + j (Wavefront)</div>
                   <small class="text-secondary">100% nearest-neighbor spatial data reuse, 0% global bus contention</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hardware Architecture Card: How Buffer A & Buffer B Ingest Input Tensors -->
+            <div class="card border border-info-subtle shadow-sm text-start mt-4" style="max-width: 900px; margin: 0 auto; background: var(--surface-card);">
+              <div class="card-header bg-info bg-opacity-10 py-2.5 px-3 border-bottom border-info-subtle d-flex justify-content-between align-items-center">
+                <span class="fw-bold small text-info"><i class="bi bi-hdd-network me-2"></i>Hardware Data Ingestion Deep Dive: Buffer A & Buffer B Architecture</span>
+                <span class="badge bg-info-subtle text-info font-monospace">RTL: matrix_buffer_a/b.sv</span>
+              </div>
+              <div class="card-body p-3">
+                <p class="text-secondary small mb-3">
+                  Before operands enter the <strong>Systolic Skew Unit</strong> displayed above, they are ingested from external memory, transformed via <strong>Im2Col</strong>, and buffered in dual on-chip SRAM macros:
+                </p>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="p-3 rounded bg-body-tertiary border h-100">
+                      <div class="d-flex align-items-center justify-content-between mb-1">
+                        <strong class="text-primary small">Weight Buffer A (Row-Parallel)</strong>
+                        <span class="badge bg-primary-subtle text-primary font-monospace">128B SRAM</span>
+                      </div>
+                      <ul class="text-secondary small ps-3 mb-0">
+                        <li><strong>Content:</strong> 8 Convolution Filters ($8 \times K$, e.g., $8 \times 9$ INT8 weights).</li>
+                        <li><strong>Write MMIO:</strong> Packed 4-INT8 (0x700) fills 72 bytes in only 18 bus cycles.</li>
+                        <li><strong>Read Address:</strong> <code>read_idx = r * k_dim + k_step</code> (outputs 8 rows simultaneously to West Skew delay lines).</li>
+                        <li><strong>Reuse:</strong> Stationary for 98 runs ($98\times$ external DRAM read savings).</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="p-3 rounded bg-body-tertiary border h-100">
+                      <div class="d-flex align-items-center justify-content-between mb-1">
+                        <strong class="text-danger small">Activation Buffer B (Col-Parallel)</strong>
+                        <span class="badge bg-danger-subtle text-danger font-monospace">128B SRAM</span>
+                      </div>
+                      <ul class="text-secondary small ps-3 mb-0">
+                        <li><strong>Content:</strong> 8 Im2Col Receptive Field Patches ($K \times 8$, e.g., $9 \times 8$ INT8 inputs).</li>
+                        <li><strong>Write MMIO:</strong> Packed 4-INT8 (0x780) fills 72 bytes in 18 bus cycles.</li>
+                        <li><strong>Read Address:</strong> <code>read_idx = k_step * 8 + c</code> (outputs 8 columns simultaneously to North Skew delay lines).</li>
+                        <li><strong>Buffering:</strong> Double-buffered ping-pong banks for zero-stall streaming.</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
